@@ -11,7 +11,7 @@ The layers are allowed to differ, so most apparent conflicts are not defects. A 
 
 1. **Set the scope.** Use what was asked, or default to `docs/product/`, `docs/brand/`, and `docs/README.md`. Read the pages in full, because a search only finds the wording you expected. Say what you read fully and what you only searched.
 
-2. **Protect the current state** before fixing anything. The project has no version history, so make a dated backup archive beside the project folder, and confirm that it lists the files.
+2. **Protect the current state** before fixing anything. Check with `git status` that earlier work is committed, so that each change can be seen and undone. The repository is public, so never commit patient data or a backup archive.
 
 3. **Look for these problems:**
 

@@ -8,7 +8,7 @@
 
 BIOMEG Laboratorio Clínico is one clinical laboratory in Venezuela. It runs a Windows program called **SICOEXC**, from the vendor Soluciones Informáticas SM. This workspace specifies a **new application to replace it**.
 
-**This workspace holds documentation only. No application is being built at this moment.** There is no application code, database, or technology choice, and no git history.
+**This workspace holds documentation only. No application is being built at this moment.** There is no application code, database, or technology choice. The history is in git, at <https://github.com/AllanTorresBass/BIOMEG>. That repository is public, so anyone can read and copy what's committed.
 
 The application will be in Spanish. The documents are in English and quote Spanish labels exactly.
 

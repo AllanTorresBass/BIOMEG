@@ -7,7 +7,7 @@ description: Write or change BIOMEG documentation so it follows the project's st
 
 This workspace holds documentation only. If a request implies building software, stop and ask, because no application is being built at this moment.
 
-The project has no version history, so an overwritten sentence can't be recovered. Before a large edit, make a dated backup archive beside the project folder.
+The history is in git, so commit earlier work before a large edit, and a change can then be undone. The repository is public, so anyone can read and copy what's committed.
 
 ## Steps
 
