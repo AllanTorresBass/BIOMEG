@@ -283,7 +283,6 @@ Applied on 1 November 2026, on the instruction to apply the recommendations. Tha
 | `brand/04-display-patterns.md` | Keeps its shape. New notes use the nine-section standard | Owner |
 | Reviewing the access rules | A person reviews each change, because no code enforces them | Owner |
 | Order states | `BORRADOR` is the unsaved Nueva orden. The first stored result moves an order to `INCOMPLETO` | Lead bioanalyst, owner |
-| Staff sign-in | BIOMEG's own sessions behind an interface, not Auth0 | Owner |
 | Procesado por | A name per section when they differ | Lead bioanalyst |
 | Convenio | A row in Registro de empresas, with Status and Requiere titular. The titular is on the order | Owner |
 | Client notes | Removed, because no other page used the field. Tell us if the laboratory needs one | Owner |
@@ -291,6 +290,8 @@ Applied on 1 November 2026, on the instruction to apply the recommendations. Tha
 | Security baseline | `product/10-security-baseline.md`, the Bioanalista and password-reset rules, and the portal's one-time code | Owner, and counsel for the credential |
 | Sending reports | A portal link, or an attachment with recorded consent | Owner, counsel |
 | Rows with one cédula | Rows brought over only, and a session holds only those matching Fecha de nac. | Owner |
+
+**Decided:** BIOMEG manages staff sign-in and all role-based access itself, with no outside identity service such as Auth0.
 
 **Settled by checking:** the vendor page `/lista-de-examenes/` is titled “Lista de Clientes e interfaz lis con equipos automatizados”, checked on 1 November 2026. `modules/test-catalog.md` and `modules/analyzer-connectivity.md` now say so.
 

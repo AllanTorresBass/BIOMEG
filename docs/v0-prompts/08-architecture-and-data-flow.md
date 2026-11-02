@@ -31,7 +31,7 @@ Include:
    | Configuration | rate, QR, Saturday, prices, registries | yes | yes | memory | never |
    | Preference | column widths, density | yes | n/a | memory | Zustand |
    | Security | password, tokens, keys | never | never | never | never |
-7. ADRs in docs/adr/, one short file each, for: own sessions behind IStaffIdentityProvider instead of Auth0; repositories instead of SQL in route handlers; a DI container instead of exported singletons; route handlers instead of Server Actions; no ORM.
+7. ADRs in docs/adr/, one short file each, for: BIOMEG managing accounts, sessions, roles, and permissions itself, with no outside identity service such as Auth0; repositories instead of SQL in route handlers; a DI container instead of exported singletons; route handlers instead of Server Actions; no ORM.
 8. Anything in the attached rules or spec that you think conflicts, and which page you believe wins. Do not resolve a conflict silently.
 
 Keep to what is written. Propose no extra features or services.

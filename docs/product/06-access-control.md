@@ -73,7 +73,7 @@ Accepted on 1 November 2026, on the instruction to apply the recommendations.
 | Outage | [11-outage-procedure.md](11-outage-procedure.md) is a draft, with proposed targets | Owner to set them, and lead bioanalyst and accountant to complete their parts |
 | Order states | `BORRADOR` and the move to `INCOMPLETO`, as under Record states | Lead bioanalyst and owner to confirm |
 | Procesado por on the report | A name per section when different bioanalysts released them | Lead bioanalyst to confirm |
-| Staff sign-in | BIOMEG's own sessions, behind an interface. Auth0 can replace them for staff. The portal can't use it, because it has no password | Owner to confirm |
+| Staff sign-in and roles | BIOMEG manages all of it itself: accounts, passwords, sessions, roles, and every permission decision. No outside identity service such as Auth0 | Decided on 1 November 2026 |
 | Convenio record | A convenio is a row in Registro de empresas, with its Status and Requiere titular. The titular is stored on the order | Owner to confirm |
 | Reviewing this table | With no application or test to enforce it, a person reviews each change. A build must run the permission tests in V0-03 | Owner to confirm |
 | Audit log practices | Everything in [09-audit-log.md](09-audit-log.md), and its starting values | Owner and lead bioanalyst to confirm |
