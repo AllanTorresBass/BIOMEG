@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { findMenuItem } from '@/lib/config/menu'
 import { guardRoute } from '@/lib/server/guard'
@@ -7,6 +7,7 @@ import { strings } from '@/lib/strings'
 
 export default async function ScreenPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
+  if (slug === 'clientes') redirect('/clientes')
   const entry = findMenuItem(slug)
   if (!entry) notFound()
 

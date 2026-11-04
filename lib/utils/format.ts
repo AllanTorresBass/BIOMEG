@@ -5,7 +5,8 @@ export const LAB_TIME_ZONE = 'America/Caracas'
 const DASH = strings.empty.dash
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
 
-export type CedulaType = 'V' | 'E'
+export const CEDULA_TYPES = ['V', 'E', 'J', 'P', 'G'] as const
+export type CedulaType = (typeof CEDULA_TYPES)[number]
 
 export interface ParsedCedula {
   type: CedulaType
@@ -110,12 +111,12 @@ export function formatCedula(type: CedulaType, digits: string): string {
  * "V-12.345.678", "e 12345678", and "12.345.678" are accepted.
  */
 export function parseCedulaPaste(text: string): ParsedCedula | null {
-  const match = /^\s*([VvEe])?\s*[-.\s]?\s*([\d.\s]+?)\s*$/.exec(text)
+  const match = /^\s*([VvEeJjPpGg])?\s*[-.\s]?\s*([\d.\s]+?)\s*$/.exec(text)
   if (!match) return null
   const digits = (match[2] ?? '').replace(/[.\s]/g, '')
   if (digits.length < 1 || digits.length > 10 || !/^\d+$/.test(digits)) return null
-  const letter = match[1]?.toUpperCase()
-  return { type: letter === 'E' ? 'E' : 'V', digits }
+  const letter = match[1]?.toUpperCase() as CedulaType | undefined
+  return { type: letter ?? 'V', digits }
 }
 
 function parseIsoDate(value: string): { y: number; m: number; d: number } | null {
