@@ -8,7 +8,7 @@ import {
   priceFor,
   pricingBasis,
   totalsOf,
-} from '@/lib/server/domain/pricing'
+} from '@/lib/domain/pricing'
 import type { DemoPriceRow } from '@/types/domain/demo.types'
 import type { OrderStub } from '@/types/domain/order-stub.types'
 

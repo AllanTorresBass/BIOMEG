@@ -33,11 +33,29 @@ export interface DraftBilling {
   direccion: string
 }
 
+export type PaymentMethodId =
+  | 'EFECTIVO_USD'
+  | 'ZELLE'
+  | 'EFECTIVO_BS'
+  | 'TDEBITO'
+  | 'TCREDITO'
+  | 'PAGO_MOVIL'
+  | 'TRANSFERENCIA'
+
+export interface DraftPayment {
+  method: PaymentMethodId
+  /** As typed, with a dot decimal. Blank means no payment on this row. */
+  amount: string
+  bank: string
+  /** Free text. */
+  reference: string
+}
+
 export interface OrderDraft {
   id: string
   ownerId: string
   path: OrderPath
-  step: 1 | 2
+  step: 1 | 2 | 3 | 4
   state: 'BORRADOR'
   clientId: string | null
   motivo: string
@@ -46,7 +64,50 @@ export interface OrderDraft {
   costType: CostType | null
   billing: DraftBilling
   lines: DraftLine[]
+  physicianId: string | null
+  convenioId: string | null
+  titular: string
+  payments: DraftPayment[]
+  /** Percent as typed. "0" means no discount. */
+  discountPct: string
+  discountMotivo: string
+  /** Set once Guardar succeeds. A second save on the same draft finds it here. */
+  savedOrderId: string | null
   createdAt: string
+}
+
+export interface PersonalInput {
+  draftId: string
+  physicianId: string | null
+}
+
+export interface PaymentInput {
+  draftId: string
+  convenioId: string | null
+  titular: string
+  razonSocial: string
+  payments: DraftPayment[]
+  discountPct: string
+  discountMotivo: string
+}
+
+export interface SaveInput {
+  draftId: string
+  /** One per Guardar attempt. The same key twice never creates a second order. */
+  key: string
+  /** The BCV rate the operator saw. A different current rate asks for a confirm. */
+  rateSeen: string
+  confirmRate?: boolean
+}
+
+export interface SaveResult {
+  ok: boolean
+  message: string
+  need: 'RATE_CHANGED' | 'DISCOUNT_APPROVAL' | 'DISCOUNT_MOTIVO' | null
+  /** The order that exists after this call, whether it was just created or was already there. */
+  orderId: string | null
+  /** True when the screen must reload because another save won. */
+  reload: boolean
 }
 
 export type DraftNeed = 'CONFIRM_NO_DISP' | 'CONFIRM_OVERRIDE' | 'SAME_DAY' | 'MOTIVO'

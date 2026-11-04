@@ -42,6 +42,11 @@ export function allOrders(): OrderStub[] {
   return [...state.orders.values()]
 }
 
+/** A saved order enters the index so the same-day check and the client rules see it. */
+export function registerOrder(stub: OrderStub): void {
+  state.orders.set(stub.id, stub)
+}
+
 export function ordersOf(clientId: string): OrderStub[] {
   return [...state.orders.values()].filter((order) => order.clientId === clientId)
 }

@@ -1,10 +1,15 @@
 import { redirect } from 'next/navigation'
 import { ClientStep } from '@/components/orders/ClientStep'
 import { ExamsStep } from '@/components/orders/ExamsStep'
+import { PaymentStep } from '@/components/orders/PaymentStep'
+import { PersonalStep } from '@/components/orders/PersonalStep'
+import { SavedOrderPanel } from '@/components/orders/SavedOrderPanel'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { decide } from '@/lib/auth/decide'
 import { getClient, searchClients } from '@/lib/db/memory/client-store'
 import { getDraft, startDraft } from '@/lib/db/memory/draft-store'
+import { getOrder } from '@/lib/db/memory/order-store'
+import { emptyPayments } from '@/lib/config/payment-methods'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { todayInLab } from '@/lib/server/domain/client-rules'
 import { toCatalog, toLineView, toTotalsView } from '@/lib/server/domain/order-draft-view'
@@ -12,7 +17,7 @@ import { guardRoute } from '@/lib/server/guard'
 import { toDecisionSession } from '@/lib/server/session/current'
 import { requireReadyStaff } from '@/lib/server/session/require'
 import { strings } from '@/lib/strings'
-import { computeAge, formatAge, formatCedula, formatDate } from '@/lib/utils/format'
+import { LAB_TIME_ZONE, computeAge, formatAge, formatCedula, formatDate } from '@/lib/utils/format'
 import type { ClientRecord } from '@/types/domain/client.types'
 import type { PatientView } from '@/types/orders/screen.types'
 
@@ -52,6 +57,7 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
   const stored = draft.clientId ? getClient(draft.clientId) : null
   const client = stored && stored.active ? stored : null
   const step = client ? draft.step : 1
+  const saved = draft.savedOrderId ? getOrder(draft.savedOrderId) : null
 
   const heading = draft.path === 'EMPRESA' ? text.pathEmpresa : text.pathParticular
 
@@ -60,7 +66,7 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-xl font-semibold">{heading}</h1>
         <ol className="flex gap-4 text-sm" aria-label={text.stepsLabel}>
-          {text.steps.slice(0, 2).map((label, index) => (
+          {text.steps.map((label, index) => (
             <li key={label} aria-current={step === index + 1 ? 'step' : undefined} className={step === index + 1 ? 'font-semibold' : 'text-muted-foreground'}>
               {label}
             </li>
@@ -68,7 +74,25 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
         </ol>
       </div>
 
-      {step === 1 || !client ? (
+      {saved ? (
+        <SavedOrderPanel
+          number={saved.number}
+          invoiceNumber={saved.invoiceNumber}
+          controlNumber={saved.controlNumber}
+          clientName={saved.clientName}
+          examCount={saved.lines.length}
+          totalUsd={saved.totals.totalUsd}
+          totalBs={saved.totals.totalBs}
+          abono={saved.totals.abono}
+          resta={saved.totals.resta}
+          savedBy={saved.savedByName}
+          savedAtText={new Date(saved.savedAt).toLocaleTimeString('es-VE', {
+            timeZone: LAB_TIME_ZONE,
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        />
+      ) : step === 1 || !client ? (
         <ClientStep
           draftId={draft.id}
           query={one(params.q)}
@@ -83,6 +107,32 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
           canCreateClient={
             decide({ session: toDecisionSession(context), command: 'client.create', facts: {}, gestures: {} }).allowed
           }
+        />
+      ) : step === 3 ? (
+        <PersonalStep
+          draftId={draft.id}
+          patient={toPatient(client)}
+          physicianId={draft.physicianId}
+          physicians={demoSeed.physicians}
+        />
+      ) : step === 4 ? (
+        <PaymentStep
+          draftId={draft.id}
+          patient={toPatient(client)}
+          isEmpresa={draft.path === 'EMPRESA'}
+          convenios={demoSeed.companies.filter((company) => company.active)}
+          convenioId={draft.convenioId}
+          titular={draft.titular}
+          razonSocial={draft.billing.razonSocial}
+          payments={draft.payments.length > 0 ? draft.payments : emptyPayments()}
+          discountPct={draft.discountPct}
+          discountMotivo={draft.discountMotivo}
+          discountLimit={demoSeed.settings.discountLimit}
+          linePrices={draft.lines.map((line) => line.priceUsd)}
+          rate={demoSeed.settings.rateBs}
+          rateDate={demoSeed.settings.rateDate}
+          ivaRate={demoSeed.settings.ivaRate}
+          igtfRate={demoSeed.settings.igtfRate}
         />
       ) : (
         <ExamsStep

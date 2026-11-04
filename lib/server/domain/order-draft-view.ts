@@ -1,5 +1,5 @@
 import { COST_TYPE_LABELS, PRICE_COLUMN_LABELS } from '@/lib/config/price-defaults'
-import { totalsOf } from '@/lib/server/domain/pricing'
+import { totalsOf } from '@/lib/domain/pricing'
 import { strings } from '@/lib/strings'
 import { formatMoney, formatPrice, formatRate } from '@/lib/utils/format'
 import type { DemoPriceRow } from '@/types/domain/demo.types'

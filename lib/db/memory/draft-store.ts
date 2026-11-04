@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { emptyPayments } from '@/lib/config/payment-methods'
 import type { OrderDraft, OrderPath } from '@/types/orders/draft.types'
 
 interface DraftState {
@@ -41,6 +42,13 @@ export function startDraft(ownerId: string, path: OrderPath): OrderDraft {
     costType: null,
     billing: { cedula: '', razonSocial: '', direccion: '' },
     lines: [],
+    physicianId: null,
+    convenioId: null,
+    titular: '',
+    payments: emptyPayments(),
+    discountPct: '0',
+    discountMotivo: '',
+    savedOrderId: null,
     createdAt: new Date().toISOString(),
   }
   state.drafts.set(draft.id, draft)
