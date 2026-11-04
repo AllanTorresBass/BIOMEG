@@ -44,7 +44,7 @@ describe('buildWorklist', () => {
   it('keeps an open correction listed on any date', () => {
     const rows = buildWorklist([stub('1', { sampleDate: '2026-02-01', correctionOpen: true })], '2026-03-10')
     expect(rows).toHaveLength(1)
-    expect(rows[0].state).toBe('EN_CORRECCION')
+    expect(rows[0]?.state).toBe('EN_CORRECCION')
   })
 
   it('falls back to the creation day when there is no sample date', () => {
@@ -65,10 +65,11 @@ describe('buildWorklist', () => {
 
 describe('toStatusOnly', () => {
   it('drops the review flag and keeps the status columns', () => {
-    const [row] = toStatusOnly(buildWorklist([stub('1', { needsReview: true, hasResult: true })], '2026-03-10'))
-    expect('needsReview' in row).toBe(false)
-    expect(row.state).toBe('INCOMPLETO')
-    expect(row.patient).toBe('Paciente 1')
+    const row = toStatusOnly(buildWorklist([stub('1', { needsReview: true, hasResult: true })], '2026-03-10'))[0]
+    expect(row).toBeDefined()
+    expect('needsReview' in (row ?? {})).toBe(false)
+    expect(row?.state).toBe('INCOMPLETO')
+    expect(row?.patient).toBe('Paciente 1')
   })
 })
 

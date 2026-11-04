@@ -68,7 +68,7 @@ function targetOf(draft: OrderDraft | undefined, target?: Target): Target {
 export async function gate(
   { context, draft }: Subject,
   command: string,
-  facts: Record<string, boolean>,
+  facts: Record<string, boolean | string>,
   presented: Presented = {},
   target?: Target,
 ): Promise<{ rowId: string | null } | DraftResult> {
