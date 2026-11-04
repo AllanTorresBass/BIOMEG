@@ -47,6 +47,19 @@ export function registerOrder(stub: OrderStub): void {
   state.orders.set(stub.id, stub)
 }
 
+export function getStub(id: string): OrderStub | null {
+  return state.orders.get(id) ?? null
+}
+
+/** Voiding and result work change the facts the other rules read. */
+export function updateStub(id: string, patch: Partial<OrderStub>): OrderStub | null {
+  const current = state.orders.get(id)
+  if (!current) return null
+  const next = { ...current, ...patch }
+  state.orders.set(id, next)
+  return next
+}
+
 export function ordersOf(clientId: string): OrderStub[] {
   return [...state.orders.values()].filter((order) => order.clientId === clientId)
 }

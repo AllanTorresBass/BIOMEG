@@ -110,7 +110,7 @@ export interface SaveResult {
   reload: boolean
 }
 
-export type DraftNeed = 'CONFIRM_NO_DISP' | 'CONFIRM_OVERRIDE' | 'SAME_DAY' | 'MOTIVO'
+export type DraftNeed = 'CONFIRM_NO_DISP' | 'CONFIRM_OVERRIDE' | 'SAME_DAY' | 'MOTIVO' | 'STEP_UP'
 
 export interface DraftResult {
   ok: boolean
@@ -169,4 +169,21 @@ export interface CatalogOption {
   id: string
   name: string
   available: boolean
+}
+
+/** Anular, remove line and Generar presupuesto share this shape. */
+export interface OrderActionResult extends DraftResult {
+  quoteId?: string
+}
+
+export interface VoidOrderInput {
+  orderId: string
+  confirmed?: boolean
+  motivo?: string
+}
+
+export interface RemoveLineInput {
+  orderId: string
+  lineId: string
+  confirmed?: boolean
 }

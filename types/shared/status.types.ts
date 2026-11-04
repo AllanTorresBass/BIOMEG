@@ -10,6 +10,7 @@ export type StatusKey =
   | 'ACTIVO'
   | 'DISPONIBLE'
   | 'ABIERTA'
+  | 'ANULADA'
   | 'EN_CORRECCION'
   | 'EN_REVISION'
   | 'PENDIENTE'

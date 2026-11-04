@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useMemo, useRef, useState, useTransition } from 'react'
 import { cancelDraft, goToStep } from '@/app/actions/order-draft'
+import { generateQuote } from '@/app/actions/order-actions'
 import { savePayment, saveOrder } from '@/app/actions/order-save'
 import { PatientHeader } from '@/components/orders/PatientHeader'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
@@ -91,6 +92,19 @@ export function PaymentStep(props: PaymentStepProps) {
     startTransition(async () => {
       const moved = await goToStep(draftId, 3)
       setMessage(moved.message)
+    })
+  }
+
+  function quote() {
+    startTransition(async () => {
+      const stored = await persist()
+      if (!stored.ok) {
+        setMessage(stored.message)
+        return
+      }
+      const result = await generateQuote(draftId)
+      setMessage(result.message)
+      if (result.ok && result.quoteId) window.open(`/ordenes/presupuesto/${result.quoteId}`, '_blank')
     })
   }
 
@@ -263,6 +277,14 @@ export function PaymentStep(props: PaymentStepProps) {
           {text.cancel}
         </button>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={quote}
+            disabled={pending}
+            className="h-11 rounded-[var(--radius-control)] border border-border-strong px-4 font-semibold disabled:opacity-50"
+          >
+            {text.quoteAction}
+          </button>
           <button
             type="button"
             onClick={back}

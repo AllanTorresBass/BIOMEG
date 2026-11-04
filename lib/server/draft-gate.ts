@@ -52,13 +52,21 @@ export interface Target {
   state: string
 }
 
-function targetOf(draft: OrderDraft, target?: Target): Target {
-  return target ?? { recordType: 'order_draft', recordId: draft.id, state: draft.state }
+/** What the gate helpers need. Order actions have no draft, so they always pass a target. */
+export interface Subject {
+  context: StaffContext
+  draft?: OrderDraft
+}
+
+function targetOf(draft: OrderDraft | undefined, target?: Target): Target {
+  if (target) return target
+  if (!draft) throw new Error('A target is required when there is no draft.')
+  return { recordType: 'order_draft', recordId: draft.id, state: draft.state }
 }
 
 /** Asks the permission table. A refusal is audited, and a missing confirm or motivo comes back as a need. */
 export async function gate(
-  { context, draft }: Opened,
+  { context, draft }: Subject,
   command: string,
   facts: Record<string, boolean>,
   presented: Presented = {},
@@ -85,6 +93,7 @@ export async function gate(
     rowId: decision.rowId,
   })
   if (decision.reason === 'CONFIRM') return fail('', 'CONFIRM_OVERRIDE')
+  if (decision.reason === 'STEP_UP') return fail('', 'STEP_UP')
   if (decision.reason === 'MOTIVO_REQUIRED') return fail(strings.auth.motivoRequired, 'MOTIVO')
   return fail(text.notAllowed)
 }
@@ -94,7 +103,7 @@ export function gated(value: { rowId: string | null } | DraftResult): value is D
 }
 
 export async function record(
-  opened: Opened,
+  opened: Subject,
   command: string,
   rowId: string | null,
   change: { before: unknown; after: unknown } | null,
@@ -114,7 +123,7 @@ export async function record(
 }
 
 /** A refusal that is not a permission one, such as a second save on an order that already exists. */
-export async function recordRefusal(opened: Opened, command: string, reason: RefusalReason, target?: Target): Promise<void> {
+export async function recordRefusal(opened: Subject, command: string, reason: RefusalReason, target?: Target): Promise<void> {
   await auditEvent({
     command,
     outcome: 'REFUSED',

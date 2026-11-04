@@ -33,6 +33,12 @@ export function SavedOrderPanel(props: SavedOrderPanelProps) {
       <p className="text-sm text-muted-foreground">{text.savedBy(props.savedBy, props.savedAtText)}</p>
       <div className="flex flex-wrap gap-2">
         <Link
+          href={`/ordenes/${props.orderId}`}
+          className="inline-flex h-11 items-center rounded-[var(--radius-control)] border border-border-strong px-4 font-semibold"
+        >
+          {text.viewOrder}
+        </Link>
+        <Link
           href="/ordenes/nueva"
           className="inline-flex h-11 items-center rounded-[var(--radius-control)] bg-primary px-4 font-semibold text-primary-foreground"
         >

@@ -56,6 +56,7 @@ export interface PaymentStepProps {
 }
 
 export interface SavedOrderPanelProps {
+  orderId: string
   number: string
   invoiceNumber: string
   controlNumber: string
@@ -75,4 +76,11 @@ export interface PatientHeaderProps {
 
 export interface StepIndicatorProps {
   current: 1 | 2
+}
+
+export interface OrderActionsProps {
+  orderId: string
+  voided: boolean
+  hasPayment: boolean
+  lines: { id: string; name: string; priceUsd: string | null }[]
 }

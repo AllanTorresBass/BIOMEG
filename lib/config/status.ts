@@ -13,6 +13,7 @@ export const STATUS_TABLE: Record<StatusKey, StatusDefinition> = {
   ACTIVO: { label: 'ACTIVO', tone: 'released', icon: null },
   DISPONIBLE: { label: 'DISPONIBLE', tone: 'released', icon: null },
   ABIERTA: { label: 'ABIERTA', tone: 'neutral', icon: null },
+  ANULADA: { label: 'ANULADA', tone: 'blocked', icon: null },
   EN_CORRECCION: { label: 'EN_CORRECCION', portalLabel: 'En revisión', tone: 'neutral', icon: null },
   EN_REVISION: { label: 'EN REVISIÓN', tone: 'neutral', icon: null },
   PENDIENTE: { label: 'PENDIENTE', tone: 'neutral', icon: null },

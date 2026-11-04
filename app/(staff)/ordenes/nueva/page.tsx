@@ -76,6 +76,7 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
 
       {saved ? (
         <SavedOrderPanel
+          orderId={saved.id}
           number={saved.number}
           invoiceNumber={saved.invoiceNumber}
           controlNumber={saved.controlNumber}
