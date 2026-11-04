@@ -1,11 +1,20 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { ClientCard } from '@/components/clients/ClientCard'
+import { ClientLifecycle } from '@/components/clients/ClientLifecycle'
 import { ClientList } from '@/components/clients/ClientList'
 import { ClientSearch } from '@/components/clients/ClientSearch'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { decide } from '@/lib/auth/decide'
-import { getClient, searchClients, summarize } from '@/lib/db/memory/client-store'
+import {
+  getClient,
+  listMergeCandidates,
+  listMergeRequests,
+  listOpenMerges,
+  searchClients,
+  summarize,
+} from '@/lib/db/memory/client-store'
+import { orderFacts } from '@/lib/db/memory/order-index'
 import { todayInLab } from '@/lib/server/domain/client-rules'
 import { guardRoute } from '@/lib/server/guard'
 import { toDecisionSession } from '@/lib/server/session/current'
@@ -99,6 +108,37 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
 
   const card = visibleSelected ? toCardData(visibleSelected) : wantsNew && canCreate ? NEW_CLIENT : null
 
+  // A missing confirm, step-up or motivo still shows the button; the action asks for it.
+  const asksForGesture = new Set(['CONFIRM', 'STEP_UP', 'MOTIVO_REQUIRED'])
+  const may = (command: string, facts: Record<string, boolean>) => {
+    const decision = decide({ session, command, facts })
+    return decision.allowed || asksForGesture.has(decision.reason)
+  }
+  const lifecycle = visibleSelected
+    ? {
+        clientId: visibleSelected.id,
+        clientName: visibleSelected.fullName,
+        active: visibleSelected.active,
+        capabilities: {
+          deactivate: may('client.deactivate', {}),
+          remove: may('client.delete', { order_last_30_days: false }),
+          correctCedula: may('client.cedula.correct', { has_order: orderFacts(visibleSelected.id).has_order }),
+          requestMerge: may('client.merge.request', {}),
+          merge: may('client.merge', { both_complete_and_different: false }),
+          unmerge: may('client.unmerge', {}),
+        },
+        candidates: listMergeCandidates(visibleSelected.id),
+        merges: listOpenMerges()
+          .filter((entry) => entry.survivorId === visibleSelected.id)
+          .map(({ id, sourceName, mergedAt, mergedBy }) => ({ id, sourceName, mergedAt, mergedBy })),
+        requests: listMergeRequests(visibleSelected.id).map(({ note, requestedBy, requestedAt }) => ({
+          note,
+          requestedBy,
+          requestedAt,
+        })),
+      }
+    : null
+
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -124,13 +164,16 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
           includeInactive={includeInactive}
         />
         {card ? (
-          <ClientCard
-            key={card.id ?? 'new'}
-            data={card}
-            canEdit={card.id ? canEdit : canCreate}
-            justSaved={justSaved}
-            returnQuery={returnQuery}
-          />
+          <div className="flex flex-col gap-4">
+            <ClientCard
+              key={card.id ?? 'new'}
+              data={card}
+              canEdit={card.id ? canEdit : canCreate}
+              justSaved={justSaved}
+              returnQuery={returnQuery}
+            />
+            {lifecycle ? <ClientLifecycle key={`lifecycle-${lifecycle.clientId}`} {...lifecycle} /> : null}
+          </div>
         ) : null}
       </div>
     </section>

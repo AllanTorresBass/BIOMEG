@@ -116,5 +116,7 @@ export interface ClientFormState {
   duplicate: ClientSummary | null
   /** Set when two people saved the same client. The card shows who and when. */
   conflict: { savedBy: string; savedAt: string } | null
+  /** Set when the permission table asks the operator to confirm before saving (R-012, R-013). */
+  needsConfirm: boolean
   savedId: string | null
 }

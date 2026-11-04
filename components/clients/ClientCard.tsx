@@ -9,7 +9,7 @@ import { CEDULA_TYPES, formatCedula, formatDate, parseCedulaPaste } from '@/lib/
 import type { ClientCardData } from '@/types/clients/card.types'
 import type { ClientFormState, ClientFieldName } from '@/types/domain/client.types'
 
-const INITIAL: ClientFormState = { error: null, field: null, similar: [], duplicate: null, conflict: null, savedId: null }
+const INITIAL: ClientFormState = { error: null, field: null, similar: [], duplicate: null, conflict: null, needsConfirm: false, savedId: null }
 
 const INPUT =
   'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3 disabled:bg-sunken disabled:text-muted-foreground'

@@ -30,6 +30,24 @@ export function parseBirthDate(text: string): string | null {
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
+export type CedulaPairValidation =
+  | { ok: true; type: CedulaType | null; digits: string | null }
+  | { ok: false; refusal: ClientRefusal }
+
+/** Both empty is valid (a client without a cédula). One without the other, or a malformed pair, is not. */
+export function validateCedulaPair(typeRaw: string, numberRaw: string): CedulaPairValidation {
+  const refuse = (refusal: ClientRefusal): CedulaPairValidation => ({ ok: false, refusal })
+  const typeText = typeRaw.trim().toUpperCase()
+  const numberText = numberRaw.replace(/[.\-\s]/g, '')
+  if (typeText === '' && numberText === '') return { ok: true, type: null, digits: null }
+  if (typeText !== '' && numberText === '') return refuse({ code: 'CEDULA_HALF_TYPE', field: 'cedulaNumber' })
+  if (typeText === '' && numberText !== '') return refuse({ code: 'CEDULA_HALF_NUMBER', field: 'cedulaType' })
+  if (!(CEDULA_TYPES as readonly string[]).includes(typeText)) return refuse({ code: 'CEDULA_TYPE_UNKNOWN', field: 'cedulaType' })
+  if (!/^\d+$/.test(numberText)) return refuse({ code: 'CEDULA_NOT_DIGITS', field: 'cedulaNumber' })
+  if (numberText.length < MIN_DIGITS || numberText.length > MAX_DIGITS) return refuse({ code: 'CEDULA_LENGTH', field: 'cedulaNumber' })
+  return { ok: true, type: typeText as CedulaType, digits: numberText }
+}
+
 /**
  * Checks run in the order of docs/product/04-edges.md and stop at the first refusal:
  * name, birth date, cédula pair, then the optional fields. The store checks
@@ -47,19 +65,9 @@ export function validateClientInput(input: ClientFormInput, today: string = toda
   if (!birthDate) return refuse({ code: 'BIRTH_INVALID', field: 'birthDate' })
   if (birthDate > today) return refuse({ code: 'BIRTH_FUTURE', field: 'birthDate' })
 
-  const typeText = input.cedulaType.trim().toUpperCase()
-  const numberText = input.cedulaNumber.replace(/[.\-\s]/g, '')
-  let cedulaType: CedulaType | null = null
-  let cedulaDigits: string | null = null
-  if (typeText !== '' || numberText !== '') {
-    if (typeText !== '' && numberText === '') return refuse({ code: 'CEDULA_HALF_TYPE', field: 'cedulaNumber' })
-    if (typeText === '' && numberText !== '') return refuse({ code: 'CEDULA_HALF_NUMBER', field: 'cedulaType' })
-    if (!(CEDULA_TYPES as readonly string[]).includes(typeText)) return refuse({ code: 'CEDULA_TYPE_UNKNOWN', field: 'cedulaType' })
-    if (!/^\d+$/.test(numberText)) return refuse({ code: 'CEDULA_NOT_DIGITS', field: 'cedulaNumber' })
-    if (numberText.length < MIN_DIGITS || numberText.length > MAX_DIGITS) return refuse({ code: 'CEDULA_LENGTH', field: 'cedulaNumber' })
-    cedulaType = typeText as CedulaType
-    cedulaDigits = numberText
-  }
+  const cedula = validateCedulaPair(input.cedulaType, input.cedulaNumber)
+  if (!cedula.ok) return refuse(cedula.refusal)
+  const { type: cedulaType, digits: cedulaDigits } = cedula
 
   const sexText = input.sex.trim().toUpperCase()
   if (sexText !== '' && sexText !== 'F' && sexText !== 'M') return refuse({ code: 'SEX_UNKNOWN', field: 'sex' })

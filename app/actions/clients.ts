@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { decide } from '@/lib/auth/decide'
 import { findByCedula, findSimilar, getClient, insertClient, summarize, updateClient } from '@/lib/db/memory/client-store'
+import { flagForReview, orderFacts } from '@/lib/db/memory/order-index'
 import { auditEvent } from '@/lib/server/audit'
 import { parseBirthDate, validateClientInput } from '@/lib/server/domain/client-rules'
 import { getStaffContext, toDecisionSession } from '@/lib/server/session/current'
@@ -11,7 +12,15 @@ import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE } from '@/lib/utils/format'
 import type { ClientFormInput, ClientFormState, ClientRecord, ConsentChannel } from '@/types/domain/client.types'
 
-const EMPTY: ClientFormState = { error: null, field: null, similar: [], duplicate: null, conflict: null, savedId: null }
+const EMPTY: ClientFormState = {
+  error: null,
+  field: null,
+  similar: [],
+  duplicate: null,
+  conflict: null,
+  needsConfirm: false,
+  savedId: null,
+}
 
 function text(data: FormData, name: string): string {
   const value = data.get(name)
@@ -47,10 +56,7 @@ function updateFacts(existing: ClientRecord, input: ClientFormInput): Record<str
     dob_or_sex_changed: parseBirthDate(input.birthDate) !== existing.birthDate || typedSex !== (existing.sex ?? ''),
     contact_changed:
       input.phone.trim() !== (existing.phone ?? '') || input.email.trim().toLowerCase() !== (existing.email ?? ''),
-    // Orders and results arrive in later steps. Until then no client has any.
-    has_order: false,
-    has_result: false,
-    has_released_result: false,
+    ...orderFacts(existing.id),
   }
 }
 
@@ -70,10 +76,13 @@ export async function saveClient(_previous: ClientFormState, formData: FormData)
   if (input.id && !existing) return { ...EMPTY, error: strings.pendingReview.clients.errors.NOT_FOUND }
 
   const command = existing ? 'client.update' : 'client.create'
+  const facts = existing ? updateFacts(existing, input) : undefined
+  const confirmed = formData.get('confirmGesture') === 'on'
   const decision = decide({
     session: toDecisionSession(context),
     command,
-    facts: existing ? updateFacts(existing, input) : undefined,
+    facts,
+    gestures: { confirmVerified: confirmed },
   })
   const audit = {
     command: 'patient.save',
@@ -83,9 +92,12 @@ export async function saveClient(_previous: ClientFormState, formData: FormData)
     recordId: existing?.id ?? null,
     rowId: decision.rowId,
   }
-  if (!decision.allowed) {
+  // A confirm is asked only after the form itself is valid, so the operator never confirms a save that cannot happen.
+  const needsConfirm = !decision.allowed && decision.reason === 'CONFIRM'
+  if (!decision.allowed && !needsConfirm) {
     await auditEvent({ ...audit, outcome: 'REFUSED', reason: decision.reason })
-    return { ...EMPTY, error: strings.pendingReview.clients.errors.REFUSED }
+    const cedulaLocked = decision.reason === 'STATE' && facts?.cedula_changed && facts.has_order
+    return { ...EMPTY, error: cedulaLocked ? strings.clients.cedulaLocked : strings.pendingReview.clients.errors.REFUSED }
   }
 
   const validation = validateClientInput(input)
@@ -109,6 +121,11 @@ export async function saveClient(_previous: ClientFormState, formData: FormData)
   if (similar.length > 0 && !input.confirmSimilar) {
     await auditEvent({ ...audit, outcome: 'REFUSED', reason: 'STATE', state: 'SIMILAR_NAME' })
     return { ...EMPTY, similar: similar.map(summarize) }
+  }
+
+  if (needsConfirm) {
+    await auditEvent({ ...audit, outcome: 'REFUSED', reason: 'CONFIRM' })
+    return { ...EMPTY, needsConfirm: true }
   }
 
   const now = new Date().toISOString()
@@ -136,6 +153,8 @@ export async function saveClient(_previous: ClientFormState, formData: FormData)
       }
     }
     savedId = result.after.id
+    // Fecha de nac. or sex changed on a client with orders: those orders need a second look (A5).
+    if (facts?.dob_or_sex_changed) flagForReview(savedId)
     await auditEvent({
       ...audit,
       outcome: 'ALLOWED',
