@@ -92,7 +92,30 @@ export const strings = {
     controlPending: 'Pendiente',
     sinPrecio: 'SIN PRECIO',
   },
+  worklist: {
+    title: 'Hoja de trabajo',
+    empty: 'Sin órdenes para esta fecha.',
+    updateFailed: 'No se pudo actualizar.',
+  },
   pendingReview: {
+    worklist: {
+      tableLabel: 'Órdenes de la fecha',
+      date: 'Fecha muestra',
+      search: 'Buscar',
+      reviewOnly: 'Solo en revisión',
+      reviewBadge: 'En revisión',
+      refresh: 'Actualizar',
+      loadResults: 'Cargar resultados',
+      columns: {
+        number: 'N° orden',
+        patient: 'Paciente',
+        convenio: 'Convenio',
+        sampleDate: 'Fecha muestra',
+        state: 'Estado',
+        printed: 'Impresión',
+      },
+      dateInvalid: 'La fecha no es válida.',
+    },
     orders: {
       title: 'Nueva orden',
       steps: ['Cliente', 'Exámenes', 'Personal', 'Pago'],

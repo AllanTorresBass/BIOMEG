@@ -8,6 +8,7 @@ import { strings } from '@/lib/strings'
 export default async function ScreenPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   if (slug === 'clientes') redirect('/clientes')
+  if (slug === toSlug('Hoja de trabajo')) redirect('/hoja-de-trabajo')
   if (slug === toSlug('Ingreso particular')) redirect('/ordenes/nueva?via=particular')
   if (slug === toSlug('Ingreso empresa')) redirect('/ordenes/nueva?via=empresa')
   const entry = findMenuItem(slug)

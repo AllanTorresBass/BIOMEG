@@ -58,6 +58,10 @@ export function createOrder(key: string, input: NewOrder, examIds: string[]): Sa
     issued: false,
     needsReview: false,
     examIds,
+    number: order.number,
+    convenioName: order.convenioName,
+    sampleDate: order.sampleDate,
+    printed: false,
   })
   return order
 }

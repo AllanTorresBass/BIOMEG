@@ -21,6 +21,14 @@ export interface OrderStub {
   needsReview: boolean
   /** Catalog ids of the exams on the order. Used for the same-day, same-exam warning. */
   examIds?: string[]
+  /** The worklist reads these. Orders that predate them show a dash. */
+  number?: string
+  convenioName?: string | null
+  /** Fecha muestra, YYYY-MM-DD. The worklist filters on this, falling back to the creation day. */
+  sampleDate?: string | null
+  printed?: boolean
+  /** A released report reopened for correction. Stays listed until released again. */
+  correctionOpen?: boolean
 }
 
 export interface OrderIdentity {

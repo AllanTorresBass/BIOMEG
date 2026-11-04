@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { demoSeed } from '@/lib/db/memory/seed'
+import { todayInLab } from '@/lib/server/domain/client-rules'
 import type { CedulaType } from '@/lib/utils/format'
 import type { MovedOrder, OrderFacts, OrderIdentity, OrderStub } from '@/types/domain/order-stub.types'
 
@@ -29,9 +30,17 @@ function buildState(): OrderIndexState {
     orders.set(stub.id, { ...stub, ...identity(stub.clientId), needsReview: false })
 
   // A recent released and issued order, an old open order, and an old voided order.
-  add({ id: 'o-1', clientId: 'c-1', createdAt: daysAgo(5), voided: false, hasResult: true, released: true, issued: true })
-  add({ id: 'o-2', clientId: 'c-2', createdAt: daysAgo(90), voided: false, hasResult: false, released: false, issued: false })
-  add({ id: 'o-3', clientId: 'c-6', createdAt: daysAgo(60), voided: true, hasResult: false, released: false, issued: false })
+  // o-1 and o-2 carry today's sample date so the worklist is not empty on first open.
+  const today = todayInLab()
+  add({
+    id: 'o-1', clientId: 'c-1', createdAt: daysAgo(5), voided: false, hasResult: true, released: true, issued: true,
+    number: '000001', convenioName: null, sampleDate: today, printed: true,
+  })
+  add({
+    id: 'o-2', clientId: 'c-2', createdAt: daysAgo(90), voided: false, hasResult: false, released: false, issued: false,
+    number: '000002', convenioName: null, sampleDate: today, printed: false,
+  })
+  add({ id: 'o-3', clientId: 'c-6', createdAt: daysAgo(60), voided: true, hasResult: false, released: false, issued: false, number: '000003' })
   return { orders }
 }
 
