@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@theme inline {
+  --color-background: var(--surface-page);
+  --color-card: var(--surface-card);
+  --color-sunken: var(--surface-sunken);
+  --color-foreground: var(--text-primary);
+  --color-muted-foreground: var(--text-secondary);
+  --color-border: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--focus-ring);
+  --color-primary: var(--color-navy);
+  --color-primary-deep: var(--color-navy-deep);
+  --color-primary-foreground: var(--text-on-navy);
+  --color-flag-high: var(--flag-high);
+  --color-flag-high-bg: var(--flag-high-bg);
+  --color-flag-low: var(--flag-low);
+  --color-flag-low-bg: var(--flag-low-bg);
+  --color-flag-incomplete: var(--flag-incomplete);
+  --color-flag-incomplete-bg: var(--flag-incomplete-bg);
+  --color-flag-blocked: var(--flag-blocked);
+  --color-flag-blocked-bg: var(--flag-blocked-bg);
+  --color-flag-released: var(--flag-released);
+  --color-flag-released-bg: var(--flag-released-bg);
+  --font-sans: var(--font-source-sans-3), 'Segoe UI', sans-serif;
+}
+
+body {
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
