@@ -1,6 +1,7 @@
 import type { CedulaType } from '@/lib/utils/format'
+import type { StaffRole } from '@/types/auth/auth.types'
 
-export type StaffRole = 'RECEPCION' | 'AUXILIAR' | 'BIOANALISTA' | 'ADMINISTRACION'
+export type { StaffRole }
 
 export interface DemoStaffUser {
   id: string
