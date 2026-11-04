@@ -1,11 +1,16 @@
 import type { CostType, PriceColumn } from '@/types/orders/draft.types'
 
 /**
- * Saved pairs of tipo de costo and price column. The application ships with none, so the operator
- * always chooses the column. A maintenance table may later fill this in. Once a pair is saved,
- * choosing another column needs a confirm and a motivo at reception (R-026).
+ * Saved pairs of tipo de costo and price column. These are demo values so the override confirm can
+ * be tried; a maintenance table may later replace them. Once a pair is saved, choosing another
+ * column needs a confirm and a motivo at reception (R-026).
  */
-export const SAVED_PRICE_PAIRS: Partial<Record<CostType, PriceColumn>> = {}
+export const SAVED_PRICE_PAIRS: Partial<Record<CostType, PriceColumn>> = {
+  RUTINA: 'PARTICULAR',
+  SEGURO_EMPRESA: 'ALIADOS',
+  EMERGENCIA: 'EMERGENCIA',
+  HOSPITALIZADO: 'HOSPITALIZADO',
+}
 
 export const COST_TYPES: readonly CostType[] = ['RUTINA', 'SEGURO_EMPRESA', 'EMERGENCIA', 'HOSPITALIZADO']
 
