@@ -38,6 +38,10 @@ function buildState(): OrderIndexState {
 const globalStore = globalThis as typeof globalThis & { __biomegOrderIndex?: OrderIndexState }
 const state: OrderIndexState = (globalStore.__biomegOrderIndex ??= buildState())
 
+export function allOrders(): OrderStub[] {
+  return [...state.orders.values()]
+}
+
 export function ordersOf(clientId: string): OrderStub[] {
   return [...state.orders.values()].filter((order) => order.clientId === clientId)
 }

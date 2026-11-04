@@ -19,6 +19,8 @@ export interface OrderStub {
   issued: boolean
   /** Set when the birth date or sex changed after a result, so the bioanalyst looks again. */
   needsReview: boolean
+  /** Catalog ids of the exams on the order. Used for the same-day, same-exam warning. */
+  examIds?: string[]
 }
 
 export interface OrderIdentity {
