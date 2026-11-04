@@ -1,7 +1,15 @@
 import 'server-only'
 
 import { getClient } from '@/lib/db/memory/client-store'
-import { discrepanciesOf, getNote, resultsOf } from '@/lib/db/memory/result-store'
+import {
+  discrepanciesOf,
+  getNote,
+  processedByOf,
+  reportDateOf,
+  resultsOf,
+  sectionRelease,
+  sectionsWithResults,
+} from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { isNumericValue, resultOrderState } from '@/lib/domain/result-rules'
 import { worklistState } from '@/lib/server/domain/worklist'
@@ -21,6 +29,7 @@ export function buildResultGrid(
 ): ResultGridView {
   const cells = new Map(resultsOf(stub.id).map((cell) => [cell.lineId, cell]))
   const client = getClient(stub.clientId)
+  const withResults = new Set(sectionsWithResults(stub.id))
   const noteShown = new Set<string>()
   const sections: GridSection[] = []
 
@@ -30,11 +39,14 @@ export function buildResultGrid(
     if (!group) {
       const first = !noteShown.has(line.section)
       noteShown.add(line.section)
+      const release = sectionRelease(stub.id, line.section)
       group = {
         title: line.section,
         subsection: line.subsection,
         note: first ? getNote(stub.id, line.section) : '',
         rows: [],
+        released: release ? { byName: release.byName, at: release.at } : null,
+        releasable: !release && withResults.has(line.section),
       }
       sections.push(group)
     }
@@ -67,7 +79,8 @@ export function buildResultGrid(
     patientName: stub.clientName,
     patientSex: client?.sex ?? null,
     sampleDate: stub.sampleDate ?? null,
-    reportDate: stub.released ? lastAt : null,
+    reportDate: reportDateOf(stub.id) ?? (stub.released ? lastAt : null),
+    processedBy: processedByOf(stub.id),
     state,
     chip,
     missingSections: chip === 'INCOMPLETO' ? allSections.filter((title) => !filled.has(title)) : [],

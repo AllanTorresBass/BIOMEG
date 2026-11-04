@@ -66,6 +66,7 @@ export default async function ResultsPage({
           [text.sex, view.patientSex ?? text.sexBlank],
           [text.sample, view.sampleDate ? formatDate(view.sampleDate) : strings.empty.dash],
           [text.report, view.reportDate ? formatDate(view.reportDate) : strings.empty.dash],
+          [text.release.processedBy, view.processedBy ?? strings.empty.dash],
         ].map(([label, value]) => (
           <div key={label} className="flex justify-between gap-4">
             <dt className="text-muted-foreground">{label}</dt>

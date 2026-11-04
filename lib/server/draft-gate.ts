@@ -106,7 +106,7 @@ export async function record(
   opened: Subject,
   command: string,
   rowId: string | null,
-  change: { before: unknown; after: unknown } | null,
+  change: { before: unknown; after: unknown; field?: string } | null,
   motivo?: string,
   target?: Target,
 ): Promise<void> {

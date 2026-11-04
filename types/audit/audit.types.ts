@@ -41,7 +41,7 @@ export interface AuditRow {
     reason: DecisionReason
   }
   /** Always null on a refused event, so no cédula digits or results are stored. */
-  change: { before: unknown; after: unknown } | null
+  change: { before: unknown; after: unknown; field?: string } | null
 }
 
 export type AuditRowInput = Omit<AuditRow, 'id'>

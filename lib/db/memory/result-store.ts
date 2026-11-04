@@ -2,12 +2,14 @@ import 'server-only'
 
 import { demoSeed } from '@/lib/db/memory/seed'
 import { autoMark } from '@/lib/domain/result-rules'
-import type { Discrepancy, ResultMark, ResultSource, StoredResult } from '@/types/orders/result.types'
+import type { Discrepancy, ResultMark, ResultSource, SectionRelease, StoredResult } from '@/types/orders/result.types'
 
 interface ResultStoreState {
   cells: Map<string, StoredResult>
   notes: Map<string, string>
   discrepancies: Discrepancy[]
+  releases: Map<string, SectionRelease>
+  reportDates: Map<string, string>
 }
 
 const SEEDED_ORDER = 'o-1'
@@ -35,7 +37,11 @@ function buildState(): ResultStoreState {
       incoming: null,
     })
   }
-  return { cells, notes: new Map(), discrepancies: [] }
+  const releases = new Map<string, SectionRelease>()
+  for (const section of new Set(demoSeed.resultLines.map((line) => line.section))) {
+    releases.set(cellKey(SEEDED_ORDER, section), { byId: 'seed', byName: 'Carga inicial', at })
+  }
+  return { cells, notes: new Map(), discrepancies: [], releases, reportDates: new Map([[SEEDED_ORDER, at]]) }
 }
 
 const globalStore = globalThis as typeof globalThis & { __biomegResults?: ResultStoreState }
@@ -121,4 +127,57 @@ export function setNote(orderId: string, section: string, text: string): void {
   const key = `${orderId}|${section}`
   if (text.trim() === '') state.notes.delete(key)
   else state.notes.set(key, text)
+}
+
+export function sectionRelease(orderId: string, section: string): SectionRelease | null {
+  return state.releases.get(cellKey(orderId, section)) ?? null
+}
+
+export function reportDateOf(orderId: string): string | null {
+  return state.reportDates.get(orderId) ?? null
+}
+
+/** The sections that hold at least one result. A section with none is never offered for release. */
+export function sectionsWithResults(orderId: string): string[] {
+  const lines = new Map(demoSeed.resultLines.map((line) => [line.id, line.section]))
+  const found = new Set<string>()
+  for (const cell of resultsOf(orderId)) {
+    const section = lines.get(cell.lineId)
+    if (section) found.add(section)
+  }
+  return [...found]
+}
+
+export type ReleaseOutcome =
+  | { kind: 'released'; sections: string[]; reportDate: string; complete: boolean }
+  | { kind: 'already'; section: string; by: SectionRelease }
+  | { kind: 'empty'; section: string }
+
+/**
+ * Releases the chosen sections together or not at all. The first release of a section wins, so a second
+ * attempt on the same section gets the first releaser back.
+ */
+export function releaseSections(orderId: string, sections: readonly string[], byId: string, byName: string): ReleaseOutcome {
+  const withResults = new Set(sectionsWithResults(orderId))
+  for (const section of sections) {
+    const existing = state.releases.get(cellKey(orderId, section))
+    if (existing) return { kind: 'already', section, by: existing }
+    if (!withResults.has(section)) return { kind: 'empty', section }
+  }
+  const at = new Date().toISOString()
+  for (const section of sections) state.releases.set(cellKey(orderId, section), { byId, byName, at })
+  state.reportDates.set(orderId, at)
+  const catalog = new Set(demoSeed.resultLines.map((line) => line.section))
+  const complete = [...catalog].every((section) => state.releases.has(cellKey(orderId, section)))
+  return { kind: 'released', sections: [...sections], reportDate: at, complete }
+}
+
+/** The bioanalyst behind the latest release on the order. */
+export function processedByOf(orderId: string): string | null {
+  let latest: SectionRelease | null = null
+  for (const [key, release] of state.releases) {
+    if (!key.startsWith(`${orderId}|`)) continue
+    if (!latest || release.at >= latest.at) latest = release
+  }
+  return latest?.byName ?? null
 }

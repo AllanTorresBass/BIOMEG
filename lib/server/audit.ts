@@ -21,7 +21,7 @@ export interface AuditEventInput {
   state?: string | null
   motivo?: string | null
   rowId?: string | null
-  change?: { before: unknown; after: unknown } | null
+  change?: { before: unknown; after: unknown; field?: string } | null
 }
 
 async function requestAddress(): Promise<string | null> {

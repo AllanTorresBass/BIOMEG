@@ -35,11 +35,28 @@ export interface GridRow {
   incoming: { value: string; at: string } | null
 }
 
+export interface SectionRelease {
+  byId: string
+  byName: string
+  at: string
+}
+
 export interface GridSection {
   title: string
   subsection: string | null
   note: string
   rows: GridRow[]
+  /** Set once the section is released. Its cells are read-only from then on. */
+  released: { byName: string; at: string } | null
+  /** The section has results and is not released, so the bioanalyst can select it. */
+  releasable: boolean
+}
+
+export interface RowHistoryEntry {
+  operator: string
+  at: string
+  before: string
+  after: string
 }
 
 export interface Discrepancy {
@@ -57,6 +74,8 @@ export interface ResultGridView {
   patientSex: 'F' | 'M' | null
   sampleDate: string | null
   reportDate: string | null
+  /** The bioanalyst who made the latest release. */
+  processedBy: string | null
   state: ResultOrderState
   /** The chip on the order: ABIERTA, INCOMPLETO, LIBERADO or EN_CORRECCION. */
   chip: 'ABIERTA' | 'INCOMPLETO' | 'LIBERADO' | 'EN_CORRECCION'
@@ -69,7 +88,7 @@ export interface ResultGridView {
   hasBacteriology: boolean
 }
 
-export type ResultNeed = 'MOTIVO' | null
+export type ResultNeed = 'MOTIVO' | 'STEP_UP' | null
 
 export interface ResultActionResult {
   ok: boolean

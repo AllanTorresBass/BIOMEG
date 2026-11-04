@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { Fragment, useState, useTransition } from 'react'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatusChip } from '@/components/shared/StatusChip'
-import { resolveIncoming, saveResult, saveSectionNote } from '@/app/actions/results'
+import { StepUpDialog } from '@/components/shared/StepUpDialog'
+import { releaseResults, resolveIncoming, rowHistory, saveResult, saveSectionNote } from '@/app/actions/results'
 import { strings } from '@/lib/strings'
-import type { GridRow, GridSection, ResultGridView, ResultMark } from '@/types/orders/result.types'
+import type { GridRow, GridSection, ResultGridView, ResultMark, RowHistoryEntry } from '@/types/orders/result.types'
 
 const text = strings.pendingReview.results
 
@@ -62,9 +63,39 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
   const [conflict, setConflict] = useState<Conflict | null>(null)
   const [pending, setPending] = useState<Pending | null>(null)
   const [message, setMessage] = useState('')
+  const [selected, setSelected] = useState<string[]>([])
+  const [stepUpOpen, setStepUpOpen] = useState(false)
+  const [releaseMessage, setReleaseMessage] = useState('')
+  const [history, setHistory] = useState<{ lineId: string; entries: RowHistoryEntry[] | null; error: string } | null>(null)
   const [, startTransition] = useTransition()
 
   const readOnly = !view.canEnter
+  const releasableTitles = [...new Set(view.sections.filter((section) => section.releasable).map((section) => section.title))]
+
+  function toggleSection(title: string) {
+    setSelected((current) => (current.includes(title) ? current.filter((entry) => entry !== title) : [...current, title]))
+  }
+
+  function release() {
+    if (selected.length === 0) return setReleaseMessage(text.release.none)
+    setReleaseMessage('')
+    startTransition(async () => {
+      const result = await releaseResults({ orderId: view.orderId, sections: selected })
+      if (result.need === 'STEP_UP') return setStepUpOpen(true)
+      setStepUpOpen(false)
+      setReleaseMessage(result.message)
+      if (result.ok) setSelected([])
+    })
+  }
+
+  function openHistory(lineId: string) {
+    if (history?.lineId === lineId) return setHistory(null)
+    setHistory({ lineId, entries: null, error: '' })
+    startTransition(async () => {
+      const result = await rowHistory({ orderId: view.orderId, lineId })
+      setHistory({ lineId, entries: result.ok ? result.entries : null, error: result.ok ? '' : text.release.historyLoadFailed })
+    })
+  }
 
   function clearError(lineId: string) {
     setErrors((current) => without(current, lineId))
@@ -176,15 +207,53 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
 
       {view.sections.length === 0 ? <p className="text-muted-foreground">{text.empty}</p> : null}
 
-      {view.sections.map((section) => (
+      {view.isBioanalyst && releasableTitles.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-border bg-card p-4">
+          <button
+            type="button"
+            onClick={release}
+            className="min-h-11 rounded-[var(--radius-control)] bg-primary px-4 font-semibold text-primary-foreground"
+          >
+            {text.release.button}
+          </button>
+          <span role="status" className="text-muted-foreground">
+            {releaseMessage}
+          </span>
+        </div>
+      ) : releaseMessage !== '' ? (
+        <p role="status" className="text-muted-foreground">
+          {releaseMessage}
+        </p>
+      ) : null}
+
+      {view.sections.map((section, index) => (
         <section
           key={`${section.title}-${section.subsection ?? ''}`}
           aria-label={section.subsection ? `${section.title}, ${section.subsection}` : section.title}
           className="flex flex-col gap-3"
         >
-          <div className="flex flex-col">
-            <h2 className="text-lg font-semibold">{section.title}</h2>
-            {section.subsection ? <p className="text-muted-foreground">{section.subsection}</p> : null}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex flex-col">
+              <h2 className="text-lg font-semibold">{section.title}</h2>
+              {section.subsection ? <p className="text-muted-foreground">{section.subsection}</p> : null}
+              {section.released ? (
+                <p className="text-sm text-muted-foreground">
+                  {text.release.releasedBy(section.released.byName, timeFormat.format(new Date(section.released.at)))}
+                </p>
+              ) : null}
+            </div>
+            {view.isBioanalyst && section.releasable && view.sections.findIndex((entry) => entry.title === section.title) === index ? (
+              <label className="flex min-h-11 items-center gap-2 font-semibold">
+                <input
+                  type="checkbox"
+                  className="size-5"
+                  checked={selected.includes(section.title)}
+                  onChange={() => toggleSection(section.title)}
+                  aria-label={text.release.selectSection(section.title)}
+                />
+                {text.release.selectSection(section.title)}
+              </label>
+            ) : null}
           </div>
           <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-card">
             <table aria-label={text.gridLabel} className="w-full min-w-[44rem] text-left">
@@ -204,13 +273,24 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                   const error = errors[row.lineId]
                   const errorId = `err-${row.lineId}`
                   return (
-                    <tr key={row.lineId} className="border-t border-border align-top">
+                    <Fragment key={row.lineId}>
+                    <tr className="border-t border-border align-top">
                       <th scope="row" className="p-3 font-normal">
                         {row.name}
                         {cell?.byName && cell.at ? (
                           <span className="block text-sm text-muted-foreground">
                             {cell.byName}, {timeFormat.format(new Date(cell.at))}
                           </span>
+                        ) : null}
+                        {cell?.byName ? (
+                          <button
+                            type="button"
+                            aria-expanded={history?.lineId === row.lineId}
+                            onClick={() => openHistory(row.lineId)}
+                            className="mt-1 min-h-11 text-sm font-semibold underline"
+                          >
+                            {text.release.history}
+                          </button>
                         ) : null}
                       </th>
                       <td className="p-3">
@@ -220,7 +300,7 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                           aria-label={`${text.colResult}: ${row.name}`}
                           aria-invalid={error ? true : undefined}
                           aria-describedby={error ? errorId : undefined}
-                          disabled={readOnly}
+                          disabled={readOnly || section.released !== null}
                           value={shown}
                           onChange={(event) => setDrafts({ ...drafts, [row.lineId]: event.target.value })}
                           onBlur={() => commit(row)}
@@ -261,7 +341,7 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                         ) : null}
                       </td>
                       <td className="p-3">
-                        {view.isBioanalyst && view.canEnter ? (
+                        {view.isBioanalyst && view.canEnter && section.released === null ? (
                           <select
                             aria-label={`${text.colMark}: ${row.name}`}
                             value={cell?.mark ?? ''}
@@ -279,6 +359,42 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                       <td className="p-3 text-muted-foreground">{row.unit ?? strings.empty.dash}</td>
                       <td className="p-3 tabular-nums text-muted-foreground">{row.reference}</td>
                     </tr>
+                    {history?.lineId === row.lineId ? (
+                      <tr className="bg-sunken">
+                        <td colSpan={5} className="p-3">
+                          <p className="font-semibold">{text.release.historyTitle(row.name)}</p>
+                          {history.error ? (
+                            <p role="alert" className="text-flag-blocked">
+                              {history.error}
+                            </p>
+                          ) : history.entries === null ? null : history.entries.length === 0 ? (
+                            <p className="text-muted-foreground">{text.release.historyEmpty}</p>
+                          ) : (
+                            <table className="mt-2 w-full text-left text-sm">
+                              <thead className="text-muted-foreground">
+                                <tr>
+                                  <th scope="col" className="py-1 pr-3">{text.release.historyOperator}</th>
+                                  <th scope="col" className="py-1 pr-3">{text.release.historyAt}</th>
+                                  <th scope="col" className="py-1 pr-3">{text.release.historyBefore}</th>
+                                  <th scope="col" className="py-1">{text.release.historyAfter}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {history.entries.map((entry) => (
+                                  <tr key={`${entry.at}-${entry.after}`} className="border-t border-border">
+                                    <td className="py-1 pr-3">{entry.operator}</td>
+                                    <td className="py-1 pr-3">{timeFormat.format(new Date(entry.at))}</td>
+                                    <td className="py-1 pr-3 tabular-nums">{entry.before}</td>
+                                    <td className="py-1 tabular-nums">{entry.after}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                        </td>
+                      </tr>
+                    ) : null}
+                    </Fragment>
                   )
                 })}
               </tbody>
@@ -296,6 +412,16 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
           ) : null}
         </section>
       ))}
+
+      <StepUpDialog
+        open={stepUpOpen}
+        title={text.release.stepUpTitle}
+        description={text.release.stepUpBody}
+        submitLabel={text.release.button}
+        cancellable
+        onVerified={release}
+        onCancel={() => setStepUpOpen(false)}
+      />
 
       <ConfirmDialog
         open={pending !== null}

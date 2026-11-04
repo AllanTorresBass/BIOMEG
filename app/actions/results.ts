@@ -3,7 +3,17 @@
 import { revalidatePath } from 'next/cache'
 import { decide } from '@/lib/auth/decide'
 import { getStub, updateStub } from '@/lib/db/memory/order-index'
-import { dropIncoming, getResult, holdIncoming, queueDiscrepancy, setNote, writeResult } from '@/lib/db/memory/result-store'
+import { listAudit } from '@/lib/db/memory/audit-store'
+import {
+  dropIncoming,
+  getResult,
+  holdIncoming,
+  queueDiscrepancy,
+  releaseSections,
+  sectionRelease,
+  setNote,
+  writeResult,
+} from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { autoMark, isNumericValue, parseLabNumber, resultOrderState } from '@/lib/domain/result-rules'
 import { getClient } from '@/lib/db/memory/client-store'
@@ -15,7 +25,7 @@ import { mayReach } from '@/lib/server/guard'
 import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE } from '@/lib/utils/format'
 import type { OrderStub } from '@/types/domain/order-stub.types'
-import type { ResultActionResult, SaveResultInput } from '@/types/orders/result.types'
+import type { ResultActionResult, RowHistoryEntry, SaveResultInput } from '@/types/orders/result.types'
 
 const text = strings.pendingReview.results
 
@@ -46,7 +56,7 @@ function isRefusal(value: Opened | ResultActionResult): value is ResultActionRes
 }
 
 function gateRefusal(value: { message: string; need: string | null }): ResultActionResult {
-  return refuse(value.message, value.need === 'MOTIVO' ? 'MOTIVO' : null)
+  return refuse(value.message, value.need === 'MOTIVO' || value.need === 'STEP_UP' ? value.need : null)
 }
 
 function touch(orderId: string): void {
@@ -62,6 +72,7 @@ export async function saveResult(input: SaveResultInput): Promise<ResultActionRe
   const line = demoSeed.resultLines.find((entry) => entry.id === input.lineId)
   if (!line) return refuse(text.notAllowed)
 
+  if (sectionRelease(input.orderId, line.section)) return refuse(text.release.locked)
   const value = input.value.trim()
   if (value === '') return { ok: true, message: '', need: null }
   if (isNumericValue(line.value) && parseLabNumber(value) === null) return refuse(text.notNumber)
@@ -122,7 +133,7 @@ export async function saveResult(input: SaveResultInput): Promise<ResultActionRe
     opened,
     'result.enter',
     allowed.rowId,
-    { before: current?.value ?? null, after: value },
+    { before: current?.value ?? null, after: value, field: line.id },
     input.motivo,
     target,
   )
@@ -202,7 +213,7 @@ export async function simulateAnalyzer(input: { orderId: string; lineId: string;
   const state = resultOrderState(stub)
   const current = getResult(stub.id, line.id)
 
-  if (state === 'LIBERADO' || state === 'EN_CORRECCION') {
+  if (state === 'LIBERADO' || state === 'EN_CORRECCION' || sectionRelease(stub.id, line.section)) {
     queueDiscrepancy({ orderId: stub.id, lineId: line.id, name: line.name, value, at: new Date().toISOString() })
     await auditEvent({ command: 'result.import', outcome: 'REFUSED', reason: 'STATE', ...target, rowId: null })
     touch(stub.id)
@@ -278,4 +289,71 @@ export async function addBacteriologyNote(input: { orderId: string }): Promise<R
   if (gated(allowed)) return gateRefusal(allowed)
   if (!hasBacteriologySection()) return refuse(text.noBacteriology)
   return { ok: true, message: text.noteSaved, need: null }
+}
+
+/** The bioanalyst releases the chosen sections together, after typing the password again. */
+export async function releaseResults(input: { orderId: string; sections: string[] }): Promise<ResultActionResult> {
+  const opened = await open(input.orderId)
+  if (isRefusal(opened)) return opened
+  const { context, stub, target } = opened
+
+  const sections = [...new Set(input.sections)]
+  if (sections.length === 0) return refuse(text.release.none)
+  const known = new Set(demoSeed.resultLines.map((line) => line.section))
+  if (sections.some((section) => !known.has(section))) return refuse(text.notAllowed)
+
+  const allowed = await gate(opened, 'result.release', { state: resultOrderState(stub) }, {}, target)
+  if (gated(allowed)) return gateRefusal(allowed)
+
+  const outcome = releaseSections(stub.id, sections, context.account.id, context.account.displayName)
+  if (outcome.kind === 'already') {
+    await auditEvent({
+      command: 'result.release',
+      outcome: 'REFUSED',
+      reason: 'STATE',
+      session: context.session,
+      account: context.account,
+      ...target,
+      rowId: allowed.rowId,
+    })
+    return refuse(text.release.already(outcome.by.byName, timeText(outcome.by.at)))
+  }
+  if (outcome.kind === 'empty') return refuse(text.release.empty(outcome.section))
+
+  for (const section of outcome.sections) {
+    await record(opened, 'result.release', allowed.rowId, { before: null, after: section, field: section }, undefined, target)
+  }
+  if (outcome.complete) updateStub(stub.id, { released: true })
+  touch(stub.id)
+  return { ok: true, message: outcome.complete ? text.release.doneComplete : text.release.done, need: null }
+}
+
+export type RowHistoryResult =
+  | { ok: true; entries: RowHistoryEntry[] }
+  | { ok: false; message: string }
+
+/** The changes recorded on one exam of one order, newest first. */
+export async function rowHistory(input: { orderId: string; lineId: string }): Promise<RowHistoryResult> {
+  const opened = await open(input.orderId)
+  if (isRefusal(opened)) return { ok: false, message: opened.message }
+  const { stub, target } = opened
+  const allowed = await gate(opened, 'result.read', { state: resultOrderState(stub) }, {}, target)
+  if (gated(allowed)) return { ok: false, message: allowed.message || text.notAllowed }
+
+  const entries = listAudit()
+    .filter(
+      (row) =>
+        row.what.command === 'result.enter' &&
+        row.result.outcome === 'ALLOWED' &&
+        row.what.recordId === stub.id &&
+        row.change?.field === input.lineId,
+    )
+    .map((row) => ({
+      operator: row.who.displayName ?? strings.empty.dash,
+      at: row.when.serverTime,
+      before: row.change?.before == null ? strings.empty.dash : String(row.change.before),
+      after: row.change?.after == null ? strings.empty.dash : String(row.change.after),
+    }))
+    .reverse()
+  return { ok: true, entries }
 }
