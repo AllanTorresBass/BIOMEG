@@ -50,6 +50,21 @@ export interface GridSection {
   released: { byName: string; at: string } | null
   /** The section has results and is not released, so the bioanalyst can select it. */
   releasable: boolean
+  /** Set while a released section is reopened for correction. */
+  correction: { byName: string; at: string; motivo: string } | null
+  /** The section is released and no correction is open on it. */
+  correctable: boolean
+}
+
+/** A released section reopened for correction. The snapshot is what the section held when it was reopened. */
+export interface SectionCorrection {
+  orderId: string
+  section: string
+  motivo: string
+  byId: string
+  byName: string
+  at: string
+  snapshot: StoredResult[]
 }
 
 export interface RowHistoryEntry {
@@ -57,6 +72,7 @@ export interface RowHistoryEntry {
   at: string
   before: string
   after: string
+  motivo: string
 }
 
 export interface Discrepancy {
@@ -82,6 +98,8 @@ export interface ResultGridView {
   /** Sections with no stored result, named in the chip when the order is INCOMPLETO. */
   missingSections: string[]
   sections: GridSection[]
+  /** Changes whenever a release or correction changes, so the grid reloads its local cells. */
+  revision: string
   canEnter: boolean
   isBioanalyst: boolean
   discrepancies: Discrepancy[]

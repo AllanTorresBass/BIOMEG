@@ -4,7 +4,16 @@ import { Fragment, useState, useTransition } from 'react'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
-import { releaseResults, resolveIncoming, rowHistory, saveResult, saveSectionNote } from '@/app/actions/results'
+import {
+  cancelCorrection,
+  openCorrection,
+  releaseCorrection,
+  releaseResults,
+  resolveIncoming,
+  rowHistory,
+  saveResult,
+  saveSectionNote,
+} from '@/app/actions/results'
 import { strings } from '@/lib/strings'
 import type { GridRow, GridSection, ResultGridView, ResultMark, RowHistoryEntry } from '@/types/orders/result.types'
 
@@ -22,6 +31,11 @@ interface CellState {
 type Pending =
   | { kind: 'save'; lineId: string; value: string; manualMark?: ResultMark | '' }
   | { kind: 'incoming'; lineId: string; choice: 'use' | 'keep' }
+
+type CorrectionOperation =
+  | { kind: 'open'; section: string; motivo: string }
+  | { kind: 'cancel'; section: string }
+  | { kind: 'release'; section: string }
 
 interface Conflict {
   lineId: string
@@ -68,8 +82,36 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
   const [releaseMessage, setReleaseMessage] = useState('')
   const [history, setHistory] = useState<{ lineId: string; entries: RowHistoryEntry[] | null; error: string } | null>(null)
   const [, startTransition] = useTransition()
+  const [seenRevision, setSeenRevision] = useState(view.revision)
+  const [correctionDialog, setCorrectionDialog] = useState<{ kind: CorrectionOperation['kind']; section: string } | null>(null)
+  const [correctionStepUp, setCorrectionStepUp] = useState<CorrectionOperation | null>(null)
+  const [correctionMessage, setCorrectionMessage] = useState('')
+
+  if (seenRevision !== view.revision) {
+    setSeenRevision(view.revision)
+    setCells(initialCells(view.sections))
+    setDrafts({})
+    setErrors({})
+    setConflict(null)
+  }
 
   const readOnly = !view.canEnter
+
+  function runCorrection(operation: CorrectionOperation) {
+    setCorrectionMessage('')
+    startTransition(async () => {
+      const result =
+        operation.kind === 'open'
+          ? await openCorrection({ orderId: view.orderId, section: operation.section, motivo: operation.motivo })
+          : operation.kind === 'cancel'
+            ? await cancelCorrection({ orderId: view.orderId, section: operation.section })
+            : await releaseCorrection({ orderId: view.orderId, section: operation.section })
+      if (result.need === 'STEP_UP') return setCorrectionStepUp(operation)
+      setCorrectionStepUp(null)
+      setCorrectionDialog(null)
+      setCorrectionMessage(result.message)
+    })
+  }
   const releasableTitles = [...new Set(view.sections.filter((section) => section.releasable).map((section) => section.title))]
 
   function toggleSection(title: string) {
@@ -205,6 +247,12 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
         </div>
       ) : null}
 
+      {correctionMessage !== '' ? (
+        <p role="status" className="font-semibold">
+          {correctionMessage}
+        </p>
+      ) : null}
+
       {view.sections.length === 0 ? <p className="text-muted-foreground">{text.empty}</p> : null}
 
       {view.isBioanalyst && releasableTitles.length > 0 ? (
@@ -241,7 +289,40 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                   {text.release.releasedBy(section.released.byName, timeFormat.format(new Date(section.released.at)))}
                 </p>
               ) : null}
+              {section.correction ? (
+                <p className="text-sm font-semibold text-flag-blocked">
+                  {text.release.correct.openedBy(section.correction.byName, timeFormat.format(new Date(section.correction.at)))}
+                  <span className="block font-normal text-muted-foreground">{text.release.correct.reason(section.correction.motivo)}</span>
+                </p>
+              ) : null}
             </div>
+            {view.isBioanalyst && section.correctable ? (
+              <button
+                type="button"
+                onClick={() => setCorrectionDialog({ kind: 'open', section: section.title })}
+                className="min-h-11 rounded-[var(--radius-control)] border border-border px-4 font-semibold"
+              >
+                {text.release.correct.open}
+              </button>
+            ) : null}
+            {view.isBioanalyst && section.correction ? (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCorrectionDialog({ kind: 'cancel', section: section.title })}
+                  className="min-h-11 rounded-[var(--radius-control)] border border-border px-4 font-semibold"
+                >
+                  {text.release.correct.cancel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCorrectionDialog({ kind: 'release', section: section.title })}
+                  className="min-h-11 rounded-[var(--radius-control)] bg-primary px-4 font-semibold text-primary-foreground"
+                >
+                  {text.release.correct.release}
+                </button>
+              </div>
+            ) : null}
             {view.isBioanalyst && section.releasable && view.sections.findIndex((entry) => entry.title === section.title) === index ? (
               <label className="flex min-h-11 items-center gap-2 font-semibold">
                 <input
@@ -376,7 +457,8 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                                   <th scope="col" className="py-1 pr-3">{text.release.historyOperator}</th>
                                   <th scope="col" className="py-1 pr-3">{text.release.historyAt}</th>
                                   <th scope="col" className="py-1 pr-3">{text.release.historyBefore}</th>
-                                  <th scope="col" className="py-1">{text.release.historyAfter}</th>
+                                  <th scope="col" className="py-1 pr-3">{text.release.historyAfter}</th>
+                                  <th scope="col" className="py-1">{text.release.historyMotivo}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -385,7 +467,8 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                                     <td className="py-1 pr-3">{entry.operator}</td>
                                     <td className="py-1 pr-3">{timeFormat.format(new Date(entry.at))}</td>
                                     <td className="py-1 pr-3 tabular-nums">{entry.before}</td>
-                                    <td className="py-1 tabular-nums">{entry.after}</td>
+                                    <td className="py-1 pr-3 tabular-nums">{entry.after}</td>
+                                    <td className="py-1">{entry.motivo}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -421,6 +504,57 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
         cancellable
         onVerified={release}
         onCancel={() => setStepUpOpen(false)}
+      />
+
+      {correctionDialog ? (
+        <ConfirmDialog
+          key={`${correctionDialog.kind}-${correctionDialog.section}`}
+          open
+          title={
+            correctionDialog.kind === 'open'
+              ? text.release.correct.openTitle(correctionDialog.section)
+              : correctionDialog.kind === 'cancel'
+                ? text.release.correct.cancelTitle
+                : text.release.correct.releaseTitle(correctionDialog.section)
+          }
+          body={
+            correctionDialog.kind === 'open'
+              ? text.release.correct.openBody
+              : correctionDialog.kind === 'cancel'
+                ? text.release.correct.cancelBody
+                : text.release.correct.releaseBody
+          }
+          confirmLabel={
+            correctionDialog.kind === 'open'
+              ? text.release.correct.confirmOpen
+              : correctionDialog.kind === 'cancel'
+                ? text.release.correct.confirmCancel
+                : text.release.correct.release
+          }
+          cancelLabel={correctionDialog.kind === 'cancel' ? text.release.correct.keepEditing : text.cancel}
+          motivoRequired={correctionDialog.kind === 'open'}
+          onConfirm={(motivo) => {
+            const { kind, section } = correctionDialog
+            if (kind === 'open') {
+              if (motivo) runCorrection({ kind, section, motivo })
+              return
+            }
+            runCorrection({ kind, section })
+          }}
+          onCancel={() => setCorrectionDialog(null)}
+        />
+      ) : null}
+
+      <StepUpDialog
+        open={correctionStepUp !== null}
+        title={text.release.stepUpTitle}
+        description={text.release.correct.releaseBody}
+        submitLabel={text.release.correct.release}
+        cancellable
+        onVerified={() => {
+          if (correctionStepUp) runCorrection(correctionStepUp)
+        }}
+        onCancel={() => setCorrectionStepUp(null)}
       />
 
       <ConfirmDialog

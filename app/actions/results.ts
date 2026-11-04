@@ -6,7 +6,9 @@ import { getStub, updateStub } from '@/lib/db/memory/order-index'
 import { listAudit } from '@/lib/db/memory/audit-store'
 import {
   dropIncoming,
+  getCorrection,
   getResult,
+  sectionResultState,
   holdIncoming,
   queueDiscrepancy,
   releaseSections,
@@ -17,6 +19,7 @@ import {
 import { demoSeed } from '@/lib/db/memory/seed'
 import { autoMark, isNumericValue, parseLabNumber, resultOrderState } from '@/lib/domain/result-rules'
 import { getClient } from '@/lib/db/memory/client-store'
+import { abandonCorrection, finishCorrection, startCorrection } from '@/lib/db/memory/correction-store'
 import { auditEvent } from '@/lib/server/audit'
 import { gate, gated, record, type Subject, type Target } from '@/lib/server/draft-gate'
 import { hasBacteriologySection } from '@/lib/server/domain/result-grid'
@@ -72,16 +75,19 @@ export async function saveResult(input: SaveResultInput): Promise<ResultActionRe
   const line = demoSeed.resultLines.find((entry) => entry.id === input.lineId)
   if (!line) return refuse(text.notAllowed)
 
-  if (sectionRelease(input.orderId, line.section)) return refuse(text.release.locked)
+  const correction = getCorrection(input.orderId, line.section)
+  if (sectionRelease(input.orderId, line.section) && !correction) return refuse(text.release.locked)
   const value = input.value.trim()
   if (value === '') return { ok: true, message: '', need: null }
   if (isNumericValue(line.value) && parseLabNumber(value) === null) return refuse(text.notNumber)
 
   const current = getResult(stub.id, line.id)
   const own = current === null || (current.byId === context.account.id && current.source === 'teclado')
-  const state = resultOrderState(stub)
+  const state = correction ? 'EN_CORRECCION' : resultOrderState(stub)
+  const command = correction ? 'result.correct.edit' : 'result.enter'
+  const cellTarget = { ...target, state }
 
-  const allowed = await gate(opened, 'result.enter', { state, cell_empty_or_own: own }, { motivo: input.motivo }, target)
+  const allowed = await gate(opened, command, { state, cell_empty_or_own: own }, { motivo: input.motivo }, cellTarget)
   if (gated(allowed)) return gateRefusal(allowed)
 
   const isBioanalyst = context.account.roles.includes('BIOANALISTA')
@@ -106,12 +112,12 @@ export async function saveResult(input: SaveResultInput): Promise<ResultActionRe
 
   if (outcome.kind === 'conflict') {
     await auditEvent({
-      command: 'result.enter',
+      command,
       outcome: 'REFUSED',
       reason: 'OWNERSHIP',
       session: context.session,
       account: context.account,
-      ...target,
+      ...cellTarget,
       rowId: allowed.rowId,
     })
     return {
@@ -131,11 +137,11 @@ export async function saveResult(input: SaveResultInput): Promise<ResultActionRe
   if (!stub.hasResult) updateStub(stub.id, { hasResult: true })
   await record(
     opened,
-    'result.enter',
+    command,
     allowed.rowId,
     { before: current?.value ?? null, after: value, field: line.id },
-    input.motivo,
-    target,
+    correction ? correction.motivo : input.motivo,
+    cellTarget,
   )
   touch(stub.id)
   const saved = outcome.result
@@ -343,7 +349,7 @@ export async function rowHistory(input: { orderId: string; lineId: string }): Pr
   const entries = listAudit()
     .filter(
       (row) =>
-        row.what.command === 'result.enter' &&
+        (row.what.command === 'result.enter' || row.what.command === 'result.correct.edit') &&
         row.result.outcome === 'ALLOWED' &&
         row.what.recordId === stub.id &&
         row.change?.field === input.lineId,
@@ -351,9 +357,119 @@ export async function rowHistory(input: { orderId: string; lineId: string }): Pr
     .map((row) => ({
       operator: row.who.displayName ?? strings.empty.dash,
       at: row.when.serverTime,
+      motivo: row.why.motivo ?? strings.empty.dash,
       before: row.change?.before == null ? strings.empty.dash : String(row.change.before),
       after: row.change?.after == null ? strings.empty.dash : String(row.change.after),
     }))
     .reverse()
   return { ok: true, entries }
+}
+
+function knownSection(section: string): boolean {
+  return demoSeed.resultLines.some((line) => line.section === section)
+}
+
+/** The bioanalyst reopens a released section. The motivo and the password are both asked. */
+export async function openCorrection(input: { orderId: string; section: string; motivo?: string }): Promise<ResultActionResult> {
+  const opened = await open(input.orderId)
+  if (isRefusal(opened)) return opened
+  const { context, stub, target } = opened
+  if (!knownSection(input.section)) return refuse(text.notAllowed)
+
+  const state = sectionResultState(stub.id, input.section)
+  const sectionTarget = { ...target, state }
+  const allowed = await gate(opened, 'result.correct.open', { state }, { motivo: input.motivo }, sectionTarget)
+  if (gated(allowed)) return gateRefusal(allowed)
+
+  const motivo = (input.motivo ?? '').trim()
+  if (motivo === '') return refuse(text.release.correct.motivoRequired, 'MOTIVO')
+
+  const outcome = startCorrection(stub.id, input.section, motivo, context.account.id, context.account.displayName)
+  if (outcome.kind === 'already') {
+    await auditEvent({
+      command: 'result.correct.open',
+      outcome: 'REFUSED',
+      reason: 'STATE',
+      session: context.session,
+      account: context.account,
+      ...sectionTarget,
+      rowId: allowed.rowId,
+    })
+    return refuse(text.release.correct.already(outcome.by.byName, timeText(outcome.by.at)))
+  }
+  if (outcome.kind === 'not_released') return refuse(text.release.correct.notReleased)
+
+  await record(
+    opened,
+    'result.correct.open',
+    allowed.rowId,
+    { before: 'LIBERADO', after: 'EN_CORRECCION', field: input.section },
+    motivo,
+    sectionTarget,
+  )
+  touch(stub.id)
+  return { ok: true, message: text.release.correct.opened, need: null }
+}
+
+/** Cancelling puts the section back to what it held when the correction opened. */
+export async function cancelCorrection(input: { orderId: string; section: string }): Promise<ResultActionResult> {
+  const opened = await open(input.orderId)
+  if (isRefusal(opened)) return opened
+  const { stub, target } = opened
+  if (!knownSection(input.section)) return refuse(text.notAllowed)
+
+  const state = sectionResultState(stub.id, input.section)
+  const sectionTarget = { ...target, state }
+  const allowed = await gate(opened, 'result.correct.cancel', { state }, {}, sectionTarget)
+  if (gated(allowed)) return gateRefusal(allowed)
+
+  const correction = abandonCorrection(stub.id, input.section)
+  if (!correction) return refuse(text.release.correct.noOpen)
+
+  await record(
+    opened,
+    'result.correct.cancel',
+    allowed.rowId,
+    { before: 'EN_CORRECCION', after: 'LIBERADO', field: input.section },
+    correction.motivo,
+    sectionTarget,
+  )
+  touch(stub.id)
+  return { ok: true, message: text.release.correct.cancelled, need: null }
+}
+
+/**
+ * Releases the corrected section: a new issue replaces the current one and the resend task is queued together.
+ * If any step fails, nothing is kept.
+ */
+export async function releaseCorrection(input: { orderId: string; section: string }): Promise<ResultActionResult> {
+  const opened = await open(input.orderId)
+  if (isRefusal(opened)) return opened
+  const { context, stub, target } = opened
+  if (!knownSection(input.section)) return refuse(text.notAllowed)
+
+  const state = sectionResultState(stub.id, input.section)
+  const sectionTarget = { ...target, state }
+  const allowed = await gate(opened, 'result.correct.release', { state }, {}, sectionTarget)
+  if (gated(allowed)) return gateRefusal(allowed)
+
+  const outcome = finishCorrection(stub.id, input.section, context.account.id, context.account.displayName)
+  if (outcome.kind === 'none') return refuse(text.release.correct.noOpen)
+  if (outcome.kind === 'failed') return refuse(text.release.correct.failed)
+
+  await record(
+    opened,
+    'result.correct.release',
+    allowed.rowId,
+    { before: outcome.replaced?.id ?? null, after: outcome.issue.id, field: input.section },
+    outcome.correction.motivo,
+    sectionTarget,
+  )
+  touch(stub.id)
+  revalidatePath('/')
+  return {
+    ok: true,
+    message: outcome.resendTask ? text.release.correct.released : text.release.correct.releasedNoResend,
+    need: null,
+  }
 }

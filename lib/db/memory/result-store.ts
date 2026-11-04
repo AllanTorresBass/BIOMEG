@@ -2,7 +2,14 @@ import 'server-only'
 
 import { demoSeed } from '@/lib/db/memory/seed'
 import { autoMark } from '@/lib/domain/result-rules'
-import type { Discrepancy, ResultMark, ResultSource, SectionRelease, StoredResult } from '@/types/orders/result.types'
+import type {
+  Discrepancy,
+  ResultMark,
+  ResultSource,
+  SectionCorrection,
+  SectionRelease,
+  StoredResult,
+} from '@/types/orders/result.types'
 
 interface ResultStoreState {
   cells: Map<string, StoredResult>
@@ -10,6 +17,9 @@ interface ResultStoreState {
   discrepancies: Discrepancy[]
   releases: Map<string, SectionRelease>
   reportDates: Map<string, string>
+  corrections: Map<string, SectionCorrection>
+  /** Earlier versions of a cell, kept when a correction is released. */
+  priorVersions: Map<string, StoredResult[]>
 }
 
 const SEEDED_ORDER = 'o-1'
@@ -41,7 +51,15 @@ function buildState(): ResultStoreState {
   for (const section of new Set(demoSeed.resultLines.map((line) => line.section))) {
     releases.set(cellKey(SEEDED_ORDER, section), { byId: 'seed', byName: 'Carga inicial', at })
   }
-  return { cells, notes: new Map(), discrepancies: [], releases, reportDates: new Map([[SEEDED_ORDER, at]]) }
+  return {
+    cells,
+    notes: new Map(),
+    discrepancies: [],
+    releases,
+    reportDates: new Map([[SEEDED_ORDER, at]]),
+    corrections: new Map(),
+    priorVersions: new Map(),
+  }
 }
 
 const globalStore = globalThis as typeof globalThis & { __biomegResults?: ResultStoreState }
@@ -180,4 +198,121 @@ export function processedByOf(orderId: string): string | null {
     if (!latest || release.at >= latest.at) latest = release
   }
   return latest?.byName ?? null
+}
+
+export function getCorrection(orderId: string, section: string): SectionCorrection | null {
+  return state.corrections.get(cellKey(orderId, section)) ?? null
+}
+
+export function correctionsOf(orderId: string): SectionCorrection[] {
+  return [...state.corrections.values()].filter((correction) => correction.orderId === orderId)
+}
+
+export function hasOpenCorrection(orderId: string): boolean {
+  return correctionsOf(orderId).length > 0
+}
+
+export function priorVersionsOf(orderId: string, lineId: string): StoredResult[] {
+  return state.priorVersions.get(cellKey(orderId, lineId)) ?? []
+}
+
+function cellsOfSection(orderId: string, section: string): StoredResult[] {
+  const lines = new Set(demoSeed.resultLines.filter((line) => line.section === section).map((line) => line.id))
+  return resultsOf(orderId).filter((cell) => lines.has(cell.lineId))
+}
+
+/** The state of one section, which is what the permission table reads for section commands. */
+export function sectionResultState(orderId: string, section: string): 'PENDIENTE' | 'CARGADO' | 'LIBERADO' | 'EN_CORRECCION' {
+  if (getCorrection(orderId, section)) return 'EN_CORRECCION'
+  if (sectionRelease(orderId, section)) return 'LIBERADO'
+  return cellsOfSection(orderId, section).length > 0 ? 'CARGADO' : 'PENDIENTE'
+}
+
+export type OpenCorrectionOutcome =
+  | { kind: 'opened'; correction: SectionCorrection }
+  | { kind: 'already'; by: SectionCorrection }
+  | { kind: 'not_released' }
+
+/** Reopens a released section. The first to open it wins. What it held is kept so a cancel can put it back. */
+export function openSectionCorrection(
+  orderId: string,
+  section: string,
+  motivo: string,
+  byId: string,
+  byName: string,
+): OpenCorrectionOutcome {
+  const existing = getCorrection(orderId, section)
+  if (existing) return { kind: 'already', by: existing }
+  if (!sectionRelease(orderId, section)) return { kind: 'not_released' }
+  const correction: SectionCorrection = {
+    orderId,
+    section,
+    motivo,
+    byId,
+    byName,
+    at: new Date().toISOString(),
+    snapshot: cellsOfSection(orderId, section).map((cell) => ({ ...cell })),
+  }
+  state.corrections.set(cellKey(orderId, section), correction)
+  return { kind: 'opened', correction }
+}
+
+/** Puts the section back as it was when the correction opened. Changed cells get a newer version so stale writers conflict. */
+export function cancelSectionCorrection(orderId: string, section: string): SectionCorrection | null {
+  const correction = getCorrection(orderId, section)
+  if (!correction) return null
+  const kept = new Set(correction.snapshot.map((cell) => cell.lineId))
+  for (const cell of cellsOfSection(orderId, section)) {
+    if (!kept.has(cell.lineId)) state.cells.delete(cellKey(orderId, cell.lineId))
+  }
+  for (const original of correction.snapshot) {
+    const key = cellKey(orderId, original.lineId)
+    const current = state.cells.get(key)
+    const changed = !current || current.value !== original.value || current.mark !== original.mark
+    state.cells.set(key, changed ? { ...original, version: (current?.version ?? original.version) + 1 } : original)
+  }
+  state.corrections.delete(cellKey(orderId, section))
+  return correction
+}
+
+/** Closes the correction. The cells it started from become prior versions and the section is released again by the new bioanalyst. */
+export function closeSectionCorrection(orderId: string, section: string, byId: string, byName: string): SectionCorrection | null {
+  const correction = getCorrection(orderId, section)
+  if (!correction) return null
+  for (const original of correction.snapshot) {
+    const key = cellKey(orderId, original.lineId)
+    const history = state.priorVersions.get(key) ?? []
+    state.priorVersions.set(key, [...history, original])
+  }
+  const at = new Date().toISOString()
+  state.releases.set(cellKey(orderId, section), { byId, byName, at })
+  state.reportDates.set(orderId, at)
+  state.corrections.delete(cellKey(orderId, section))
+  return correction
+}
+
+export interface ResultStoreSnapshot {
+  cells: [string, StoredResult][]
+  releases: [string, SectionRelease][]
+  reportDates: [string, string][]
+  corrections: [string, SectionCorrection][]
+  priorVersions: [string, StoredResult[]][]
+}
+
+export function snapshotResults(): ResultStoreSnapshot {
+  return {
+    cells: [...state.cells.entries()],
+    releases: [...state.releases.entries()],
+    reportDates: [...state.reportDates.entries()],
+    corrections: [...state.corrections.entries()],
+    priorVersions: [...state.priorVersions.entries()],
+  }
+}
+
+export function restoreResults(snapshot: ResultStoreSnapshot): void {
+  state.cells = new Map(snapshot.cells)
+  state.releases = new Map(snapshot.releases)
+  state.reportDates = new Map(snapshot.reportDates)
+  state.corrections = new Map(snapshot.corrections)
+  state.priorVersions = new Map(snapshot.priorVersions)
 }

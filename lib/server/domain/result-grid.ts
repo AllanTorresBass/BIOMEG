@@ -3,6 +3,7 @@ import 'server-only'
 import { getClient } from '@/lib/db/memory/client-store'
 import {
   discrepanciesOf,
+  getCorrection,
   getNote,
   processedByOf,
   reportDateOf,
@@ -40,13 +41,17 @@ export function buildResultGrid(
       const first = !noteShown.has(line.section)
       noteShown.add(line.section)
       const release = sectionRelease(stub.id, line.section)
+      const open = getCorrection(stub.id, line.section)
       group = {
         title: line.section,
         subsection: line.subsection,
         note: first ? getNote(stub.id, line.section) : '',
         rows: [],
-        released: release ? { byName: release.byName, at: release.at } : null,
+        // While a correction is open the section is editable, so it no longer shows as released.
+        released: release && !open ? { byName: release.byName, at: release.at } : null,
         releasable: !release && withResults.has(line.section),
+        correction: open ? { byName: open.byName, at: open.at, motivo: open.motivo } : null,
+        correctable: Boolean(release) && !open,
       }
       sections.push(group)
     }
@@ -85,7 +90,10 @@ export function buildResultGrid(
     chip,
     missingSections: chip === 'INCOMPLETO' ? allSections.filter((title) => !filled.has(title)) : [],
     sections,
-    canEnter: options.canEnter && (state === 'PENDIENTE' || state === 'CARGADO'),
+    revision: sections
+      .map((section) => `${section.released?.at ?? ''}/${section.correction?.at ?? ''}`)
+      .join('|'),
+    canEnter: options.canEnter && state !== 'LIBERADO',
     isBioanalyst: options.isBioanalyst,
     discrepancies: discrepanciesOf(stub.id),
     hasBacteriology: hasBacteriologySection(),
