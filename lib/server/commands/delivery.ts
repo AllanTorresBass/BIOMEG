@@ -7,7 +7,7 @@ import { printedLinesOf, replaceIssue, vigenteIssueOf } from '@/lib/db/memory/is
 import { getStub } from '@/lib/db/memory/order-index'
 import { resultOrderState } from '@/lib/domain/result-rules'
 import { auditEvent } from '@/lib/server/audit'
-import { currentProvider } from '@/lib/server/delivery/provider'
+import { serverContainer } from '@/lib/server/container'
 import { blockedReason, deliveryModeAllowed, deliveryStateOf, destinationOf, messageFor, missingSectionsOf, modeOf, resendChannelsOf } from '@/lib/server/domain/delivery'
 import { gate, gated, record } from '@/lib/server/draft-gate'
 import { requestOrigin } from '@/lib/server/origin'
@@ -132,7 +132,7 @@ async function deliver(input: DeliverInput): Promise<DeliveryActionResult> {
   const origin = await requestOrigin()
   let failure: string | null = null
   try {
-    const result = await currentProvider().send(
+    const result = await serverContainer.deliveryPort.send(
       messageFor({ channel, to, mode, orderNumber, origin, resend: input.resend, incomplete }),
     )
     if (!result.ok) failure = result.reason

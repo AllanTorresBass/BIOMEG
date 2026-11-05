@@ -126,4 +126,10 @@ describe('route scan', () => {
     const code = ['app', 'components', 'lib', 'hooks'].flatMap(walk).filter((file) => /\.tsx?$/.test(file))
     expect(code.filter((file) => /^\s*['"]use server['"]/m.test(readFileSync(file, 'utf8')))).toEqual([])
   })
+
+  it('keeps screens and routes away from the stores, so every read is guarded', () => {
+    // /dev/tokens shows invented samples only, and it is a 404 in production.
+    const screens = walk('app').filter((file) => /\.tsx?$/.test(file) && !file.startsWith(path.join('app', 'dev')))
+    expect(screens.filter((file) => readFileSync(file, 'utf8').includes('@/lib/db/memory'))).toEqual([])
+  })
 })

@@ -4,14 +4,8 @@ import { ResultExtras } from '@/components/orders/ResultExtras'
 import { ResultGrid } from '@/components/orders/ResultGrid'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { StatusChip } from '@/components/shared/StatusChip'
-import { decide } from '@/lib/auth/decide'
-import { getStub } from '@/lib/db/memory/order-index'
-import { demoSeed } from '@/lib/db/memory/seed'
-import { resultOrderState } from '@/lib/domain/result-rules'
-import { buildResultGrid } from '@/lib/server/domain/result-grid'
-import { guardRoute, mayReach } from '@/lib/server/guard'
+import { getResultsScreen } from '@/lib/server/queries/results'
 import { requireReadyStaff } from '@/lib/server/session/require'
-import { toDecisionSession } from '@/lib/server/session/current'
 import { strings } from '@/lib/strings'
 import { formatDate } from '@/lib/utils/format'
 
@@ -28,25 +22,10 @@ export default async function ResultsPage({
   if (context.locked) return null
   const { id } = await params
   const { seccion } = await searchParams
-  if (!(await guardRoute(context, ['result.read'], `/ordenes/${id}/resultados`))) return <BlockedNotice />
-
-  const stub = getStub(id)
-  if (!stub || stub.voided) notFound()
-
-  const read = decide({
-    session: toDecisionSession(context),
-    command: 'result.read',
-    facts: { state: resultOrderState(stub) },
-    gestures: { confirmVerified: false, stepUpVerified: false },
-  })
-  if (!read.allowed) return <BlockedNotice />
-
-  const view = buildResultGrid(stub, {
-    canEnter: mayReach(context, ['result.enter']),
-    isBioanalyst: context.account.roles.includes('BIOANALISTA'),
-    section: seccion,
-  })
-  const sectionTitles = [...new Set(demoSeed.resultLines.map((line) => line.section))]
+  const screen = await getResultsScreen(context, id, seccion)
+  if (screen.kind === 'BLOCKED') return <BlockedNotice />
+  if (screen.kind === 'MISSING') notFound()
+  const { view, sectionTitles, lines } = screen
 
   return (
     <section className="flex flex-col gap-4">
@@ -102,7 +81,7 @@ export default async function ResultsPage({
       </ErrorBoundary>
       <ResultExtras
         orderId={view.orderId}
-        lines={demoSeed.resultLines.map((line) => ({ id: line.id, name: line.name }))}
+        lines={lines}
         discrepancies={view.discrepancies}
         isBioanalyst={view.isBioanalyst}
         canEnter={view.canEnter}

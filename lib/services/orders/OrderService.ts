@@ -12,11 +12,17 @@ import type {
   VisitInput,
   VoidOrderInput,
 } from '@/types/orders/draft.types'
-import type { DraftIdInput, GoToStepInput, RemoveDraftLineInput, SelectClientInput } from '@/types/orders/orders.schemas'
+import type { PatientView } from '@/types/orders/screen.types'
+import type { DraftPatientSearchInput, DraftIdInput, GoToStepInput, RemoveDraftLineInput, SelectClientInput } from '@/types/orders/orders.schemas'
 
 export class OrderService extends BaseService {
   constructor() {
     super('/api/v1/orders')
+  }
+
+  /** A POST, so a name or cédula never appears in a URL. */
+  searchPatients(input: DraftPatientSearchInput): Promise<PatientView[]> {
+    return this.post('/draft/patient-search', input)
   }
 
   selectClient(input: SelectClientInput): Promise<DraftResult> {

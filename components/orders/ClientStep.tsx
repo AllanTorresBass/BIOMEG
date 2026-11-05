@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
-import { useOrderCommands } from '@/hooks/use-orders'
+import { useDraftPatientSearch, useOrderCommands } from '@/hooks/use-orders'
 import { PatientHeader } from '@/components/orders/PatientHeader'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { strings } from '@/lib/strings'
@@ -11,11 +11,15 @@ import { useRouter } from 'next/navigation'
 
 const text = strings.pendingReview.orders
 
-export function ClientStep({ draftId, query, patient, results, visit, todayText, canCreateClient }: ClientStepProps) {
+export function ClientStep({ draftId, patient, visit, todayText, canCreateClient }: ClientStepProps) {
   const { selectClient, saveVisit, goToStep, cancelDraft } = useOrderCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')
+  const [typed, setTyped] = useState('')
+  const [query, setQuery] = useState('')
+  const search = useDraftPatientSearch(draftId, query)
+  const results = search.data ?? []
   const [motivo, setMotivo] = useState(visit.motivo)
   const [sampleDate, setSampleDate] = useState(visit.sampleDate)
 
@@ -47,13 +51,20 @@ export function ClientStep({ draftId, query, patient, results, visit, todayText,
       {patient ? (
         <PatientHeader patient={patient} />
       ) : (
-        <form action="/ordenes/nueva" method="get" role="search" className="flex flex-wrap items-end gap-2">
-          <input type="hidden" name="d" value={draftId} />
+        <form
+          role="search"
+          onSubmit={(event) => {
+            event.preventDefault()
+            setQuery(typed.trim())
+          }}
+          className="flex flex-wrap items-end gap-2"
+        >
           <label className="flex min-w-64 flex-1 flex-col gap-1">
             <span className="font-semibold">{text.searchLabel}</span>
             <input
-              name="q"
-              defaultValue={query}
+              value={typed}
+              onChange={(event) => setTyped(event.target.value)}
+              autoComplete="off"
               className="h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3"
             />
           </label>
@@ -74,7 +85,7 @@ export function ClientStep({ draftId, query, patient, results, visit, todayText,
         </form>
       )}
 
-      {!patient && query !== '' ? (
+      {!patient && query !== '' && !search.isLoading ? (
         results.length === 0 ? (
           <p className="text-muted-foreground">{text.noMatches}</p>
         ) : (

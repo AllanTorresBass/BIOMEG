@@ -1,11 +1,11 @@
 import 'server-only'
-import type { DeliveryProvider, FakeState, ProviderMessage } from '@/types/server/provider.types'
+import type { FakeState, IDeliveryPort, ProviderMessage } from '@/types/contracts/ports.contracts'
 
 const globalFake = globalThis as typeof globalThis & { __biomegFakeProvider?: FakeState }
 const fake: FakeState = (globalFake.__biomegFakeProvider ??= { sent: [], failing: false })
 
 /** Records what would have been sent and can be told to fail. It never calls a real service. */
-export const fakeProvider: DeliveryProvider = {
+export const fakeDeliveryPort: IDeliveryPort = {
   async send(message) {
     if (fake.failing) return { ok: false, reason: 'El proveedor no respondió.' }
     fake.sent.push(message)
@@ -24,8 +24,4 @@ export function fakeProviderSent(): readonly ProviderMessage[] {
 export function clearFakeProvider(): void {
   fake.sent = []
   fake.failing = false
-}
-
-export function currentProvider(): DeliveryProvider {
-  return fakeProvider
 }

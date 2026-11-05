@@ -16,8 +16,23 @@ export interface ProviderMessage {
 export type ProviderResult = { ok: true } | { ok: false; reason: string }
 
 /** The real WhatsApp and email providers are Unknown. Anything that sends goes through this one interface. */
-export interface DeliveryProvider {
+export interface IDeliveryPort {
   send(message: ProviderMessage): Promise<ProviderResult>
+}
+
+export interface IClock {
+  now(): Date
+}
+
+export interface ITokenGenerator {
+  /** At least the given number of random bytes, URL-safe. */
+  token(bytes: number): string
+}
+
+export interface ServerContainer {
+  readonly deliveryPort: IDeliveryPort
+  readonly clock: IClock
+  readonly tokens: ITokenGenerator
 }
 
 export interface FakeState {
