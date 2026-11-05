@@ -217,6 +217,8 @@ Prompt IDs are from [v0-prompts/](v0-prompts/README.md). The catalog's run order
 | Health data, retention, minors, portal credential | Venezuelan counsel |
 | IVA and IGTF rates, rounding, Control N° (G2) | Owner, accountant |
 
+The blank answer sheet is [gates/gate-b.md](gates/gate-b.md). **Closed** until those people answer. Do not start Phase 6 on invented rates or hosting.
+
 ### Phase 6. Real backend (Stage 6)
 
 Request the database integration only after Gate B. Use the documents' stack from D2.

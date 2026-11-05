@@ -161,6 +161,9 @@ describe('prices and switches', () => {
     expect(warning.ok).toBe(false)
     expect(warning.need).toBe('RATE_CHANGED')
     expect(warning.orderId).toBeNull()
+    const warned = listAudit().filter((row) => row.what.event === 'order.rate.warn')
+    expect(warned).toHaveLength(1)
+    expect(warned[0]?.result.outcome).toBe('REFUSED')
   })
 
   it('toggles Precio sábado without a formula and without rewriting a saved line (E-52)', async () => {
@@ -183,7 +186,7 @@ describe('prices and switches', () => {
 })
 
 describe('users and Auditoría', () => {
-  it('refuses to disable the last administrator, then allows it once another exists', async () => {
+  it('refuses to disable the last administrator, then allows it once another exists (E-02)', async () => {
     expect((await disableUser({ userId: 'u-administracion' })).ok).toBe(false)
     const created = await createUser({ displayName: 'Admin Dos', roles: ['ADMINISTRACION'] })
     expect(created.ok).toBe(true)
@@ -196,7 +199,7 @@ describe('users and Auditoría', () => {
     expect((await disableUser({ userId: 'u-administracion' })).ok).toBe(true)
   })
 
-  it('masks clinical text for Administración and shows it to Bioanalista', async () => {
+  it('masks clinical text for Administración and shows it to Bioanalista (E-54)', async () => {
     await auditEvent({
       command: 'result.enter',
       outcome: 'ALLOWED',

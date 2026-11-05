@@ -7,6 +7,8 @@ export interface DurationSummary {
 }
 
 export interface AuditMetrics {
+  /** ALLOWED order.open rows in range. Section 6.2 intake has no end event. */
+  intake: number
   timeToFirstResult: DurationSummary
   releaseWait: DurationSummary
   turnaround: DurationSummary
@@ -16,12 +18,21 @@ export interface AuditMetrics {
   resendLag: DurationSummary
   /** Pairs whose resend is still open, or took longer than two days. A starting threshold. */
   resendLagOverTwoDays: number
+  adminQueue: DurationSummary
+  discounts: number
+  priceColumnOverrides: number
+  portalFailures: { address: string; count: number }[]
+  stepUpFailures: number
+  selfEnteredReleases: number
+  analyzerConflicts: number
+  rateWarnings: number
   refusals: { role: string; command: string; count: number }[]
   sameUserReversals: number
 }
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000
 const DELIVERY = new Set(['delivery.whatsapp', 'delivery.email'])
+const PORTAL_FAILURES = new Set(['portal.login.failed', 'portal.code.failed'])
 
 function median(values: readonly number[]): number | null {
   if (values.length === 0) return null
@@ -91,10 +102,78 @@ function sameUserReversals(rows: readonly AuditRow[]): number {
   return count
 }
 
+function sourceIdOf(row: AuditRow): string | null {
+  const before = row.change?.before
+  if (typeof before !== 'object' || before === null || !('sourceId' in before)) return null
+  return typeof before.sourceId === 'string' ? before.sourceId : null
+}
+
+/** Wait from a merge request (R-019) to the act (R-020). Pairs by survivor or source id. */
+function adminQueue(rows: readonly AuditRow[]): number[] {
+  const requests = rows
+    .filter((row) => allowed(row, 'client.merge.request'))
+    .sort((left, right) => left.sequence - right.sequence)
+  const values: number[] = []
+  for (const merge of rows.filter((row) => allowed(row, 'patient.merge'))) {
+    const sourceId = sourceIdOf(merge)
+    const match = [...requests]
+      .reverse()
+      .find(
+        (request) =>
+          request.sequence < merge.sequence &&
+          (request.what.recordId === merge.what.recordId || (sourceId !== null && request.what.recordId === sourceId)),
+      )
+    if (match) values.push(elapsed(match, merge))
+  }
+  return values
+}
+
+function portalFailures(rows: readonly AuditRow[]): { address: string; count: number }[] {
+  const groups = new Map<string, number>()
+  for (const row of rows) {
+    if (row.result.outcome !== 'REFUSED' || !PORTAL_FAILURES.has(row.what.event)) continue
+    const address = row.where.address ?? 'sin-dirección'
+    groups.set(address, (groups.get(address) ?? 0) + 1)
+  }
+  return [...groups.entries()].map(([address, count]) => ({ address, count }))
+}
+
+function selfEnteredReleases(grouped: Map<string, AuditRow[]>): number {
+  let count = 0
+  for (const list of grouped.values()) {
+    const enter = list.find((row) => allowed(row, 'result.enter') && row.who.userId)
+    if (!enter?.who.userId) continue
+    const release = list.find(
+      (row) => allowed(row, 'result.release') && row.sequence > enter.sequence && row.who.userId === enter.who.userId,
+    )
+    if (release) count += 1
+  }
+  return count
+}
+
+/**
+ * Resend lag from section 6.2: start at result.correct.release, require a later
+ * delivery.resend.task, then measure to the first delivery.* after that task.
+ */
+function resendLagValues(grouped: Map<string, AuditRow[]>): number[] {
+  const values: number[] = []
+  for (const list of grouped.values()) {
+    const start = list.find((row) => allowed(row, 'result.correct.release'))
+    if (!start) continue
+    const task = list.find((row) => allowed(row, 'delivery.resend.task') && row.sequence > start.sequence)
+    if (!task) continue
+    const delivery = list.find(
+      (row) => DELIVERY.has(row.what.event) && row.result.outcome === 'ALLOWED' && row.sequence > task.sequence,
+    )
+    if (delivery) values.push(elapsed(start, delivery))
+  }
+  return values
+}
+
 /** Views over the audit rows. Counts and durations only: no name, cédula, phone, or result. */
 export function auditMetrics(rows: readonly AuditRow[]): AuditMetrics {
   const grouped = byRecord(rows)
-  const resend = pair(grouped, 'delivery.resend.task', [...DELIVERY], 'first')
+  const resend = resendLagValues(grouped)
   const refusals = new Map<string, { role: string; command: string; count: number }>()
   for (const row of rows) {
     if (row.result.outcome !== 'REFUSED') continue
@@ -106,6 +185,7 @@ export function auditMetrics(rows: readonly AuditRow[]): AuditMetrics {
   }
 
   return {
+    intake: rows.filter((row) => allowed(row, 'order.open')).length,
     timeToFirstResult: summary(pair(grouped, 'order.open', 'result.enter', 'first')),
     releaseWait: summary(pair(grouped, 'result.enter', 'result.release', 'first')),
     turnaround: summary(pair(grouped, 'order.open', 'result.release', 'last')),
@@ -114,6 +194,14 @@ export function auditMetrics(rows: readonly AuditRow[]): AuditMetrics {
     correctionTime: summary(pair(grouped, 'result.correct.open', 'result.correct.release', 'first')),
     resendLag: summary(resend),
     resendLagOverTwoDays: resend.filter((value) => value > TWO_DAYS_MS).length,
+    adminQueue: summary(adminQueue(rows)),
+    discounts: rows.filter((row) => allowed(row, 'order.line.change.discount')).length,
+    priceColumnOverrides: rows.filter((row) => allowed(row, 'order.price_column.override')).length,
+    portalFailures: portalFailures(rows),
+    stepUpFailures: rows.filter((row) => row.what.event === 'step_up.failed' && row.result.outcome === 'REFUSED').length,
+    selfEnteredReleases: selfEnteredReleases(grouped),
+    analyzerConflicts: rows.filter((row) => row.what.event === 'result.conflict' && row.result.outcome === 'REFUSED').length,
+    rateWarnings: rows.filter((row) => row.what.event === 'order.rate.warn' && row.result.outcome === 'REFUSED').length,
     refusals: [...refusals.values()],
     sameUserReversals: sameUserReversals(rows),
   }

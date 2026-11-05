@@ -5,6 +5,7 @@ import { addEntry } from '@/lib/db/memory/payment-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { activeCompanies, activePhysicians } from '@/lib/db/memory/registry-store'
 import { PAYMENT_METHOD_IDS } from '@/lib/config/payment-methods'
+import { auditEvent } from '@/lib/server/audit'
 import { activeClient, done, fail, gate, gated, isResult, open, record, recordRefusal, refresh } from '@/lib/server/draft-gate'
 import type { Opened } from '@/types/server/draft-gate.types'
 import { computeOrderTotals, parseAmountCents, parsePercentBp } from '@/lib/domain/order-totals'
@@ -170,14 +171,26 @@ export async function saveOrder(input: SaveInput): Promise<SaveResult> {
     if (missing) return saveFail(missing)
 
     const bp = parsePercentBp(draft.discountPct) ?? 0
+    let discountRowId: string | null = null
     if (bp > 0) {
       const limitBp = Math.round(demoSeed.settings.discountLimit * 100)
       const discount = await gate(opened, 'order.discount', { within_limit: bp <= limitBp }, { motivo: draft.discountMotivo })
       if (gated(discount)) return saveFail(discount.message || text.saveFailed, discount.need === 'MOTIVO' ? 'DISCOUNT_MOTIVO' : null)
+      discountRowId = discount.rowId
     }
 
     const { settings } = demoSeed
     if (input.rateSeen !== settings.rateBs && input.confirmRate !== true) {
+      await auditEvent({
+        command: 'order.save',
+        event: 'order.rate.warn',
+        outcome: 'REFUSED',
+        reason: 'STATE',
+        session: context.session,
+        account: context.account,
+        recordType: 'order_draft',
+        recordId: draft.id,
+      })
       return saveFail(text.rateChangedBody(formatRate(input.rateSeen), formatRate(settings.rateBs)), 'RATE_CHANGED')
     }
 
@@ -229,6 +242,16 @@ export async function saveOrder(input: SaveInput): Promise<SaveResult> {
 
     const target = { recordType: 'order', recordId: order.id, state: order.state }
     await record(opened, 'order.save', allowed.rowId, { before: null, after: { number: order.number, totals } }, undefined, target)
+    if (bp > 0) {
+      await record(
+        opened,
+        'order.discount',
+        discountRowId,
+        { before: '0', after: draft.discountPct },
+        draft.discountMotivo || undefined,
+        target,
+      )
+    }
     if (payments.length > 0) {
       const paymentAllowed = await gate(opened, 'payment.record', {}, {}, target)
       if (!gated(paymentAllowed)) {

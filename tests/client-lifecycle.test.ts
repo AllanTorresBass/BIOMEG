@@ -24,7 +24,7 @@ describe('deactivate', () => {
 })
 
 describe('delete', () => {
-  it('keeps the record but takes it out of every search', () => {
+  it('keeps the record but takes it out of every search (M-02)', () => {
     expect(softDeleteClient('c-6', actor)).toMatchObject({ ok: true })
     expect(getClient('c-6')).toBeNull()
     expect(searchClients({ text: 'Paciente Demo Seis', includeInactive: true }).map((c) => c.id)).not.toContain('c-6')
@@ -55,7 +55,7 @@ describe('merge and undo', () => {
     expect(listOpenMerges().some((entry) => entry.sourceId === 'c-4' && entry.survivorId === 'c-3')).toBe(true)
   })
 
-  it('brings the absorbed client back with its earlier active state', () => {
+  it('brings the absorbed client back with its earlier active state (E-18)', () => {
     const open = listOpenMerges().find((entry) => entry.sourceId === 'c-4')
     expect(open).toBeDefined()
     const result = unmergeClients(open!.id, { ...actor, now: '2026-11-05T12:00:00.000Z' })

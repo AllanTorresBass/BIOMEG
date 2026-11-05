@@ -55,7 +55,11 @@ export default async function ReportPage({
           <label className="flex flex-col gap-1"><span className="font-semibold">{text.reportTo}</span><input type="date" name="to" defaultValue={filters.to} className="h-10 rounded-[var(--radius-control)] border border-border-strong px-3" /></label>
           <button type="submit" className="h-10 rounded-[var(--radius-control)] bg-primary px-4 font-semibold text-primary-foreground">{text.auditApply}</button>
         </form>
-        {stats.lines.every(([, value]) => value === strings.empty.dash) && stats.refusals.length === 0 ? <p>{text.statsNone}</p> : null}
+        {stats.lines.every(([, value]) => value === strings.empty.dash || value === '0') &&
+        stats.refusals.length === 0 &&
+        stats.portalFailures.length === 0 ? (
+          <p>{text.statsNone}</p>
+        ) : null}
         <dl className="grid gap-2 sm:grid-cols-2">
           {stats.lines.map(([label, value]) => (
             <div key={label} className="flex justify-between gap-4 border-b border-border py-1">
@@ -67,6 +71,12 @@ export default async function ReportPage({
         <h2 className="font-semibold">{text.statsRefusals}</h2>
         <ul>
           {stats.refusals.map((group) => (
+            <li key={group.label} className="tabular-nums">{group.label}: {group.count}</li>
+          ))}
+        </ul>
+        <h2 className="font-semibold">{text.statsPortalFailures}</h2>
+        <ul>
+          {stats.portalFailures.map((group) => (
             <li key={group.label} className="tabular-nums">{group.label}: {group.count}</li>
           ))}
         </ul>
