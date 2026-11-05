@@ -17,9 +17,9 @@ import {
 } from '@/lib/db/memory/portal-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import {
-  contactFor,
-  maskDestination,
+  hasAnyOrder,
   matchClients,
+  phoneFor,
   portalFileOf,
   visitFor,
   visitsOf,
@@ -56,18 +56,18 @@ describe('portal sign-in match', () => {
 describe('portal contact', () => {
   const base = { phone: null, email: null } as unknown as ClientRecord
 
-  it('returns nothing when the client has no contact on file', () => {
-    expect(contactFor([base])).toBeNull()
+  it('returns nothing when the client has no phone on file', () => {
+    expect(phoneFor([base])).toBeNull()
   })
 
-  it('prefers WhatsApp over email and masks the destination', () => {
-    const both = { ...base, phone: '04141234567', email: 'paciente@example.com' } as ClientRecord
-    const contact = contactFor([both])
-    expect(contact?.channel).toBe('WHATSAPP')
-    expect(maskDestination(contact!)).toMatch(/^\*\*\*\d{3}$/)
+  it('never falls back to email', () => {
+    expect(phoneFor([{ ...base, email: 'paciente@example.com' } as ClientRecord])).toBeNull()
+    expect(phoneFor([{ ...base, phone: '04141234567', email: 'paciente@example.com' } as ClientRecord])).toBe('04141234567')
+  })
 
-    const emailOnly = { ...base, email: 'paciente@example.com' } as ClientRecord
-    expect(maskDestination(contactFor([emailOnly])!)).toBe('pa***@example.com')
+  it('needs at least one order', () => {
+    expect(hasAnyOrder([{ ...base, id: 'sin-ordenes' } as ClientRecord])).toBe(false)
+    expect(hasAnyOrder([{ ...base, id: getStub('o-1')!.clientId } as ClientRecord])).toBe(true)
   })
 })
 
@@ -83,7 +83,15 @@ describe('failed attempts', () => {
   })
 
   it('counts a cédula that does not exist the same way as one that does', () => {
-    expect(failureKey('v', '99999999')).toBe('V-99999999')
+    expect(failureKey('v', '99.999.999')).toBe(failureKey('V', '99999999'))
+  })
+
+  it('keeps no digits in the key and depends on the secret', () => {
+    const key = failureKey('V', '99999999')
+    expect(key).not.toContain('99999999')
+    vi.stubEnv('PORTAL_HASH_SECRET', 'otro-secreto-de-prueba')
+    expect(failureKey('V', '99999999')).not.toBe(key)
+    vi.unstubAllEnvs()
   })
 })
 

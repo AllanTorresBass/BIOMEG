@@ -28,7 +28,6 @@ export function PortalSignIn() {
     setError(null)
     start(async () => {
       const result = await requestPortalCode({ type, digits, birth })
-      if (result.kind === 'INVALID') return setError(text.invalid)
       if (result.kind === 'PAUSED') return setError(text.paused)
       setDemoCode(result.demoCode)
       setStep('code')

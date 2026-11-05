@@ -11,7 +11,6 @@ import { renderReportPdf } from '@/lib/server/pdf/report-pdf'
 import { formatDate } from '@/lib/utils/format'
 import type { ClientRecord } from '@/types/domain/client.types'
 import type { OrderStub } from '@/types/domain/order-stub.types'
-import type { SendChannel } from '@/types/orders/delivery.types'
 import type { ReportDocument } from '@/types/orders/report.types'
 import type { PortalVisit, PortalVisitState } from '@/types/portal/portal.types'
 
@@ -24,28 +23,17 @@ export function matchClients(type: string, digits: string, birthDate: string): C
   )
 }
 
-export interface PortalContact {
-  channel: SendChannel
-  destination: string
-}
-
-/** WhatsApp first, then email. A sign-in code is not a result, so it needs no consent, only a contact on file. */
-export function contactFor(clients: readonly ClientRecord[]): PortalContact | null {
-  for (const channel of ['WHATSAPP', 'CORREO'] as const) {
-    for (const client of clients) {
-      const destination = destinationOf(client, channel)
-      if (destination) return { channel, destination }
-    }
+/** The phone on file. Email is never used for this code (product/10): it doesn't prove possession of a device. */
+export function phoneFor(clients: readonly ClientRecord[]): string | null {
+  for (const client of clients) {
+    const phone = destinationOf(client, 'WHATSAPP')
+    if (phone) return phone
   }
   return null
 }
 
-export function maskDestination(contact: PortalContact): string {
-  if (contact.channel === 'CORREO') {
-    const [user = '', host = ''] = contact.destination.split('@')
-    return `${user.slice(0, 2)}***@${host}`
-  }
-  return `***${contact.destination.slice(-3)}`
+export function hasAnyOrder(clients: readonly ClientRecord[]): boolean {
+  return clients.some((client) => ordersOf(client.id).length > 0)
 }
 
 function releasedTitles(stub: OrderStub, document: ReportDocument): string[] {

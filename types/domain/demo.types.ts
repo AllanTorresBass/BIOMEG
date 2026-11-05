@@ -10,6 +10,8 @@ export interface DemoStaffUser {
 }
 
 export interface DemoClient {
+  /** Invented. Without one a demo client can't try the portal, which sends its code only to a phone. */
+  phone?: string
   id: string
   fullName: string
   cedulaType: CedulaType

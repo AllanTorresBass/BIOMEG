@@ -29,7 +29,6 @@ export type PortalCodeRequest =
   /** The same answer whether or not the data matched, so the form never confirms a cédula exists. */
   | { kind: 'ANSWERED'; demoCode: string | null }
   | { kind: 'PAUSED' }
-  | { kind: 'INVALID' }
 
 export type PortalCodeCheck =
   | { kind: 'OK' }
