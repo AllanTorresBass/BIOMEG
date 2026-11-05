@@ -6,6 +6,7 @@ import { API_LIMITS } from '@/lib/config/api'
 import { takeRequestToken } from '@/lib/db/memory/rate-limit-store'
 import { logger } from '@/lib/logger'
 import { requestAddress } from '@/lib/server/audit'
+import { withAuditRequest } from '@/lib/server/audit-request'
 import { getStaffContext } from '@/lib/server/session/current'
 import { strings } from '@/lib/strings'
 import { REFUSAL_RESULT_KEY, type ApiErrorBody, type ApiErrorCode } from '@/types/api.types'
@@ -86,7 +87,7 @@ export function withCommand<Schema extends z.ZodType, Result>(
     if (!parsed.success) return errorResponse(400, 'VALIDATION', text.invalid)
 
     try {
-      return respond(await run(parsed.data), options.status ?? 200)
+      return await withAuditRequest(async () => respond(await run(parsed.data), options.status ?? 200))
     } catch (error: unknown) {
       return unexpected(error)
     }
@@ -106,8 +107,10 @@ export function withQuery<Schema extends z.ZodType, Result>(
     const parsed = schema.safeParse(Object.fromEntries(new URL(request.url).searchParams))
     if (!parsed.success) return errorResponse(400, 'VALIDATION', text.invalid)
     try {
-      const result = await run(parsed.data)
-      return result === null ? errorResponse(404, 'NOT_FOUND', text.failed) : NextResponse.json(result)
+      return await withAuditRequest(async () => {
+        const result = await run(parsed.data)
+        return result === null ? errorResponse(404, 'NOT_FOUND', text.failed) : NextResponse.json(result)
+      })
     } catch (error: unknown) {
       return unexpected(error)
     }

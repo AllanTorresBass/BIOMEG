@@ -69,7 +69,7 @@ describe('mode and consent', () => {
     expect(blockedReason(client({ email: '' }), 'CORREO')).toBe('NO_CONTACT')
   })
 
-  it('needs recorded consent to send a result as an attachment', () => {
+  it('needs recorded consent to send a result as an attachment (E-62)', () => {
     demoSeed.settings.portalCodeWorks = false
     expect(blockedReason(client({}), 'CORREO')).toBe('NO_CONSENT')
     expect(blockedReason(client({ consents: [consent('EMAIL')] }), 'CORREO')).toBeNull()

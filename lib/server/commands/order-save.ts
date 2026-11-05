@@ -3,6 +3,7 @@ import 'server-only'
 import { createOrder, getOrder, orderForKey } from '@/lib/db/memory/order-store'
 import { addEntry } from '@/lib/db/memory/payment-store'
 import { demoSeed } from '@/lib/db/memory/seed'
+import { activeCompanies, activePhysicians } from '@/lib/db/memory/registry-store'
 import { PAYMENT_METHOD_IDS } from '@/lib/config/payment-methods'
 import { activeClient, done, fail, gate, gated, isResult, open, record, recordRefusal, refresh } from '@/lib/server/draft-gate'
 import type { Opened } from '@/types/server/draft-gate.types'
@@ -15,7 +16,7 @@ import type { DraftPayment, DraftResult, PaymentInput, PersonalInput, SaveInput,
 const text = strings.pendingReview.orders
 
 function activeConvenio(id: string | null) {
-  return id ? (demoSeed.companies.find((company) => company.id === id && company.active) ?? null) : null
+  return id ? (activeCompanies().find((company) => company.id === id) ?? null) : null
 }
 
 function clockTime(iso: string): string {
@@ -48,7 +49,7 @@ export async function savePersonal(input: PersonalInput): Promise<DraftResult> {
   const allowed = await gate(opened, 'order.open', {})
   if (gated(allowed)) return allowed
 
-  if (input.physicianId !== null && !demoSeed.physicians.some((physician) => physician.id === input.physicianId)) {
+  if (input.physicianId !== null && !activePhysicians().some((physician) => physician.id === input.physicianId)) {
     return fail(text.physicianMissing)
   }
   const before = { physicianId: opened.draft.physicianId }
@@ -183,7 +184,7 @@ export async function saveOrder(input: SaveInput): Promise<SaveResult> {
     const client = activeClient(draft.clientId)
     if (!client) return saveFail(strings.orders.clientNotFound)
     const payments = draft.payments.filter((payment) => payment.amount !== '')
-    const physician = demoSeed.physicians.find((candidate) => candidate.id === draft.physicianId) ?? null
+    const physician = activePhysicians().find((candidate) => candidate.id === draft.physicianId) ?? null
     const convenio = activeConvenio(draft.convenioId)
     const totals = computeOrderTotals({
       lines: draft.lines,

@@ -52,7 +52,8 @@ function prices(
   return out
 }
 
-export const demoSeed: DemoSeed = {
+function buildSeed(): DemoSeed {
+  return {
   staff: [
     { id: 'u-recepcion', displayName: 'Recepción Demo', role: 'RECEPCION' },
     { id: 'u-auxiliar', displayName: 'Auxiliar Demo', role: 'AUXILIAR' },
@@ -138,4 +139,10 @@ export const demoSeed: DemoSeed = {
     igtfRate: null,
     portalCodeWorks: false,
   },
+  }
 }
+
+const globalStore = globalThis as typeof globalThis & { __biomegDemoSeed?: DemoSeed }
+
+/** One object for every server bundle. A rate or price change has to be visible to the next screen. */
+export const demoSeed: DemoSeed = (globalStore.__biomegDemoSeed ??= buildSeed())

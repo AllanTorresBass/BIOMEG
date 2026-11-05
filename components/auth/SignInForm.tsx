@@ -31,7 +31,7 @@ export function SignInForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(submit)} noValidate className="flex flex-col gap-4">
+      <form method="post" onSubmit={form.handleSubmit(submit)} noValidate className="flex flex-col gap-4">
         <FormField
           control={form.control}
           name="username"

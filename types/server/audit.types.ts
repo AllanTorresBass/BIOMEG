@@ -4,7 +4,9 @@ import type { PublicAccount, StaffSession } from '@/types/session/session.types'
 
 export interface AuditEventInput {
   command: string
-  outcome: 'ALLOWED' | 'REFUSED'
+  /** Overrides the catalog when the business event is not the command name. */
+  event?: string
+  outcome: 'ALLOWED' | 'REFUSED' | 'FAILED'
   reason?: DecisionReason
   session?: StaffSession | null
   account?: PublicAccount | null

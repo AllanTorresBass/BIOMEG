@@ -16,7 +16,7 @@ export interface Presented {
 export interface Target {
   recordType: string
   recordId: string
-  state: string
+  state: string | null
 }
 
 /** What the gate helpers need. Order actions have no draft, so they always pass a target. */

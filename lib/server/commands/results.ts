@@ -446,6 +446,17 @@ export async function releaseCorrection(input: { orderId: string; section: strin
     outcome.correction.motivo,
     sectionTarget,
   )
+  if (outcome.resendTask) {
+    await auditEvent({
+      command: 'delivery.resend.task',
+      outcome: 'ALLOWED',
+      session: context.session,
+      account: context.account,
+      recordType: 'order',
+      recordId: stub.id,
+      state: sectionTarget.state,
+    })
+  }
   touch(stub.id)
   revalidatePath('/')
   return {

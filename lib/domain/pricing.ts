@@ -30,6 +30,12 @@ export function priceFor(row: DemoPriceRow, column: PriceColumn | null): string 
   return row.prices[column].usd
 }
 
+/** A blank price stays blank. A stored zero is increased from zero. */
+export function applyIncrease(value: string | null, percentBp: number): string | null {
+  if (value === null) return null
+  return centsToDecimal(Math.round((parseCents(value) * (10_000 + percentBp)) / 10_000))
+}
+
 export function bsFromUsdCents(usdCents: number, rate: string): string {
   return centsToDecimal(Math.round((usdCents * parseCents(rate)) / 100))
 }

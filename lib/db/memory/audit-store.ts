@@ -2,26 +2,49 @@ import 'server-only'
 
 import type { AuditRow, AuditRowInput } from '@/types/audit/audit.types'
 
-const rows: AuditRow[] = []
-let counter = 0
+type AuditState = { rows: AuditRow[]; counter: number }
 
-/** Append only. There is no update and no delete. A refused event never stores a change. */
+const globalStore = globalThis as typeof globalThis & { __biomegAudit?: AuditState }
+
+function state(): AuditState {
+  return (globalStore.__biomegAudit ??= { rows: [], counter: 0 })
+}
+
+/** Append only. There is no update and no delete. A refused or failed event never stores a change. */
 export function appendAudit(input: AuditRowInput): AuditRow {
-  counter += 1
+  const current = state()
+  current.counter += 1
+  const counter = current.counter
   const row: AuditRow = Object.freeze({
-    ...input,
     id: `aud-${String(counter).padStart(6, '0')}`,
-    change: input.result.outcome === 'REFUSED' ? null : input.change,
+    sequence: counter,
+    requestId: input.requestId ?? `req-${String(counter).padStart(6, '0')}`,
+    severity: input.severity ?? 'INFO',
+    who: input.who,
+    what: {
+      command: input.what.command,
+      event: input.what.event ?? input.what.command,
+      recordType: input.what.recordType,
+      recordId: input.what.recordId,
+      state: input.what.state,
+    },
+    when: input.when,
+    where: input.where,
+    how: input.how,
+    why: input.why,
+    result: input.result,
+    change: input.result.outcome === 'ALLOWED' ? input.change : null,
   })
-  rows.push(row)
+  current.rows.push(row)
   return row
 }
 
 export function listAudit(): readonly AuditRow[] {
-  return [...rows]
+  return [...state().rows]
 }
 
 export function resetAuditForTests(): void {
-  rows.length = 0
-  counter = 0
+  const current = state()
+  current.rows.length = 0
+  current.counter = 0
 }

@@ -5,6 +5,7 @@ import { findMenuItem, toSlug } from '@/lib/config/menu'
 import { guardRoute } from '@/lib/server/guard'
 import { requireReadyStaff } from '@/lib/server/session/require'
 import { strings } from '@/lib/strings'
+import { REGISTRY_COMMAND } from '@/types/office/office.types'
 
 // Only menu names were seen, so these invent nothing. The cut-off title stays as captured.
 const UNKNOWN_COLUMNS = new Set([
@@ -39,10 +40,32 @@ export default async function ScreenPage({ params }: { params: Promise<{ slug: s
   if (screen) redirect(screen)
   const entry = findMenuItem(slug)
   if (!entry) notFound()
+  const command = entry.commands[0] ?? ''
+  if (command === 'prices.list') redirect('/precios')
+  if (command === 'prices.edit') redirect('/precios/editar')
+  if (command === 'prices.general_increase') redirect('/precios/aumento')
+  if (command === 'setting.saturday.change') redirect('/mantenimiento/sabado')
+  if (command === 'setting.qr.change') redirect('/mantenimiento/qr')
+  if (command === 'purchase.orders') redirect('/compras')
+  if (command === 'inventory.deduct') redirect('/inventario')
+  if (command === 'user.create') redirect('/usuarios')
+  if (command === 'mail.config') redirect('/correo')
+  if (command === 'backup.run') redirect('/respaldo')
+  if (entry.commands.includes('audit.read_all') || entry.commands.includes('audit.read_clinical')) redirect('/auditoria')
+  if (command.startsWith('report.') || command.startsWith('costs.')) redirect(`/reportes/${slug}`)
+  const registryKind = Object.entries(REGISTRY_COMMAND).find(([, value]) => value === command)?.[0]
+  if (registryKind) redirect(`/registros/${registryKind}`)
 
   const context = await requireReadyStaff()
   if (context.locked) return null
-  // Blocked for everyone until a capture says what it does: the title and BLOQUEADO, nothing else.
+  if (entry.commands.includes('values.modify')) {
+    return (
+      <section className="flex flex-col items-start gap-2">
+        <h1 className="text-xl font-semibold">{entry.label}</h1>
+        <p>{strings.pendingReview.office.modifyValues}</p>
+      </section>
+    )
+  }
   if (entry.commands.includes('relation.reverse') || entry.commands.includes('client.transfer')) {
     return (
       <section className="flex flex-col items-start gap-2">

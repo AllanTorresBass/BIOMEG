@@ -159,7 +159,7 @@ describe('Registro de pagos', () => {
     expect(all.kind === 'READY' && all.rows).toHaveLength(2)
   })
 
-  it('lists same-user reversals for review, for Administración only', async () => {
+  it('lists same-user reversals for review, for Administración only (E-47)', async () => {
     const order = newOrder()
     await abono(order.id)
     await reversePayment({ paymentId: allEntries()[0]!.id, confirmed: true, motivo: 'Error' })

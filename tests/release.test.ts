@@ -33,7 +33,7 @@ describe('releaseSections', () => {
     expect(reportDateOf('rel-3')).toBeNull()
   })
 
-  it('gives back the first releaser when a second one tries the same section', () => {
+  it('gives back the first releaser when a second one tries the same section (E-30)', () => {
     enter('rel-4', 'rl-01')
     releaseSections('rel-4', [HEM], 'b-1', 'Beatriz')
     const second = releaseSections('rel-4', [HEM], 'b-2', 'Carlos')

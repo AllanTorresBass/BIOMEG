@@ -154,7 +154,7 @@ describe('client store', () => {
     expect(getClient(verified.id)?.version).toBe(1)
   })
 
-  it('finds a duplicate cédula, active or inactive, but ignores the client being saved', () => {
+  it('finds a duplicate cédula, active or inactive, but ignores the client being saved (E-16)', () => {
     const created = insertClient(valid({ fullName: 'Duplicado Tres', cedulaDigits: '19000022' }), context)
     expect(findByCedula('V', '19000022', null)?.id).toBe(created.id)
     expect(findByCedula('V', '19000022', created.id)).toBeNull()

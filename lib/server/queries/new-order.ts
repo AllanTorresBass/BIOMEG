@@ -6,6 +6,7 @@ import { getClient, searchClients } from '@/lib/db/memory/client-store'
 import { getDraft, startDraft } from '@/lib/db/memory/draft-store'
 import { getOrder } from '@/lib/db/memory/order-store'
 import { demoSeed } from '@/lib/db/memory/seed'
+import { activeCompanies, activePhysicians } from '@/lib/db/memory/registry-store'
 import { todayInLab } from '@/lib/server/domain/client-rules'
 import { guardRoute } from '@/lib/server/guard'
 import { toDecisionSession } from '@/lib/server/session/current'
@@ -55,8 +56,8 @@ export function getNewOrderScreen(context: StaffContext, draftId: string) {
     saved: draft.savedOrderId ? getOrder(draft.savedOrderId) : null,
     today: todayInLab(),
     canCreateClient: decide({ session: toDecisionSession(context), command: 'client.create', facts: {}, gestures: {} }).allowed,
-    physicians: demoSeed.physicians,
-    convenios: demoSeed.companies.filter((company) => company.active),
+    physicians: activePhysicians(),
+    convenios: activeCompanies(),
     settings: demoSeed.settings,
     priceRows: demoSeed.priceRows,
     emptyPayments: emptyPayments(),

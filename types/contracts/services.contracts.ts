@@ -1,6 +1,7 @@
 import type { ClientService } from '@/lib/services/clients/ClientService'
 import type { DeliveryService } from '@/lib/services/delivery/DeliveryService'
 import type { FiscalService } from '@/lib/services/fiscal/FiscalService'
+import type { OfficeService } from '@/lib/services/office/OfficeService'
 import type { OrderService } from '@/lib/services/orders/OrderService'
 import type { PaymentService } from '@/lib/services/payments/PaymentService'
 import type { PortalService } from '@/lib/services/portal/PortalService'
@@ -12,6 +13,7 @@ export interface ServiceContainer {
   readonly clientService: ClientService
   readonly deliveryService: DeliveryService
   readonly fiscalService: FiscalService
+  readonly officeService: OfficeService
   readonly orderService: OrderService
   readonly paymentService: PaymentService
   readonly portalService: PortalService

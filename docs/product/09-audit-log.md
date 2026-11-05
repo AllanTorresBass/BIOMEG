@@ -6,7 +6,7 @@
 
 The audit log is the permanent record of who did what in the application, including what was refused. It lets the laboratory reconstruct a result, a payment, or a permission change after the fact, and detect tampering.
 
-All of this is a design rule, and no application implements it. The current program has an Auditoría command, and that screen was never opened, so it's **Unknown**. This page doesn't describe it.
+All of this is a design rule. A prototype keeps an in-memory copy of the row, without the hash chain, the Summary and Flood tiers, or an outside copy. Those wait for Stage 6. The prototype is not safe for a real patient record, which waits for Gate C. The current program has an Auditoría command, and that screen was never opened, so it's **Unknown**. This page doesn't describe it.
 
 **How to read this page.** [06-access-control.md](06-access-control.md) wins if this page differs, and its Decisions table records what still needs confirming. Everything here was accepted on 1 November 2026, on the instruction to apply the recommendations, and still needs the confirmation of the owner and the lead bioanalyst. No part of this page is legal advice, and Venezuelan counsel hasn't reviewed it.
 

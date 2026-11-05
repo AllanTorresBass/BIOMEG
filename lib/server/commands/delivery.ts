@@ -142,14 +142,15 @@ async function deliver(input: DeliverInput): Promise<DeliveryActionResult> {
 
   if (failure) {
     updateDelivery(delivery.id, { status: 'FAILED', failure })
-    await record(
-      { context },
-      auditCommand,
-      allowed.rowId,
-      { before: null, after: { id: delivery.id, status: 'FAILED', incomplete }, field: 'delivery' },
-      undefined,
-      target,
-    )
+    await auditEvent({
+      command: auditCommand,
+      outcome: 'FAILED',
+      reason: 'STATE',
+      session: context.session,
+      account: context.account,
+      ...target,
+      rowId: allowed.rowId,
+    })
     revalidatePath(`/ordenes/${stub.id}/reporte`)
     return refuse(text.failed)
   }
