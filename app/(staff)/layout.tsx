@@ -11,7 +11,7 @@ import { SESSION_SETTINGS } from '@/lib/config/session'
 import { mayReach } from '@/lib/server/guard'
 import { requireStaff } from '@/lib/server/session/require'
 import { listDemoAccounts } from '@/lib/server/session/store'
-import { getShellSettings } from '@/lib/server/settings'
+import { getShellSettings, isDemoAccessOn } from '@/lib/server/settings'
 import type { StaffRole } from '@/types/auth/auth.types'
 
 function roleLabel(roles: readonly StaffRole[], separator = ', '): string {
@@ -41,10 +41,12 @@ export default async function StaffLayout({ children }: { children: ReactNode })
       {groups.length > 0 ? <MenuBar groups={groups} /> : null}
       <PrimaryActions actions={actions} />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 p-4">{children}</main>
-      <DemoRoleSwitcher
-        accounts={listDemoAccounts().map((account) => ({ id: account.id, label: roleLabel(account.roles, ' y ') }))}
-        currentUserId={context.account.id}
-      />
+      {isDemoAccessOn() ? (
+        <DemoRoleSwitcher
+          accounts={listDemoAccounts().map((account) => ({ id: account.id, label: roleLabel(account.roles, ' y ') }))}
+          currentUserId={context.account.id}
+        />
+      ) : null}
       <IdleLock locked={context.locked} idleMinutes={SESSION_SETTINGS.idleLockMinutes} />
     </UnsavedEditsProvider>
   )

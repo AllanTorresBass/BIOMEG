@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { isDemoAccessOn } from '@/lib/server/settings'
 import { strings } from '@/lib/strings'
 import { auditEvent } from '@/lib/server/audit'
 import { getStaffContext } from '@/lib/server/session/current'
@@ -13,7 +14,7 @@ export async function signIn(_previous: FormState, formData: FormData): Promise<
   const password = String(formData.get('password') ?? '')
 
   const { result, account } = verifyCredentials(username, password)
-  if (result !== 'OK' || !account) {
+  if (result !== 'OK' || !account || !isDemoAccessOn()) {
     await auditEvent({
       command: 'session.enter.failed',
       outcome: 'REFUSED',

@@ -1,3 +1,8 @@
+// Demo sign-in is public knowledge, so it must never reach production (V0-A8).
+if (process.env.BIOMEG_DEMO === 'on' && process.env.VERCEL_ENV === 'production') {
+  throw new Error('BIOMEG_DEMO cannot be on in a production deployment.')
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
