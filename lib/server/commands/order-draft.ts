@@ -1,6 +1,9 @@
 import 'server-only'
 
-import type { DraftIdInput, GoToStepInput, RemoveDraftLineInput, SelectClientInput } from '@/types/orders/orders.schemas'
+import { searchDraftPatients } from '@/lib/server/queries/new-order'
+import { getStaffContext } from '@/lib/server/session/current'
+import type { PatientView } from '@/types/orders/screen.types'
+import type { DraftPatientSearchInput, DraftIdInput, GoToStepInput, RemoveDraftLineInput, SelectClientInput } from '@/types/orders/orders.schemas'
 import { discardDraft, nextLineId } from '@/lib/db/memory/draft-store'
 import { allOrders } from '@/lib/db/memory/order-index'
 import { demoSeed } from '@/lib/db/memory/seed'
@@ -183,4 +186,10 @@ export async function cancelDraft({ draftId }: DraftIdInput): Promise<DraftResul
   discardDraft(draftId, opened.context.account.id)
   refresh()
   return done('')
+}
+
+/** Finding a patient for this draft. The term arrives in the body, never in a URL. */
+export async function searchPatients({ draftId, text }: DraftPatientSearchInput): Promise<PatientView[]> {
+  const context = await getStaffContext()
+  return context ? searchDraftPatients(context, draftId, text) : []
 }

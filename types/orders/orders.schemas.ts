@@ -18,6 +18,7 @@ const confirmed = z.boolean().optional()
 const motivo = longText.optional()
 
 export const draftIdSchema = z.strictObject({ draftId: id })
+export const draftPatientSearchSchema = z.strictObject({ draftId: id, text: shortText })
 export const selectClientSchema = z.strictObject({ draftId: id, clientId: id })
 export const removeDraftLineSchema = z.strictObject({ draftId: id, lineId: id })
 export const goToStepSchema = z.strictObject({
@@ -98,6 +99,7 @@ export const worklistQuerySchema = z.strictObject({
   reviewOnly: z.enum(['0', '1']),
 })
 
+export type DraftPatientSearchInput = z.infer<typeof draftPatientSearchSchema>
 export type DraftIdInput = z.infer<typeof draftIdSchema>
 export type SelectClientInput = z.infer<typeof selectClientSchema>
 export type RemoveDraftLineInput = z.infer<typeof removeDraftLineSchema>

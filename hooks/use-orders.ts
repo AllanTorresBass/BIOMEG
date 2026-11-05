@@ -1,7 +1,9 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useCommand } from '@/hooks/use-command'
+import { queryKeys } from '@/lib/query-keys'
 import { container } from '@/lib/services'
 import type {
   AddLineInput,
@@ -34,4 +36,14 @@ export function useOrderCommands() {
       generateQuote: (draftId: string) => run(() => service().generateQuote({ draftId })),
     }
   }, [run])
+}
+
+/** The rows for a typed search. The term stays in this in-memory cache, never in a URL or a store. */
+export function useDraftPatientSearch(draftId: string, text: string) {
+  return useQuery({
+    queryKey: queryKeys.orders.patientSearch(draftId, text),
+    queryFn: () => container.orderService.searchPatients({ draftId, text }),
+    enabled: text !== '',
+    gcTime: 0,
+  })
 }
