@@ -22,6 +22,10 @@
   /* Surfaces. Cool neutrals, derived so the page is not pure logo-white glare. */
   --surface-page: #f4f7fb;
   --surface-card: #ffffff;
+  /* The printed sheet stays white and black in every theme, since it stands for the paper. */
+  --paper-surface: #ffffff;
+  --paper-ink: #111111;
+  --paper-rule: #8a8a8a;
   --surface-sunken: #e8eef5;
   --surface-navy-wash: #e8eef5;
   --surface-burgundy-wash: #f8f1f3;

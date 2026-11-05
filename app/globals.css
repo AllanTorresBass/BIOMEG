@@ -5,6 +5,9 @@
   --color-background: var(--surface-page);
   --color-card: var(--surface-card);
   --color-sunken: var(--surface-sunken);
+  --color-paper: var(--paper-surface);
+  --color-paper-ink: var(--paper-ink);
+  --color-paper-rule: var(--paper-rule);
   --color-foreground: var(--text-primary);
   --color-muted-foreground: var(--text-secondary);
   --color-border: var(--border-default);
