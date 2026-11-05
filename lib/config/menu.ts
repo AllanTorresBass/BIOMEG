@@ -67,6 +67,7 @@ export const MENU_GROUPS: readonly MenuGroup[] = [
       item('Re-imprimir retenciones', 'reprint.retentions'),
       item('Re-imprimir orden de entrega', 'reprint.delivery_order'),
       item('Re-imprimir orden empresa', 'reprint.company_order'),
+      item('Asignar Control N°', 'control.assign'),
       item('Cobros Cashea', 'cashea.collect'),
       item('Reversar relación', 'relation.reverse'),
       item('Agregar abono', 'payment.abono'),

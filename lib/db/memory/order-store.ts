@@ -65,11 +65,7 @@ export function createOrder(key: string, input: NewOrder, examIds: string[]): Sa
 export function voidSavedOrder(id: string, input: VoidInput): SavedOrder | null {
   const order = state.orders.get(id)
   if (!order || order.state === 'ANULADA') return null
-  let creditNote: string | null = null
-  if (input.withCreditNote) {
-    state.creditNotes = (state.creditNotes ?? 0) + 1
-    creditNote = `NC-${String(state.creditNotes).padStart(6, '0')}`
-  }
+  const creditNote = input.withCreditNote ? nextCreditNoteNumber() : null
   const next: SavedOrder = {
     ...order,
     state: 'ANULADA',
@@ -110,4 +106,23 @@ export function findOrderByNumber(number: string): SavedOrder | null {
 export function setOrderPayments(id: string, payments: SavedOrder['payments'], totals: SavedOrder['totals']): void {
   const order = state.orders.get(id)
   if (order) state.orders.set(id, { ...order, payments, totals, version: order.version + 1 })
+}
+
+/** One sequence for every credit note, voids included. A number is never reused. */
+export function nextCreditNoteNumber(): string {
+  state.creditNotes = (state.creditNotes ?? 0) + 1
+  return `NC-${String(state.creditNotes).padStart(6, '0')}`
+}
+
+export function allSavedOrders(): SavedOrder[] {
+  return [...state.orders.values()]
+}
+
+export function findOrderByControl(controlNumber: string): SavedOrder | null {
+  return [...state.orders.values()].find((order) => order.controlNumber === controlNumber) ?? null
+}
+
+export function setControlNumber(id: string, controlNumber: string): void {
+  const order = state.orders.get(id)
+  if (order) state.orders.set(id, { ...order, controlNumber, version: order.version + 1 })
 }

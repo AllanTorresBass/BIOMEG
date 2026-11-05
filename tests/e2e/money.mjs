@@ -105,6 +105,31 @@ export async function runMoney(chromium, B, pw) {
     await adm.goto(B + '/p/cobros-cashea'); await adm.waitForTimeout(300)
     ok('Cobros Cashea invents no columns', (await adm.locator('main').innerText()).includes('no están capturadas'))
   })
+
+  await step('fiscal documents', async () => {
+    const adm = await fresh(); await signIn(adm, 'administracion')
+    const number = orderUrl.split('o-').pop().padStart(8, '0')
+    await adm.goto(B + '/documentos/reimprimir/factura'); await adm.waitForTimeout(400)
+    await adm.getByLabel('N° del documento').fill(number); await adm.getByRole('button', { name: 'Abrir' }).click(); await adm.waitForTimeout(600)
+    ok('factura with no Control N° is refused', (await adm.locator('main').innerText()).includes('Falta el número de control.'))
+    await adm.goto(B + '/documentos/control'); await adm.waitForTimeout(400)
+    await adm.getByLabel('Control N°').first().fill('C-E2E-' + Date.now()); await adm.getByRole('button', { name: 'Asignar' }).first().click()
+    const t = await toast(adm); ok('Control N° assigned', /asignado/.test(t), t)
+    await adm.goto(B + '/documentos/reimprimir/factura'); await adm.waitForTimeout(400)
+    await adm.getByLabel('N° del documento').fill(number); await adm.getByRole('button', { name: 'Abrir' }).click(); await adm.waitForTimeout(600)
+    const paper = await adm.locator('article').innerText()
+    ok('reprint shows COPIA and keeps its number', paper.includes('COPIA') && paper.includes(number))
+    await adm.goto(B + '/documentos/nota/credito'); await adm.waitForTimeout(400)
+    await adm.getByLabel('N° de orden o factura').fill(number); await adm.getByRole('button', { name: 'Buscar' }).click(); await adm.waitForTimeout(500)
+    await adm.getByLabel('Descripción').fill('Ajuste de prueba'); await adm.getByLabel('Monto USD').fill('1,00'); await adm.getByRole('button', { name: 'Emitir nota' }).click(); await adm.waitForTimeout(600)
+    const pass = adm.locator('dialog[open] input[type=password]')
+    if (await pass.count()) { await pass.fill(pw); await pass.press('Enter') }
+    const t2 = await toast(adm); ok('credit note issued with its own number', /Nota NC-/.test(t2), t2)
+    await adm.goto(B + '/p/' + 'reversar-relacion'); await adm.waitForTimeout(300)
+    ok('Reversar relación is blocked for Administración too', (await adm.locator('main').innerText()).includes('BLOQUEADO'))
+    await rec.goto(B + '/documentos/nota/credito'); await rec.waitForTimeout(300)
+    ok('Recepción cannot reach notes', /bloqueado/i.test(await rec.locator('main').innerText()))
+  })
   await browser.close()
   return { results: out, errors: [...new Set(errors)] }
 }

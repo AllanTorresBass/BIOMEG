@@ -2,6 +2,7 @@ import 'server-only'
 
 import type { DraftIdInput } from '@/types/orders/orders.schemas'
 import { revalidatePath } from 'next/cache'
+import { addNote } from '@/lib/db/memory/fiscal-store'
 import { getStub } from '@/lib/db/memory/order-index'
 import { getOrder, removeSavedLine, voidSavedOrder } from '@/lib/db/memory/order-store'
 import { createQuote } from '@/lib/db/memory/quote-store'
@@ -71,6 +72,21 @@ export async function voidOrder(input: VoidOrderInput): Promise<OrderActionResul
   )
   refresh(order.id)
   const credit = voided.voided?.creditNote
+  if (credit) {
+    addNote({
+      kind: 'CREDITO',
+      number: credit,
+      orderId: order.id,
+      invoiceNumber: order.invoiceNumber,
+      clientName: order.clientName,
+      lines: [{ description: text.voidNoteLine, amount: order.totals.abono }],
+      total: order.totals.abono,
+      rateBs: order.rateBs,
+      at: new Date().toISOString(),
+      byName: opened.context.account.displayName,
+    })
+    await record(opened, 'note.issue', allowed.rowId, { before: null, after: { number: credit, kind: 'CREDITO', total: order.totals.abono } }, motivo, target)
+  }
   return { ok: true, message: credit ? text.voidDoneCredit(order.number, credit) : text.voidDone(order.number), need: null }
 }
 

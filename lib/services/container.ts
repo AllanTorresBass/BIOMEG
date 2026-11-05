@@ -1,5 +1,6 @@
 import { ClientService } from '@/lib/services/clients/ClientService'
 import { DeliveryService } from '@/lib/services/delivery/DeliveryService'
+import { FiscalService } from '@/lib/services/fiscal/FiscalService'
 import { OrderService } from '@/lib/services/orders/OrderService'
 import { PaymentService } from '@/lib/services/payments/PaymentService'
 import { PortalService } from '@/lib/services/portal/PortalService'
@@ -18,6 +19,9 @@ export const container: ServiceContainer = {
   },
   get deliveryService() {
     return (created.deliveryService ??= new DeliveryService())
+  },
+  get fiscalService() {
+    return (created.fiscalService ??= new FiscalService())
   },
   get orderService() {
     return (created.orderService ??= new OrderService())
