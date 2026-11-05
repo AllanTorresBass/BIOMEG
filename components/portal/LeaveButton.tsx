@@ -2,10 +2,11 @@
 
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
-import { leavePortal } from '@/app/actions/portal'
+import { usePortalCommands } from '@/hooks/use-portal'
 import { strings } from '@/lib/strings'
 
 export function LeaveButton() {
+  const { leavePortal } = usePortalCommands()
   const router = useRouter()
   const [pending, start] = useTransition()
   return (

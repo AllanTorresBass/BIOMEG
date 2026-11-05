@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { addLine, cancelDraft, goToStep, removeLine, saveBilling } from '@/app/actions/order-draft'
+import { useOrderCommands } from '@/hooks/use-orders'
 import { PatientHeader } from '@/components/orders/PatientHeader'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatusChip } from '@/components/shared/StatusChip'
@@ -22,6 +22,7 @@ interface Question {
 const FIELD = 'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3'
 
 export function ExamsStep({ draftId, patient, costType, billing, catalog, lines, totals, rateMissing }: ExamsStepProps) {
+  const { saveBilling, addLine, removeLine, goToStep, cancelDraft } = useOrderCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')

@@ -2,8 +2,7 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { ClientCard } from '@/components/clients/ClientCard'
 import { ClientLifecycle } from '@/components/clients/ClientLifecycle'
-import { ClientList } from '@/components/clients/ClientList'
-import { ClientSearch } from '@/components/clients/ClientSearch'
+import { ClientBrowser } from '@/components/clients/ClientBrowser'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { decide } from '@/lib/auth/decide'
 import {
@@ -79,8 +78,6 @@ const NEW_CLIENT: ClientCardData = {
 
 export default async function ClientsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams
-  const query = one(params.q)
-  const wantsInactive = one(params.inactivos) === '1'
   const selectedId = one(params.id)
   const wantsNew = one(params.nuevo) === '1'
   const justSaved = one(params.saved) === '1'
@@ -96,15 +93,9 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
   // Worklists arrive in a later step, so no client is on one yet.
   const canRead = decide({ session, command: 'client.read', facts: { on_worklist: false } }).allowed
 
-  const includeInactive = canIncludeInactive && wantsInactive
-  const rows = canRead ? searchClients({ text: query, includeInactive }) : []
+  const rows = canRead ? searchClients({ text: '', includeInactive: false }) : []
   const selected = selectedId && canRead ? getClient(selectedId) : null
   const visibleSelected = selected ?? null
-
-  const returnParams = new URLSearchParams()
-  if (query) returnParams.set('q', query)
-  if (includeInactive) returnParams.set('inactivos', '1')
-  const returnQuery = returnParams.size > 0 ? `&${returnParams.toString()}` : ''
 
   const card = visibleSelected ? toCardData(visibleSelected) : wantsNew && canCreate ? NEW_CLIENT : null
 
@@ -154,14 +145,11 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
         ) : null}
       </div>
 
-      <ClientSearch query={query} includeInactive={includeInactive} canIncludeInactive={canIncludeInactive} />
-
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <ClientList
-          rows={rows.map(summarize)}
+        <ClientBrowser
+          initialRows={rows.map(summarize)}
           selectedId={visibleSelected?.id ?? null}
-          query={query}
-          includeInactive={includeInactive}
+          canIncludeInactive={canIncludeInactive}
         />
         {card ? (
           <div className="flex flex-col gap-4">
@@ -170,7 +158,6 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
               data={card}
               canEdit={card.id ? canEdit : canCreate}
               justSaved={justSaved}
-              returnQuery={returnQuery}
             />
             {lifecycle ? <ClientLifecycle key={`lifecycle-${lifecycle.clientId}`} {...lifecycle} /> : null}
           </div>

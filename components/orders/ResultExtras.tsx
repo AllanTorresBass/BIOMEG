@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { addBacteriologyNote, simulateAnalyzer } from '@/app/actions/results'
+import { useResultCommands } from '@/hooks/use-results'
 import { strings } from '@/lib/strings'
 import type { Discrepancy } from '@/types/orders/result.types'
 
@@ -25,6 +25,7 @@ export function ResultExtras({
   isBioanalyst: boolean
   canEnter: boolean
 }) {
+  const { simulateAnalyzer, addBacteriologyNote } = useResultCommands()
   const [lineId, setLineId] = useState(lines[0]?.id ?? '')
   const [value, setValue] = useState('')
   const [status, setStatus] = useState('')

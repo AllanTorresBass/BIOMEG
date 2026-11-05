@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { CEDULA_TYPES, LAB_TIME_ZONE, normalizeName } from '@/lib/utils/format'
 import type { CedulaType } from '@/lib/utils/format'
 import type { ClientFormInput, ClientRefusal, Sex, ValidClientInput } from '@/types/domain/client.types'

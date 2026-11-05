@@ -2,8 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { cancelDraft, goToStep } from '@/app/actions/order-draft'
-import { savePersonal } from '@/app/actions/order-save'
+import { useOrderCommands } from '@/hooks/use-orders'
 import { PatientHeader } from '@/components/orders/PatientHeader'
 import { strings } from '@/lib/strings'
 import type { PersonalStepProps } from '@/types/orders/screen.types'
@@ -11,6 +10,7 @@ import type { PersonalStepProps } from '@/types/orders/screen.types'
 const text = strings.pendingReview.orders
 
 export function PersonalStep({ draftId, patient, physicianId, physicians }: PersonalStepProps) {
+  const { goToStep, cancelDraft, savePersonal } = useOrderCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')

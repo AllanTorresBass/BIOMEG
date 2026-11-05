@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { OrderStub } from '@/types/domain/order-stub.types'
 import type { SavedOrder } from '@/types/orders/order.types'
 

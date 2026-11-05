@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { lockCurrentSession } from '@/app/actions/session'
+import { useSessionCommands } from '@/hooks/use-session'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
 
@@ -13,6 +13,7 @@ const ACTIVITY_EVENTS = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as con
  * The page behind stays mounted, so nothing typed is lost. The server keeps its own clock.
  */
 export function IdleLock({ locked, idleMinutes }: { locked: boolean; idleMinutes: number }) {
+  const { lockCurrentSession } = useSessionCommands()
   const router = useRouter()
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -34,7 +35,7 @@ export function IdleLock({ locked, idleMinutes }: { locked: boolean; idleMinutes
       if (timer.current) clearTimeout(timer.current)
       for (const name of ACTIVITY_EVENTS) window.removeEventListener(name, restart)
     }
-  }, [locked, idleMinutes, router])
+  }, [lockCurrentSession, locked, idleMinutes, router])
 
   return (
     <StepUpDialog

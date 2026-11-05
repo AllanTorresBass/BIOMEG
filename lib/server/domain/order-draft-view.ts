@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { COST_TYPE_LABELS, PRICE_COLUMN_LABELS } from '@/lib/config/price-defaults'
 import { totalsOf } from '@/lib/domain/pricing'
 import { strings } from '@/lib/strings'

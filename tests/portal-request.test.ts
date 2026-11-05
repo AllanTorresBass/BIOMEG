@@ -6,7 +6,7 @@ vi.mock('next/headers', () => ({
   cookies: async () => ({ get: () => undefined, set: () => undefined, delete: () => undefined }),
 }))
 
-import { requestPortalCode } from '@/app/actions/portal'
+import { requestPortalCode } from '@/lib/server/commands/portal'
 import { listAudit, resetAuditForTests } from '@/lib/db/memory/audit-store'
 import { getClient } from '@/lib/db/memory/client-store'
 import { getStub } from '@/lib/db/memory/order-index'

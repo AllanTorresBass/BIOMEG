@@ -2,9 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useMemo, useRef, useState, useTransition } from 'react'
-import { cancelDraft, goToStep } from '@/app/actions/order-draft'
-import { generateQuote } from '@/app/actions/order-actions'
-import { savePayment, saveOrder } from '@/app/actions/order-save'
+import { useOrderCommands } from '@/hooks/use-orders'
 import { PatientHeader } from '@/components/orders/PatientHeader'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PAYMENT_METHODS } from '@/lib/config/payment-methods'
@@ -19,6 +17,7 @@ const text = strings.pendingReview.orders
 const FIELD = 'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3'
 
 export function PaymentStep(props: PaymentStepProps) {
+  const { goToStep, cancelDraft, savePayment, saveOrder, generateQuote } = useOrderCommands()
   const { draftId, patient, isEmpresa, convenios, rate, rateDate, ivaRate, igtfRate, linePrices, discountLimit } = props
   const router = useRouter()
   const [pending, startTransition] = useTransition()

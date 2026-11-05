@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useActionState, useEffect, useState, type ClipboardEvent } from 'react'
-import { saveClient } from '@/app/actions/clients'
+import { useClientCommands } from '@/hooks/use-clients'
 import { useUnsavedEdits } from '@/components/shell/UnsavedEditsContext'
 import { strings } from '@/lib/strings'
 import { CEDULA_TYPES, formatCedula, formatDate, parseCedulaPaste } from '@/lib/utils/format'
@@ -18,7 +18,6 @@ interface ClientCardProps {
   data: ClientCardData
   canEdit: boolean
   justSaved: boolean
-  returnQuery: string
 }
 
 type Values = Pick<
@@ -40,9 +39,10 @@ function pick(data: ClientCardData): Values {
   }
 }
 
-export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCardProps) {
+export function ClientCard({ data, canEdit, justSaved }: ClientCardProps) {
+  const { saveClientForm } = useClientCommands()
   const text = strings.pendingReview.clients
-  const [state, action, pending] = useActionState(saveClient, INITIAL)
+  const [state, action, pending] = useActionState(saveClientForm, INITIAL)
   const [values, setValues] = useState<Values>(() => pick(data))
   const { setDirty } = useUnsavedEdits()
 
@@ -282,7 +282,7 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
         <div role="alert" className="flex flex-col gap-2 rounded-[var(--radius-control)] bg-flag-blocked-bg p-3 text-flag-blocked">
           <p>{text.conflict(state.conflict.savedBy, state.conflict.savedAt)}</p>
           {data.id ? (
-            <Link href={`/clientes?id=${data.id}${returnQuery}`} className="font-semibold underline">
+            <Link href={`/clientes?id=${data.id}`} className="font-semibold underline">
               {text.reload}
             </Link>
           ) : null}

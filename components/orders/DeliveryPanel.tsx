@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { approveIncompleteSend, resendDelivery, sendDelivery } from '@/app/actions/delivery'
+import { useDeliveryCommands } from '@/hooks/use-delivery'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
@@ -27,6 +27,7 @@ interface Props {
 }
 
 export function DeliveryPanel({ orderId, view }: Props) {
+  const { approveIncompleteSend, sendDelivery, resendDelivery } = useDeliveryCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [confirming, setConfirming] = useState<DeliveryChannelView | null>(null)

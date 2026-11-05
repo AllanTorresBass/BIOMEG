@@ -234,6 +234,16 @@ export const strings = {
     updateFailed: 'No se pudo actualizar.',
   },
   pendingReview: {
+    api: {
+      failed: 'No se pudo completar la acción.',
+      fetchFailed: 'No se pudo actualizar.',
+      invalid: 'Los datos enviados no son válidos.',
+      rateLimited: 'Demasiadas solicitudes. Espere un momento e intente de nuevo.',
+      pageFailed: 'No se pudo mostrar esta pantalla.',
+      sessionEnded: 'La sesión terminó. Vuelva a entrar.',
+      retry: 'Intentar de nuevo',
+      loading: 'Cargando…',
+    },
     verification: {
       title: 'Verificación de informe',
       unavailable: 'No disponible',
@@ -557,6 +567,7 @@ export const strings = {
       billingAddress: 'Dirección',
     },
     clients: {
+      searching: 'Buscando…',
       search: 'Buscar por nombre o cédula',
       searchButton: 'Buscar',
       includeInactive: 'Incluir inactivos',

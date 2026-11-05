@@ -33,4 +33,5 @@ export type PasswordChangeResult = 'OK' | 'WRONG_CURRENT' | 'TOO_SHORT' | 'SAME'
 export interface FormState {
   error: string | null
   done?: boolean
+  redirectTo?: string
 }

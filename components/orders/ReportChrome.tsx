@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { generateReportPdf } from '@/app/actions/report'
+import { useDeliveryCommands } from '@/hooks/use-delivery'
 import { strings } from '@/lib/strings'
 import type { ReportMode, StoredReportInfo } from '@/types/orders/report.types'
 
@@ -24,6 +24,7 @@ interface Props {
 
 /** The controls beside the paper. They never print. */
 export function ReportChrome({ orderId, mode, lineId, stored, final, storedLabel }: Props) {
+  const { generateReportPdf } = useDeliveryCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)

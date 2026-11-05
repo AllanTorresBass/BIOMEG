@@ -1,3 +1,4 @@
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { notFound } from 'next/navigation'
 import { ResultExtras } from '@/components/orders/ResultExtras'
 import { ResultGrid } from '@/components/orders/ResultGrid'
@@ -96,7 +97,9 @@ export default async function ResultsPage({
         </button>
       </form>
 
+      <ErrorBoundary>
       <ResultGrid key={`${view.orderId}-${seccion ?? ''}`} view={view} />
+      </ErrorBoundary>
       <ResultExtras
         orderId={view.orderId}
         lines={demoSeed.resultLines.map((line) => ({ id: line.id, name: line.name }))}

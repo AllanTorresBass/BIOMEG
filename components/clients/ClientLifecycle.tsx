@@ -1,14 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import {
-  correctCedula,
-  deactivateClient,
-  deleteClient,
-  mergeClientRecords,
-  requestMerge,
-  undoMerge,
-} from '@/app/actions/client-lifecycle'
+import { useClientCommands } from '@/hooks/use-clients'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
@@ -50,6 +43,7 @@ export function ClientLifecycle({
   merges,
   requests,
 }: ClientLifecycleProps) {
+  const { deactivateClient, deleteClient, correctCedula, requestMerge, mergeClientRecords, undoMerge } = useClientCommands()
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
   const [confirming, setConfirming] = useState<Pending | null>(null)
   const [stepUp, setStepUp] = useState<Pending | null>(null)

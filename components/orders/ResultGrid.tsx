@@ -1,19 +1,10 @@
 'use client'
 
 import { Fragment, useState, useTransition } from 'react'
+import { useResultCommands } from '@/hooks/use-results'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
-import {
-  cancelCorrection,
-  openCorrection,
-  releaseCorrection,
-  releaseResults,
-  resolveIncoming,
-  rowHistory,
-  saveResult,
-  saveSectionNote,
-} from '@/app/actions/results'
 import { strings } from '@/lib/strings'
 import type { GridRow, GridSection, ResultGridView, ResultMark, RowHistoryEntry } from '@/types/orders/result.types'
 
@@ -68,6 +59,7 @@ function initialCells(sections: readonly GridSection[]): Record<string, CellStat
 }
 
 export function ResultGrid({ view }: { view: ResultGridView }) {
+  const { saveResult, resolveIncoming, releaseResults, rowHistory, openCorrection, cancelCorrection, releaseCorrection } = useResultCommands()
   const [cells, setCells] = useState(() => initialCells(view.sections))
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [notes, setNotes] = useState<Record<string, string>>(() =>
@@ -586,6 +578,7 @@ function NoteField({
   value: string
   onChange: (value: string) => void
 }) {
+  const { saveSectionNote } = useResultCommands()
   const [status, setStatus] = useState('')
   const [, startTransition] = useTransition()
   const id = `note-${section}`
