@@ -44,7 +44,6 @@ export async function runMoney(chromium, B, pw) {
     ok('order saved through the wizard', !!orderUrl, orderUrl)
   })
   await step('abono', async () => {
-    const id = orderUrl.split('/').pop()
     await rec.goto(B + orderUrl); await rec.waitForTimeout(500)
     await rec.getByRole('link', { name: /agregar abono/i }).click(); await rec.waitForURL(/pagos\/abono/)
     await rec.waitForTimeout(400)
