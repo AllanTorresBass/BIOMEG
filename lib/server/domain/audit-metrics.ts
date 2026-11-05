@@ -7,6 +7,8 @@ export interface DurationSummary {
 }
 
 export interface AuditMetrics {
+  /** ALLOWED order.open rows in range. Section 6.2 intake has no end event. */
+  intake: number
   timeToFirstResult: DurationSummary
   releaseWait: DurationSummary
   turnaround: DurationSummary
@@ -149,10 +151,29 @@ function selfEnteredReleases(grouped: Map<string, AuditRow[]>): number {
   return count
 }
 
+/**
+ * Resend lag from section 6.2: start at result.correct.release, require a later
+ * delivery.resend.task, then measure to the first delivery.* after that task.
+ */
+function resendLagValues(grouped: Map<string, AuditRow[]>): number[] {
+  const values: number[] = []
+  for (const list of grouped.values()) {
+    const start = list.find((row) => allowed(row, 'result.correct.release'))
+    if (!start) continue
+    const task = list.find((row) => allowed(row, 'delivery.resend.task') && row.sequence > start.sequence)
+    if (!task) continue
+    const delivery = list.find(
+      (row) => DELIVERY.has(row.what.event) && row.result.outcome === 'ALLOWED' && row.sequence > task.sequence,
+    )
+    if (delivery) values.push(elapsed(start, delivery))
+  }
+  return values
+}
+
 /** Views over the audit rows. Counts and durations only: no name, cédula, phone, or result. */
 export function auditMetrics(rows: readonly AuditRow[]): AuditMetrics {
   const grouped = byRecord(rows)
-  const resend = pair(grouped, 'delivery.resend.task', [...DELIVERY], 'first')
+  const resend = resendLagValues(grouped)
   const refusals = new Map<string, { role: string; command: string; count: number }>()
   for (const row of rows) {
     if (row.result.outcome !== 'REFUSED') continue
@@ -164,6 +185,7 @@ export function auditMetrics(rows: readonly AuditRow[]): AuditMetrics {
   }
 
   return {
+    intake: rows.filter((row) => allowed(row, 'order.open')).length,
     timeToFirstResult: summary(pair(grouped, 'order.open', 'result.enter', 'first')),
     releaseWait: summary(pair(grouped, 'result.enter', 'result.release', 'first')),
     turnaround: summary(pair(grouped, 'order.open', 'result.release', 'last')),

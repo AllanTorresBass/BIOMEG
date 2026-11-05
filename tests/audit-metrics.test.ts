@@ -64,6 +64,7 @@ describe('audit metrics', () => {
       }),
     ])
 
+    expect(metrics.intake).toBe(1)
     expect(metrics.timeToFirstResult).toEqual({ count: 1, medianMs: 60 * 60 * 1000 })
     expect(metrics.turnaround).toEqual({ count: 1, medianMs: 3 * 60 * 60 * 1000 })
     expect(metrics.releaseWait.count).toBe(1)
@@ -73,7 +74,33 @@ describe('audit metrics', () => {
     expect(JSON.stringify(metrics)).not.toContain('Recepción')
   })
 
-  it('counts a resend that takes longer than two days', () => {
+  it('counts a resend that takes longer than two days from correction release through the task', () => {
+    const metrics = auditMetrics([
+      row({
+        sequence: 1,
+        what: { command: 'result.correct.release', event: 'result.correct.release', recordType: 'order', recordId: 'o-1', state: null },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        when: { serverTime: '2026-11-01T10:00:00.000Z', timeZone: 'America/Caracas' },
+      }),
+      row({
+        sequence: 2,
+        what: { command: 'delivery.resend.task', event: 'delivery.resend.task', recordType: 'order', recordId: 'o-1', state: null },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        when: { serverTime: '2026-11-01T12:00:00.000Z', timeZone: 'America/Caracas' },
+      }),
+      row({
+        sequence: 3,
+        what: { command: 'delivery.email', event: 'delivery.email', recordType: 'order', recordId: 'o-1', state: null },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        when: { serverTime: '2026-11-04T12:00:00.000Z', timeZone: 'America/Caracas' },
+      }),
+    ])
+    expect(metrics.resendLag.count).toBe(1)
+    expect(metrics.resendLag.medianMs).toBeGreaterThan(RESEND_LAG_LIMIT_MS)
+    expect(metrics.resendLagOverTwoDays).toBe(1)
+  })
+
+  it('ignores a delivery that has no correction release before the resend task', () => {
     const metrics = auditMetrics([
       row({
         sequence: 1,
@@ -88,9 +115,8 @@ describe('audit metrics', () => {
         when: { serverTime: '2026-11-04T12:00:00.000Z', timeZone: 'America/Caracas' },
       }),
     ])
-    expect(metrics.resendLag.count).toBe(1)
-    expect(metrics.resendLag.medianMs).toBeGreaterThan(RESEND_LAG_LIMIT_MS)
-    expect(metrics.resendLagOverTwoDays).toBe(1)
+    expect(metrics.resendLag.count).toBe(0)
+    expect(metrics.resendLagOverTwoDays).toBe(0)
   })
 
   it('measures the admin queue, discounts, overrides, portal and step-up failures, self-entered releases, conflicts, and rate warnings', () => {

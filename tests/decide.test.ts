@@ -23,7 +23,7 @@ const STEP_UP_OK = { stepUpVerified: true }
 const CONFIRM_OK = { confirmVerified: true }
 
 describe('decide: required cases from V0-03', () => {
-  it('Auxiliar cannot release a result', () => {
+  it('Auxiliar cannot release a result (E-36)', () => {
     expect(run([AUX], 'result.release', { facts: { state: 'CARGADO' } }).reason).toBe('ROLE')
   })
 
@@ -39,7 +39,7 @@ describe('decide: required cases from V0-03', () => {
     expect(run([REC], 'client.merge', { facts: { both_complete_and_different: false } }).reason).toBe('ROLE')
   })
 
-  it('Administración cannot merge two complete, different cédulas', () => {
+  it('Administración cannot merge two complete, different cédulas (E-17)', () => {
     expect(run([ADM], 'client.merge', { facts: { both_complete_and_different: true }, gestures: STEP_UP_OK }).reason).toBe('STATE')
   })
 
@@ -146,7 +146,7 @@ describe('decide: required cases from V0-03', () => {
       expect(run([ADM], 'user.role.change', { facts: { grants_bioanalista: true }, gestures: STEP_UP_OK }).reason).toBe('STATE')
     })
 
-    it('refuses temporary cover that includes Bioanalista', () => {
+    it('refuses temporary cover that includes Bioanalista (E-08)', () => {
       const facts = { has_end_date: true, grants_bioanalista: true }
       expect(run([ADM], 'user.grant.temporary', { facts, gestures: { ...STEP_UP_OK, motivo: 'Vacaciones' } }).reason).toBe('STATE')
     })

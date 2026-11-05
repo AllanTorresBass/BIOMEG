@@ -186,7 +186,7 @@ describe('prices and switches', () => {
 })
 
 describe('users and Auditoría', () => {
-  it('refuses to disable the last administrator, then allows it once another exists', async () => {
+  it('refuses to disable the last administrator, then allows it once another exists (E-02)', async () => {
     expect((await disableUser({ userId: 'u-administracion' })).ok).toBe(false)
     const created = await createUser({ displayName: 'Admin Dos', roles: ['ADMINISTRACION'] })
     expect(created.ok).toBe(true)
@@ -199,7 +199,7 @@ describe('users and Auditoría', () => {
     expect((await disableUser({ userId: 'u-administracion' })).ok).toBe(true)
   })
 
-  it('masks clinical text for Administración and shows it to Bioanalista', async () => {
+  it('masks clinical text for Administración and shows it to Bioanalista (E-54)', async () => {
     await auditEvent({
       command: 'result.enter',
       outcome: 'ALLOWED',

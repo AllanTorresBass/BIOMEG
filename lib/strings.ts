@@ -922,6 +922,7 @@ export const strings = {
       statsNote: 'Totales sobre el registro de auditoría. Los grupos pequeños no se muestran.',
       statsSuppressed: (count: number) => `Grupos pequeños ocultos: ${count}.`,
       statsNone: 'Sin datos en este rango.',
+      statsIntake: 'Órdenes guardadas (ingreso)',
       statsTurnaround: 'Tiempo hasta liberar',
       statsFirstResult: 'Tiempo al primer resultado',
       statsRelease: 'Espera de liberación',

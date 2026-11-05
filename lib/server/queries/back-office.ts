@@ -186,6 +186,7 @@ export async function getStatistics(context: StaffContext, filters: AuditFilters
   return {
     kind: 'READY' as const,
     lines: [
+      [text.statsIntake, String(metrics.intake)],
       [text.statsTurnaround, minutes(metrics.turnaround.medianMs)],
       [text.statsFirstResult, minutes(metrics.timeToFirstResult.medianMs)],
       [text.statsRelease, minutes(metrics.releaseWait.medianMs)],

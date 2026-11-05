@@ -17,11 +17,23 @@ Cross-links: [build-plan Gate B](../build-plan.md#gate-b-before-phase-6), [v0 ca
 | Rounding rules for money on the invoice | Owner, accountant | **Unknown** (G2) | |
 | How Control N° is assigned | Owner, accountant | **Unknown** (G2) | |
 
+## Collection status
+
+| Party | Asked for | Status |
+|---|---|---|
+| Laboratory | Deployment model; whether a hosted database fits health data | **Waiting** — no answer recorded |
+| Venezuelan counsel | Hosted-database fitness; health data, retention, minors, portal credential | **Waiting** — no answer recorded |
+| Owner | IVA, IGTF, rounding, Control N° (with accountant) | **Waiting** — no answer recorded |
+| Accountant | IVA, IGTF, rounding, Control N° (with owner) | **Waiting** — no answer recorded |
+
+Do not fill the Answer column with a guess, a working value from the prototype, or a caption such as `0,00`. Stage 6 stays blocked while any row above is Waiting.
+
 ## How to close the gate
 
 1. Collect the answers from the people in the table. Write them into the Answer column with the date. Keep rates and hosting as they were given; do not normalize them into a guess.
-2. Spread settled facts into the right product pages (`product/05`, `product/09`, `product/10`, tax captions) with the correct evidence label.
-3. Only then open Stage 6 in catalog order: V0-25 schema, V0-26 Argon2id sessions, V0-27 memory-to-SQL and audit hash chain, V0-28 portal and file hardening.
+2. Update the Collection status table to **Received** with the same date.
+3. Spread settled facts into the right product pages (`product/05`, `product/09`, `product/10`, tax captions) with the correct evidence label.
+4. Only then open Stage 6 in catalog order: V0-25 schema, V0-26 Argon2id sessions, V0-27 memory-to-SQL and audit hash chain, V0-28 portal and file hardening.
 
 ## What stays blocked while this gate is closed
 

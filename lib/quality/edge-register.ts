@@ -4,8 +4,11 @@
  * Stage 6 ids (hash chain, Argon2id, hosted hardening) stay out until Gate B opens those tests.
  */
 export const EDGE_REGISTER = [
+  { id: 'E-02', testFile: 'tests/office.test.ts' },
+  { id: 'E-08', testFile: 'tests/decide.test.ts' },
   { id: 'E-13', testFile: 'tests/payments.test.ts' },
   { id: 'E-16', testFile: 'tests/clients.test.ts' },
+  { id: 'E-17', testFile: 'tests/decide.test.ts' },
   { id: 'E-18', testFile: 'tests/client-lifecycle.test.ts' },
   { id: 'E-27', testFile: 'tests/results.test.ts' },
   { id: 'E-28', testFile: 'tests/results.test.ts' },
@@ -14,6 +17,7 @@ export const EDGE_REGISTER = [
   { id: 'E-31', testFile: 'tests/correction.test.ts' },
   { id: 'E-33', testFile: 'tests/portal.test.ts' },
   { id: 'E-34', testFile: 'tests/correction.test.ts' },
+  { id: 'E-36', testFile: 'tests/decide.test.ts' },
   { id: 'E-37', testFile: 'tests/order-state.test.ts' },
   { id: 'E-38', testFile: 'tests/delivery.test.ts' },
   { id: 'E-40', testFile: 'tests/portal.test.ts' },
@@ -27,6 +31,7 @@ export const EDGE_REGISTER = [
   { id: 'E-50', testFile: 'tests/fiscal.test.ts' },
   { id: 'E-51', testFile: 'tests/office.test.ts' },
   { id: 'E-52', testFile: 'tests/office.test.ts' },
+  { id: 'E-54', testFile: 'tests/office.test.ts' },
   { id: 'E-62', testFile: 'tests/delivery.test.ts' },
   { id: 'E-63', testFile: 'tests/verification.test.ts' },
   { id: 'P-01', testFile: 'tests/clients.test.ts' },
