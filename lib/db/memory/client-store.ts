@@ -29,7 +29,7 @@ function buildState(): ClientState {
       cedulaDigits: seed.cedulaDigits,
       birthDate: seed.birthDate,
       sex: seed.sex,
-      phone: null,
+      phone: seed.phone ?? null,
       email: null,
       verified: seed.verified,
       active: seed.active,

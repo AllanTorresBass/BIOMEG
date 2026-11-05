@@ -22,7 +22,7 @@ export interface DeliveryChannelView {
   resend: boolean
 }
 
-export interface DeliveryRow extends Pick<DeliveryRecord, 'id' | 'channel' | 'recipient' | 'at' | 'mode' | 'status' | 'failure' | 'operatorName' | 'incomplete' | 'missing' | 'resend'> {}
+export type DeliveryRow = Pick<DeliveryRecord, 'id' | 'channel' | 'recipient' | 'at' | 'mode' | 'status' | 'failure' | 'operatorName' | 'incomplete' | 'missing' | 'resend'>
 
 export interface DeliveryView {
   /** LIBERADO sends freely. INCOMPLETO needs an approval first. */

@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
+import { createHash, createHmac, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
 import { PORTAL_SETTINGS } from '@/lib/config/portal'
 import type { PortalSession } from '@/types/portal/portal.types'
 
@@ -23,6 +23,8 @@ interface PortalState {
   challenges: Map<string, Challenge>
   sessions: Map<string, PortalSession>
   failures: Map<string, Failure>
+  /** Used only when PORTAL_HASH_SECRET is unset. Never a value written in the code. */
+  fallbackSecret: string
 }
 
 const globalStore = globalThis as typeof globalThis & { __biomegPortal?: PortalState }
@@ -30,15 +32,24 @@ const state: PortalState = (globalStore.__biomegPortal ??= {
   challenges: new Map(),
   sessions: new Map(),
   failures: new Map(),
+  fallbackSecret: randomBytes(32).toString('hex'),
 })
 
 function digest(code: string, salt: string): string {
   return createHash('sha256').update(`${salt}:${code}`).digest('hex')
 }
 
-/** Failures are counted by the typed cédula, found or not, so a count never reveals whether it exists. */
+function keyedHash(text: string): string {
+  return createHmac('sha256', process.env.PORTAL_HASH_SECRET || state.fallbackSecret).update(text).digest('hex')
+}
+
+/** Failures are counted by a keyed hash of the typed cédula, found or not, so a count reveals nothing and holds no digits. */
 export function failureKey(type: string, digits: string): string {
-  return `${type.trim().toUpperCase()}-${digits.replace(/\D/g, '')}`
+  return keyedHash(`biomeg:${type.trim().toUpperCase()}-${digits.replace(/\D/g, '')}`)
+}
+
+export function addressKey(address: string): string {
+  return keyedHash(`address:${address}`)
 }
 
 export function isPaused(key: string, now: number = Date.now()): boolean {
@@ -46,14 +57,14 @@ export function isPaused(key: string, now: number = Date.now()): boolean {
   return record !== undefined && record.pausedUntil > now
 }
 
-export function registerFailure(key: string, now: number = Date.now()): void {
+export function registerFailure(key: string, now: number = Date.now(), limit: number = PORTAL_SETTINGS.maxFailedAttempts): void {
   const record = state.failures.get(key) ?? { count: 0, pausedUntil: 0 }
   if (record.pausedUntil !== 0 && record.pausedUntil <= now) {
     record.count = 0
     record.pausedUntil = 0
   }
   record.count += 1
-  if (record.count >= PORTAL_SETTINGS.maxFailedAttempts) {
+  if (record.count >= limit) {
     record.pausedUntil = now + PORTAL_SETTINGS.pauseMinutes * 60_000
   }
   state.failures.set(key, record)

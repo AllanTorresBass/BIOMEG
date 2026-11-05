@@ -8,3 +8,16 @@ export function getShellSettings(): ShellSettings {
   const { rateBs, rateDate, qrEnabled, saturdayPriceEnabled } = demoSeed.settings
   return { rateBs: rateBs === '' ? null : rateBs, rateDate, qrEnabled, saturdayPriceEnabled }
 }
+
+/** R-149 is a deployment setting on purpose, so nobody can switch it on from a screen. */
+export function isValueCheckOn(): boolean {
+  return process.env.BIOMEG_VALUE_CHECK === 'on'
+}
+
+/**
+ * The seeded accounts share a password that is in a public repository, and the role switcher needs none.
+ * So a built app refuses both unless a deployment opts in. next.config.mjs fails a production build that does.
+ */
+export function isDemoAccessOn(): boolean {
+  return process.env.NODE_ENV !== 'production' || process.env.BIOMEG_DEMO === 'on'
+}

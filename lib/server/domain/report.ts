@@ -1,10 +1,11 @@
 import 'server-only'
 
 import { getClient } from '@/lib/db/memory/client-store'
-import { vigenteIssueOf } from '@/lib/db/memory/issue-store'
+import { printSecretsOf, vigenteIssueOf } from '@/lib/db/memory/issue-store'
 import { findReport } from '@/lib/db/memory/report-store'
 import { reportDateOf, resultsOf, sectionRelease, sectionsWithResults } from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
+import { isValueCheckOn } from '@/lib/server/settings'
 import { strings } from '@/lib/strings'
 import { computeAge, formatAge, formatCedula, formatDate, LAB_TIME_ZONE } from '@/lib/utils/format'
 import type { OrderStub } from '@/types/domain/order-stub.types'
@@ -31,11 +32,6 @@ export function reportKindOf(stub: Pick<OrderStub, 'hasResult' | 'released' | 'c
 
 function todayInLab(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: LAB_TIME_ZONE }).format(new Date())
-}
-
-function consultCodeOf(token: string): string {
-  const code = token.replace(/[^A-Za-z0-9]/g, '').slice(0, 8).toUpperCase()
-  return `${code.slice(0, 4)}-${code.slice(4)}`
 }
 
 function rowsOf(stub: OrderStub, kind: ReportKind): ReportRow[] {
@@ -116,7 +112,8 @@ export function buildReport({ stub, mode, lineId, origin }: ReportRequest): Repo
   const client = getClient(stub.clientId)
   const sample = stub.sampleDate ?? stub.createdAt.slice(0, 10)
   const reportDate = reportDateOf(stub.id)
-  const showQr = settings.qrEnabled && !draft && issue !== null && origin !== null
+  const secrets = issue ? printSecretsOf(issue.id) : null
+  const showQr = settings.qrEnabled && !draft && secrets !== null && origin !== null
 
   const document: ReportDocument = {
     orderId: stub.id,
@@ -142,8 +139,8 @@ export function buildReport({ stub, mode, lineId, origin }: ReportRequest): Repo
     },
     sections,
     processedBy: processedByOf(stub, sections),
-    verifyUrl: showQr && issue ? `${origin}/v/${issue.token}` : null,
-    consultCode: showQr && settings.valueCheckEnabled && issue ? consultCodeOf(issue.token) : null,
+    verifyUrl: showQr ? `${origin}/verificar/${secrets.token}` : null,
+    consultCode: showQr && isValueCheckOn() ? secrets.consultCode : null,
     issueId: issue?.id ?? null,
   }
   return { kind: 'READY', document, stored: storedInfo }

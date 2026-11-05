@@ -16,7 +16,10 @@ export interface IssuedLine {
 export interface IssueRecord {
   id: string
   orderId: string
-  token: string
+  /** Hash of the QR token. The token itself is only ever printed. */
+  tokenHash: string
+  /** Hash of Código de consulta, salted with the issue id. Never derived from the token. */
+  consultHash: string
   status: IssueStatus
   createdAt: string
   replacedAt: string | null

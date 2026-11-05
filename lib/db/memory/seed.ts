@@ -60,7 +60,7 @@ export const demoSeed: DemoSeed = {
     { id: 'u-administracion', displayName: 'Administración Demo', role: 'ADMINISTRACION' },
   ],
   clients: [
-    { id: 'c-1', fullName: 'Paciente Demo Uno', cedulaType: 'V', cedulaDigits: '12000001', birthDate: '1985-03-14', sex: 'F', verified: true, active: true, deletedAt: null, version: 1 },
+    { id: 'c-1', phone: '04140000001', fullName: 'Paciente Demo Uno', cedulaType: 'V', cedulaDigits: '12000001', birthDate: '1985-03-14', sex: 'F', verified: true, active: true, deletedAt: null, version: 1 },
     { id: 'c-2', fullName: 'Paciente Demo Dos', cedulaType: 'V', cedulaDigits: '12000002', birthDate: '1990-11-02', sex: 'M', verified: false, active: true, deletedAt: null, version: 1 },
     { id: 'c-3', fullName: 'Paciente Demo Tres', cedulaType: 'E', cedulaDigits: '82000003', birthDate: '2025-02-20', sex: 'F', verified: true, active: true, deletedAt: null, version: 1 },
     { id: 'c-4', fullName: 'Paciente Demo Cuatro', cedulaType: 'V', cedulaDigits: '12000004', birthDate: '1962-07-30', sex: 'M', verified: true, active: false, deletedAt: null, version: 2 },
@@ -136,7 +136,6 @@ export const demoSeed: DemoSeed = {
     discountLimit: 0,
     ivaRate: null,
     igtfRate: null,
-    valueCheckEnabled: false,
     portalCodeWorks: false,
   },
 }

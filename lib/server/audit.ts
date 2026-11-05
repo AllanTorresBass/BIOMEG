@@ -25,7 +25,7 @@ export interface AuditEventInput {
   change?: { before: unknown; after: unknown; field?: string } | null
 }
 
-async function requestAddress(): Promise<string | null> {
+export async function requestAddress(): Promise<string | null> {
   try {
     const list = await headers()
     return list.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
