@@ -54,6 +54,7 @@ export async function gate(
     session: toDecisionSession(context),
     command,
     facts,
+    ...(presented.ownerUserId ? { record: { ownerUserId: presented.ownerUserId } } : {}),
     gestures: {
       confirmVerified: presented.confirmed === true,
       stepUpVerified: isStepUpFresh(context.session),

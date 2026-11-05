@@ -1,6 +1,7 @@
 import { ClientService } from '@/lib/services/clients/ClientService'
 import { DeliveryService } from '@/lib/services/delivery/DeliveryService'
 import { OrderService } from '@/lib/services/orders/OrderService'
+import { PaymentService } from '@/lib/services/payments/PaymentService'
 import { PortalService } from '@/lib/services/portal/PortalService'
 import { ResultService } from '@/lib/services/results/ResultService'
 import { SessionService } from '@/lib/services/session/SessionService'
@@ -20,6 +21,9 @@ export const container: ServiceContainer = {
   },
   get orderService() {
     return (created.orderService ??= new OrderService())
+  },
+  get paymentService() {
+    return (created.paymentService ??= new PaymentService())
   },
   get portalService() {
     return (created.portalService ??= new PortalService())

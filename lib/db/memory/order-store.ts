@@ -101,3 +101,13 @@ export function removeSavedLine(id: string, lineId: string): RemoveLineOutcome {
   updateStub(id, { examIds: lines.map((candidate) => candidate.examId) })
   return { ok: true, order: next, removedName: line.examName }
 }
+
+export function findOrderByNumber(number: string): SavedOrder | null {
+  return [...state.orders.values()].find((order) => order.number === number || order.invoiceNumber === number) ?? null
+}
+
+/** An abono or a reversal changed the money. Lines, numbers, and the saved rate stay as they were. */
+export function setOrderPayments(id: string, payments: SavedOrder['payments'], totals: SavedOrder['totals']): void {
+  const order = state.orders.get(id)
+  if (order) state.orders.set(id, { ...order, payments, totals, version: order.version + 1 })
+}

@@ -64,6 +64,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         lines={order.lines.map((line) => ({ id: line.id, name: line.examName, priceUsd: line.priceUsd }))}
       />
 
+      {order.state === 'ANULADA' ? null : (
+        <Link href={`/pagos/abono?o=${encodeURIComponent(order.id)}`} className="w-fit font-semibold underline">
+          {strings.pendingReview.payments.addAbono}
+        </Link>
+      )}
       <Link href="/ordenes/nueva" className="w-fit font-semibold underline">
         {text.newOrder}
       </Link>

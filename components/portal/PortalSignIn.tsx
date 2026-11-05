@@ -35,18 +35,26 @@ export function PortalSignIn() {
 
   async function askForCode(values: PortalCodeRequestInput) {
     setError(null)
-    const result = await requestPortalCode(values)
-    if (result.kind === 'PAUSED') return setError(text.paused)
-    setDemoCode(result.demoCode)
-    setStep('code')
+    try {
+      const result = await requestPortalCode(values)
+      if (result.kind === 'PAUSED') return setError(text.paused)
+      setDemoCode(result.demoCode)
+      setStep('code')
+    } catch {
+      setError(text.paused)
+    }
   }
 
   async function submitCode({ code }: PortalCodeCheckInput) {
     setError(null)
-    const result = await verifyPortalCode(code)
-    if (result.kind === 'OK') return router.push('/portal')
-    setError(result.kind === 'WRONG' ? text.wrongCode : result.kind === 'LOCKED' ? text.lockedCode : text.expiredCode)
-    if (result.kind !== 'WRONG') setStep('data')
+    try {
+      const result = await verifyPortalCode(code)
+      if (result.kind === 'OK') return router.push('/portal')
+      setError(result.kind === 'WRONG' ? text.wrongCode : result.kind === 'LOCKED' ? text.lockedCode : text.expiredCode)
+      if (result.kind !== 'WRONG') setStep('data')
+    } catch {
+      setError(text.paused)
+    }
   }
 
   const message = error ? (

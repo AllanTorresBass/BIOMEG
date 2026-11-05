@@ -70,6 +70,15 @@ describe('withCommand', () => {
     expect(JSON.stringify(await response.json())).not.toContain('12345678')
   })
 
+  it('keeps a separate count per limit, so staff traffic never locks out the portal', async () => {
+    const staff = withCommand(schema, async () => ({ ok: true }), { perMinute: 2, ...open })
+    await staff(post({ name: 'a' }))
+    await staff(post({ name: 'a' }))
+    await staff(post({ name: 'a' }))
+    const portal = withCommand(schema, async () => ({ ok: true }), { perMinute: 5, ...open })
+    expect((await portal(post({ name: 'a' }))).status).toBe(200)
+  })
+
   it('answers 401 with no staff session, before running the command', async () => {
     const run = vi.fn(async () => ({ ok: true }))
     const response = await withCommand(schema, run)(post({ name: 'a' }))

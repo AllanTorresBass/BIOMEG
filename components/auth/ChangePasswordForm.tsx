@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { useSessionCommands } from '@/hooks/use-session'
 import { strings } from '@/lib/strings'
+import { errorMessage } from '@/lib/utils/errors'
 import { changePasswordSchema, type ChangePasswordInput } from '@/types/session/session.schemas'
 import type { FormState } from '@/types/session/session.types'
 
@@ -20,9 +21,13 @@ export function ChangePasswordForm() {
   })
 
   async function submit(values: ChangePasswordInput) {
-    const result = await changePassword(values)
-    setState(result)
-    if (result.done) form.reset()
+    try {
+      const result = await changePassword(values)
+      setState(result)
+      if (result.done) form.reset()
+    } catch (failure: unknown) {
+      setState({ error: errorMessage(failure, strings.pendingReview.api.failed) })
+    }
   }
 
   return (

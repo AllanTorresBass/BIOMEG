@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createOrder, getOrder, orderForKey } from '@/lib/db/memory/order-store'
+import { addEntry } from '@/lib/db/memory/payment-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { PAYMENT_METHOD_IDS } from '@/lib/config/payment-methods'
 import { activeClient, done, fail, gate, gated, isResult, open, record, recordRefusal, refresh } from '@/lib/server/draft-gate'
@@ -231,6 +232,18 @@ export async function saveOrder(input: SaveInput): Promise<SaveResult> {
       const paymentAllowed = await gate(opened, 'payment.record', {}, {}, target)
       if (!gated(paymentAllowed)) {
         for (const payment of payments) {
+          addEntry({
+            ...payment,
+            orderId: order.id,
+            orderNumber: order.number,
+            invoiceNumber: order.invoiceNumber,
+            at: order.savedAt,
+            byId: context.account.id,
+            byName: context.account.displayName,
+            workstation: context.session.workstation,
+            reversesId: null,
+            motivo: null,
+          })
           await record(opened, 'payment.record', paymentAllowed.rowId, { before: null, after: payment }, undefined, target)
         }
       }

@@ -9,6 +9,8 @@ export interface Opened {
 export interface Presented {
   confirmed?: boolean
   motivo?: string
+  /** Who owns the record, for rows that depend on ownership. */
+  ownerUserId?: string
 }
 
 export interface Target {

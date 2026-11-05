@@ -36,7 +36,8 @@ async function needsSession(options: EndpointOptions): Promise<NextResponse | nu
 }
 
 async function withinLimit(perMinute: number): Promise<boolean> {
-  return takeRequestToken(`api:${(await requestAddress()) ?? 'local'}`, perMinute)
+  // One counter per limit, so a busy desk on the laboratory's address can't lock patients out of the portal.
+  return takeRequestToken(`api:${perMinute}:${(await requestAddress()) ?? 'local'}`, perMinute)
 }
 
 /** A refused command keeps its result in the error, with 428 when the screen must collect a gesture first. */

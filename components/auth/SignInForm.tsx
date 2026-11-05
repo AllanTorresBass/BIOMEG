@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { useSessionCommands } from '@/hooks/use-session'
 import { strings } from '@/lib/strings'
+import { errorMessage } from '@/lib/utils/errors'
 import { signInSchema, type SignInInput } from '@/types/session/session.schemas'
 
 const FIELD = 'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3'
@@ -20,8 +21,12 @@ export function SignInForm() {
 
   async function submit(values: SignInInput) {
     setError(null)
-    const result = await signIn(values)
-    if (result.error) setError(result.error)
+    try {
+      const result = await signIn(values)
+      if (result.error) setError(result.error)
+    } catch (failure: unknown) {
+      setError(errorMessage(failure, strings.pendingReview.api.failed))
+    }
   }
 
   return (
