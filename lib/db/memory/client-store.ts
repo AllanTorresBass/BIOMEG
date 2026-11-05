@@ -4,19 +4,15 @@ import { randomUUID } from 'node:crypto'
 import { moveOrders, restoreOrders, syncIdentity } from '@/lib/db/memory/order-index'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { normalizeName } from '@/lib/utils/format'
-import type { CedulaType } from '@/lib/utils/format'
-import type { MovedOrder } from '@/types/domain/order-stub.types'
+import type { CedulaType } from '@/types/lib/format.types'
 import { nameSimilarity, SIMILAR_NAME_THRESHOLD } from '@/lib/utils/similarity'
+import type { ActiveResult, Actor, ClientQuery, ClientState, CorrectResult, LifecycleState, MergeRecord, MergeRequest, MergeResult, SaveContext, UnmergeResult, UpdateResult } from '@/types/stores/client-store.types'
 import type {
   ClientRecord,
   ClientSummary,
   ConsentChannel,
   ValidClientInput,
 } from '@/types/domain/client.types'
-
-interface ClientState {
-  clients: Map<string, ClientRecord>
-}
 
 function buildState(): ClientState {
   const clients = new Map<string, ClientRecord>()
@@ -65,11 +61,6 @@ export function getClient(id: string): ClientRecord | null {
   return record && record.deletedAt === null ? record : null
 }
 
-export interface ClientQuery {
-  text: string
-  includeInactive: boolean
-}
-
 /** Matches the name key, or the cédula digits typed with or without dots. Soft-deleted clients never appear. */
 export function searchClients({ text, includeInactive }: ClientQuery): ClientRecord[] {
   const typed = text.trim()
@@ -104,14 +95,6 @@ export function findSimilar(nameKey: string, excludeId: string | null): ClientRe
   return found
 }
 
-interface SaveContext {
-  userName: string
-  userId: string
-  now: string
-  consents: ConsentChannel[]
-  confirmedSimilarIds: string[]
-}
-
 function applyConsents(record: ClientRecord, wanted: ConsentChannel[], userId: string, now: string): void {
   for (const channel of ['WHATSAPP', 'EMAIL'] as const) {
     const current = record.consents.find((entry) => entry.channel === channel && entry.withdrawnAt === null)
@@ -143,11 +126,6 @@ export function insertClient(value: ValidClientInput, context: SaveContext): Cli
   return record
 }
 
-export type UpdateResult =
-  | { ok: true; before: ClientRecord; after: ClientRecord }
-  | { ok: false; reason: 'NOT_FOUND' }
-  | { ok: false; reason: 'CONFLICT'; current: ClientRecord }
-
 /** Saves only when the caller still holds the current version. Two savers cannot overwrite each other. */
 export function updateClient(
   id: string,
@@ -172,37 +150,6 @@ export function updateClient(
   return { ok: true, before, after: structuredClone(current) }
 }
 
-export interface Actor {
-  userId: string
-  userName: string
-  now: string
-}
-
-interface LifecycleState {
-  merges: MergeRecord[]
-  requests: MergeRequest[]
-}
-
-export interface MergeRecord {
-  id: string
-  survivorId: string
-  sourceId: string
-  survivorName: string
-  sourceName: string
-  sourceWasActive: boolean
-  movedOrders: MovedOrder[]
-  mergedAt: string
-  mergedBy: string
-  undoneAt: string | null
-}
-
-export interface MergeRequest {
-  clientId: string
-  note: string
-  requestedBy: string
-  requestedAt: string
-}
-
 const lifecycleStore = globalThis as typeof globalThis & { __biomegClientLifecycle?: LifecycleState }
 const lifecycle: LifecycleState = (lifecycleStore.__biomegClientLifecycle ??= { merges: [], requests: [] })
 
@@ -211,10 +158,6 @@ function touch(record: ClientRecord, actor: Actor): void {
   record.lastSavedBy = actor.userName
   record.lastSavedAt = actor.now
 }
-
-export type ActiveResult =
-  | { ok: true; changed: boolean; before: ClientRecord; after: ClientRecord }
-  | { ok: false; reason: 'NOT_FOUND' }
 
 /** Running it twice changes nothing the second time. */
 export function setClientActive(id: string, active: boolean, actor: Actor): ActiveResult {
@@ -238,10 +181,6 @@ export function softDeleteClient(id: string, actor: Actor): ActiveResult {
   return { ok: true, changed: true, before, after: structuredClone(record) }
 }
 
-export type CorrectResult =
-  | { ok: true; before: ClientRecord; after: ClientRecord; ordersUpdated: string[] }
-  | { ok: false; reason: 'NOT_FOUND' | 'CEDULA_TAKEN' }
-
 export function correctClientCedula(id: string, type: CedulaType, digits: string, actor: Actor): CorrectResult {
   const record = getClient(id)
   if (!record) return { ok: false, reason: 'NOT_FOUND' }
@@ -254,10 +193,6 @@ export function correctClientCedula(id: string, type: CedulaType, digits: string
   const ordersUpdated = syncIdentity(id, { clientName: record.fullName, cedulaType: type, cedulaDigits: digits })
   return { ok: true, before, after: structuredClone(record), ordersUpdated }
 }
-
-export type MergeResult =
-  | { ok: true; merge: MergeRecord; survivorBefore: ClientRecord }
-  | { ok: false; reason: 'NOT_FOUND' | 'SELF' }
 
 /** Orders move to the survivor with its name and cédula. The source is soft-deleted in the same step. */
 export function mergeClients(sourceId: string, survivorId: string, actor: Actor): MergeResult {
@@ -292,10 +227,6 @@ export function mergeClients(sourceId: string, survivorId: string, actor: Actor)
   lifecycle.requests = lifecycle.requests.filter((request) => request.clientId !== source.id && request.clientId !== survivor.id)
   return { ok: true, merge, survivorBefore }
 }
-
-export type UnmergeResult =
-  | { ok: true; merge: MergeRecord; restoredOrders: number }
-  | { ok: false; reason: 'NOT_FOUND' | 'ALREADY_UNDONE' | 'CEDULA_TAKEN' }
 
 /** Restores the orders from the stored map and brings the absorbed client back. */
 export function unmergeClients(mergeId: string, actor: Actor): UnmergeResult {

@@ -5,8 +5,7 @@ import { guardRoute } from '@/lib/server/guard'
 import { requireReadyStaff } from '@/lib/server/session/require'
 import { isWorklistDate, loadWorklist } from '@/lib/server/worklist-load'
 import { strings } from '@/lib/strings'
-
-type SearchParams = Promise<Record<string, string | string[] | undefined>>
+import type { SearchParams } from '@/types/app/page.types'
 
 function one(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '')

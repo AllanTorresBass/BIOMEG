@@ -1,30 +1,23 @@
 'use client'
 
 import Link from 'next/link'
-import { useActionState, useEffect, useState, type ClipboardEvent } from 'react'
-import { saveClient } from '@/app/actions/clients'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState, useTransition, type ClipboardEvent } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { useClientCommands } from '@/hooks/use-clients'
 import { useUnsavedEdits } from '@/components/shell/UnsavedEditsContext'
 import { strings } from '@/lib/strings'
 import { CEDULA_TYPES, formatCedula, formatDate, parseCedulaPaste } from '@/lib/utils/format'
+import { clientCardSchema } from '@/types/clients/clients.schemas'
 import type { ClientCardData } from '@/types/clients/card.types'
 import type { ClientFormState, ClientFieldName } from '@/types/domain/client.types'
+import type { ClientCardProps, Values } from '@/types/clients/client-card.props'
 
 const INITIAL: ClientFormState = { error: null, field: null, similar: [], duplicate: null, conflict: null, needsConfirm: false, savedId: null }
 
 const INPUT =
   'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3 disabled:bg-sunken disabled:text-muted-foreground'
-
-interface ClientCardProps {
-  data: ClientCardData
-  canEdit: boolean
-  justSaved: boolean
-  returnQuery: string
-}
-
-type Values = Pick<
-  ClientCardData,
-  'fullName' | 'cedulaType' | 'cedulaNumber' | 'birthDate' | 'sex' | 'phone' | 'email' | 'consentWhatsapp' | 'consentEmail'
->
 
 function pick(data: ClientCardData): Values {
   return {
@@ -40,37 +33,58 @@ function pick(data: ClientCardData): Values {
   }
 }
 
-export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCardProps) {
+export function ClientCard({ data, canEdit, justSaved }: ClientCardProps) {
+  const { saveClient } = useClientCommands()
   const text = strings.pendingReview.clients
-  const [state, action, pending] = useActionState(saveClient, INITIAL)
-  const [values, setValues] = useState<Values>(() => pick(data))
+  const [state, setState] = useState<ClientFormState>(INITIAL)
+  const [pending, startSave] = useTransition()
+  const form = useForm<Values>({ resolver: zodResolver(clientCardSchema), defaultValues: pick(data) })
   const { setDirty } = useUnsavedEdits()
+  const cedulaType = useWatch({ control: form.control, name: 'cedulaType' })
+  const cedulaNumber = useWatch({ control: form.control, name: 'cedulaNumber' })
+  const changed = form.formState.isDirty
 
-  const initial = pick(data)
-  const changed = (Object.keys(initial) as (keyof Values)[]).some((key) => initial[key] !== values[key])
   useEffect(() => {
     setDirty(canEdit && changed)
     return () => setDirty(false)
   }, [canEdit, changed, setDirty])
 
-  const set = <K extends keyof Values>(key: K, value: Values[K]) => setValues((previous) => ({ ...previous, [key]: value }))
-
   const onPaste = (event: ClipboardEvent<HTMLInputElement>) => {
     const parsed = parseCedulaPaste(event.clipboardData.getData('text'))
     if (!parsed) return
     event.preventDefault()
-    setValues((previous) => ({ ...previous, cedulaType: parsed.type, cedulaNumber: parsed.digits }))
+    form.setValue('cedulaType', parsed.type, { shouldDirty: true })
+    form.setValue('cedulaNumber', parsed.digits, { shouldDirty: true })
   }
+
+  /** The server judges the fields, so its one rule set decides. A confirm comes back as needsConfirm. */
+  const save = (confirm: { similar?: boolean; gesture?: boolean } = {}) =>
+    form.handleSubmit((current) => {
+      startSave(async () => {
+        const result = await saveClient({
+          ...current,
+          id: data.id,
+          version: data.version,
+          confirmSimilar: confirm.similar === true,
+          confirmGesture: confirm.gesture === true,
+        })
+        setState({ ...INITIAL, ...result })
+        if (!result.error && result.redirectTo) setDirty(false)
+      })
+    })()
 
   const errorId = (field: ClientFieldName) => (state.field === field ? 'client-error' : undefined)
   const invalid = (field: ClientFieldName) => (state.field === field ? true : undefined)
-  const cedulaPreview = values.cedulaType && values.cedulaNumber ? formatCedula(values.cedulaType as 'V', values.cedulaNumber) : ''
+  const cedulaPreview = cedulaType && cedulaNumber ? formatCedula(cedulaType as 'V', cedulaNumber) : ''
 
   return (
-    <form action={action} className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-card p-4">
-      <input type="hidden" name="id" value={data.id ?? ''} />
-      <input type="hidden" name="version" value={data.version ?? ''} />
-
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        void save()
+      }}
+      className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-card p-4"
+    >
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-lg font-semibold">{data.id ? text.cardTitle : text.newTitle}</h2>
         {data.id ? (
@@ -102,9 +116,7 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
         <label className="flex flex-col gap-1">
           <span className="font-semibold">{text.name}</span>
           <input
-            name="fullName"
-            value={values.fullName}
-            onChange={(event) => set('fullName', event.target.value)}
+            {...form.register('fullName')}
             autoComplete="off"
             aria-invalid={invalid('fullName')}
             aria-describedby={errorId('fullName')}
@@ -116,10 +128,8 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
           <span className="font-semibold" id="cedula-label">{text.cedula}</span>
           <div className="flex flex-wrap gap-2" role="group" aria-labelledby="cedula-label">
             <select
-              name="cedulaType"
+              {...form.register('cedulaType')}
               aria-label={text.cedulaType}
-              value={values.cedulaType}
-              onChange={(event) => set('cedulaType', event.target.value)}
               aria-invalid={invalid('cedulaType')}
               aria-describedby={errorId('cedulaType')}
               className={`${INPUT} w-24`}
@@ -132,11 +142,9 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
               ))}
             </select>
             <input
-              name="cedulaNumber"
+              {...form.register('cedulaNumber')}
               aria-label={text.cedulaNumber}
               inputMode="numeric"
-              value={values.cedulaNumber}
-              onChange={(event) => set('cedulaNumber', event.target.value)}
               onPaste={onPaste}
               autoComplete="off"
               aria-invalid={invalid('cedulaNumber')}
@@ -152,9 +160,7 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
           <label className="flex min-w-40 flex-col gap-1">
             <span className="font-semibold">{strings.clients.birthDate}</span>
             <input
-              name="birthDate"
-              value={values.birthDate}
-              onChange={(event) => set('birthDate', event.target.value)}
+              {...form.register('birthDate')}
               placeholder={strings.clients.birthDatePlaceholder}
               inputMode="numeric"
               autoComplete="off"
@@ -170,9 +176,7 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
           <label className="flex min-w-40 flex-col gap-1">
             <span className="font-semibold">{text.sex}</span>
             <select
-              name="sex"
-              value={values.sex}
-              onChange={(event) => set('sex', event.target.value)}
+              {...form.register('sex')}
               aria-invalid={invalid('sex')}
               aria-describedby={errorId('sex')}
               className={INPUT}
@@ -188,10 +192,8 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
           <label className="flex min-w-48 flex-1 flex-col gap-1">
             <span className="font-semibold">{text.phone}</span>
             <input
-              name="phone"
+              {...form.register('phone')}
               type="tel"
-              value={values.phone}
-              onChange={(event) => set('phone', event.target.value)}
               autoComplete="off"
               className={INPUT}
             />
@@ -199,10 +201,8 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
           <label className="flex min-w-48 flex-1 flex-col gap-1">
             <span className="font-semibold">{text.email}</span>
             <input
-              name="email"
+              {...form.register('email')}
               type="email"
-              value={values.email}
-              onChange={(event) => set('email', event.target.value)}
               autoComplete="off"
               aria-invalid={invalid('email')}
               aria-describedby={errorId('email')}
@@ -215,20 +215,16 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
           <legend className="px-1 font-semibold">{text.consentTitle}</legend>
           <label className="flex items-center gap-2">
             <input
-              name="consentWhatsapp"
+              {...form.register('consentWhatsapp')}
               type="checkbox"
-              checked={values.consentWhatsapp}
-              onChange={(event) => set('consentWhatsapp', event.target.checked)}
               className="size-4"
             />
             <span>{text.consentWhatsapp}</span>
           </label>
           <label className="flex items-center gap-2">
             <input
-              name="consentEmail"
+              {...form.register('consentEmail')}
               type="checkbox"
-              checked={values.consentEmail}
-              onChange={(event) => set('consentEmail', event.target.checked)}
               className="size-4"
             />
             <span>{text.consentEmail}</span>
@@ -267,9 +263,8 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
             ))}
           </ul>
           <button
-            type="submit"
-            name="confirmSimilar"
-            value="on"
+            type="button"
+            onClick={() => void save({ similar: true })}
             disabled={pending}
             className="h-10 self-start rounded-[var(--radius-control)] border border-border-strong bg-card px-4 font-semibold"
           >
@@ -282,7 +277,7 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
         <div role="alert" className="flex flex-col gap-2 rounded-[var(--radius-control)] bg-flag-blocked-bg p-3 text-flag-blocked">
           <p>{text.conflict(state.conflict.savedBy, state.conflict.savedAt)}</p>
           {data.id ? (
-            <Link href={`/clientes?id=${data.id}${returnQuery}`} className="font-semibold underline">
+            <Link href={`/clientes?id=${data.id}`} className="font-semibold underline">
               {text.reload}
             </Link>
           ) : null}
@@ -300,6 +295,16 @@ export function ClientCard({ data, canEdit, justSaved, returnQuery }: ClientCard
           </button>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={state.needsConfirm}
+        title={text.confirmChangeTitle}
+        body={text.confirmChangeBody}
+        confirmLabel={text.save}
+        cancelLabel={strings.auth.cancel}
+        onConfirm={() => void save({ gesture: true })}
+        onCancel={() => setState(INITIAL)}
+      />
     </form>
   )
 }

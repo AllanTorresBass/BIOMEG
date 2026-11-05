@@ -1,27 +1,13 @@
 import 'server-only'
 
 import { createResendTask, restoreDeliveries, snapshotDeliveries } from '@/lib/db/memory/delivery-store'
-import {
-  issueByToken,
-  issuesOf,
-  printedLinesOf,
-  replaceIssue,
-  restoreIssues,
-  snapshotIssues,
-  vigenteIssueOf,
-} from '@/lib/db/memory/issue-store'
+import { issueByToken, issuesOf, printedLinesOf, replaceIssue, restoreIssues, snapshotIssues, vigenteIssueOf } from '@/lib/db/memory/issue-store'
 import { getStub, updateStub } from '@/lib/db/memory/order-index'
-import {
-  cancelSectionCorrection,
-  closeSectionCorrection,
-  hasOpenCorrection,
-  openSectionCorrection,
-  restoreResults,
-  snapshotResults,
-  type OpenCorrectionOutcome,
-} from '@/lib/db/memory/result-store'
-import type { IssueRecord, ReportSurface, ResendTask } from '@/types/orders/issue.types'
+import { cancelSectionCorrection, closeSectionCorrection, hasOpenCorrection, openSectionCorrection, restoreResults, snapshotResults } from '@/lib/db/memory/result-store'
+import type { OpenCorrectionOutcome } from '@/types/stores/result-store.types'
+import type { ReportSurface } from '@/types/orders/issue.types'
 import type { SectionCorrection } from '@/types/orders/result.types'
+import type { FinishOutcome } from '@/types/stores/correction-store.types'
 
 /** A fully released order shows EN_CORRECCION while any of its sections is reopened. */
 function syncOrderFlag(orderId: string): void {
@@ -48,11 +34,6 @@ export function abandonCorrection(orderId: string, section: string): SectionCorr
   if (correction) syncOrderFlag(orderId)
   return correction
 }
-
-export type FinishOutcome =
-  | { kind: 'released'; correction: SectionCorrection; issue: IssueRecord; replaced: IssueRecord | null; resendTask: ResendTask | null }
-  | { kind: 'none' }
-  | { kind: 'failed' }
 
 /**
  * Releases the corrected section, replaces the current issue and queues the resend as one unit.

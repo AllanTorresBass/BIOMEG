@@ -3,27 +3,10 @@ import 'server-only'
 import { headers } from 'next/headers'
 import { appendAudit } from '@/lib/db/memory/audit-store'
 import { TABLE_VERSION } from '@/lib/auth/table'
-import type { AuditChannel, AuditRow, AuditSource } from '@/types/audit/audit.types'
-import type { DecisionReason, Gesture } from '@/types/auth/auth.types'
-import type { PublicAccount, StaffSession } from '@/types/session/session.types'
-
-export interface AuditEventInput {
-  command: string
-  outcome: 'ALLOWED' | 'REFUSED'
-  reason?: DecisionReason
-  session?: StaffSession | null
-  account?: PublicAccount | null
-  workstation?: string | null
-  gesture?: Gesture
-  source?: AuditSource
-  channel?: AuditChannel
-  recordType?: string | null
-  recordId?: string | null
-  state?: string | null
-  motivo?: string | null
-  rowId?: string | null
-  change?: { before: unknown; after: unknown; field?: string } | null
-}
+import { currentRequestId } from '@/lib/server/audit-request'
+import { cleanMotivo, eventFor, severityFor } from '@/lib/server/domain/audit-catalog'
+import type { AuditRow } from '@/types/audit/audit.types'
+import type { AuditEventInput } from '@/types/server/audit.types'
 
 export async function requestAddress(): Promise<string | null> {
   try {
@@ -34,10 +17,14 @@ export async function requestAddress(): Promise<string | null> {
   }
 }
 
-/** One row per event, refused ones included. A refused row never carries a change. */
+/** One row per event, refused and failed ones included. Those rows never carry a change. */
 export async function auditEvent(input: AuditEventInput): Promise<AuditRow> {
   const address = await requestAddress()
+  const event = eventFor(input.command, input.event)
+  const outcome = input.outcome
   return appendAudit({
+    requestId: currentRequestId(),
+    severity: severityFor(event),
     who: {
       userId: input.account?.id ?? null,
       displayName: input.account?.displayName ?? null,
@@ -46,6 +33,7 @@ export async function auditEvent(input: AuditEventInput): Promise<AuditRow> {
     },
     what: {
       command: input.command,
+      event,
       recordType: input.recordType ?? null,
       recordId: input.recordId ?? null,
       state: input.state ?? null,
@@ -57,8 +45,8 @@ export async function auditEvent(input: AuditEventInput): Promise<AuditRow> {
       address,
     },
     how: { gesture: input.gesture ?? 'NONE', source: input.source ?? 'ui' },
-    why: { motivo: input.motivo ?? null, tableVersion: TABLE_VERSION, rowId: input.rowId ?? null },
-    result: { outcome: input.outcome, reason: input.reason ?? (input.outcome === 'ALLOWED' ? 'OK' : 'ROLE') },
-    change: input.outcome === 'REFUSED' ? null : (input.change ?? null),
+    why: { motivo: cleanMotivo(input.motivo), tableVersion: TABLE_VERSION, rowId: input.rowId ?? null },
+    result: { outcome, reason: input.reason ?? (outcome === 'ALLOWED' ? 'OK' : 'STATE') },
+    change: outcome === 'ALLOWED' ? (input.change ?? null) : null,
   })
 }

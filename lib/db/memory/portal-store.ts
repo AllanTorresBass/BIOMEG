@@ -3,29 +3,7 @@ import 'server-only'
 import { createHash, createHmac, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto'
 import { PORTAL_SETTINGS } from '@/lib/config/portal'
 import type { PortalSession } from '@/types/portal/portal.types'
-
-interface Challenge {
-  clientIds: string[]
-  name: string
-  salt: string
-  hash: string
-  expiresAt: number
-  wrong: number
-  spent: boolean
-}
-
-interface Failure {
-  count: number
-  pausedUntil: number
-}
-
-interface PortalState {
-  challenges: Map<string, Challenge>
-  sessions: Map<string, PortalSession>
-  failures: Map<string, Failure>
-  /** Used only when PORTAL_HASH_SECRET is unset. Never a value written in the code. */
-  fallbackSecret: string
-}
+import type { ChallengeOutcome, PortalState } from '@/types/stores/portal-store.types'
 
 const globalStore = globalThis as typeof globalThis & { __biomegPortal?: PortalState }
 const state: PortalState = (globalStore.__biomegPortal ??= {
@@ -90,10 +68,6 @@ export function openChallenge(clientIds: string[], name: string, now: number = D
   })
   return { challengeId, code }
 }
-
-export type ChallengeOutcome =
-  | { kind: 'OK'; clientIds: string[]; name: string }
-  | { kind: 'WRONG' | 'EXPIRED' | 'LOCKED' }
 
 /** A code works once. After too many wrong tries, even the right code is refused. */
 export function checkChallenge(challengeId: string, code: string, now: number = Date.now()): ChallengeOutcome {

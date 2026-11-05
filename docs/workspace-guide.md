@@ -8,7 +8,7 @@
 
 BIOMEG Laboratorio Clínico is one clinical laboratory in Venezuela. It runs a Windows program called **SICOEXC**, from the vendor Soluciones Informáticas SM. This workspace specifies a **new application to replace it**.
 
-**This workspace holds documentation only. No application is being built at this moment.** There is no application code, database, or technology choice. The history is in git, at <https://github.com/AllanTorresBass/BIOMEG>. That repository is public, so anyone can read and copy what's committed.
+A prototype of the application is in progress at the repository root. Its data is invented and kept in memory. There is no database. A real patient record waits for Gate C in `docs/v0-prompts/README.md`. The history is in git, at <https://github.com/AllanTorresBass/BIOMEG>. That repository is public, so anyone can read and copy what's committed.
 
 The application will be in Spanish. The documents are in English and quote Spanish labels exactly.
 
@@ -41,7 +41,7 @@ The application will be in Spanish. The documents are in English and quote Spani
 | Behavior | `product/` | 12 | What will the new application do? |
 | Appearance | `brand/` | 10 | How will it look, and how is a screen documented? |
 | Analysis | `access-control-analysis.md`, `access-control-plan.md` | 2 | Why do the access rules exist? |
-| Build prompts | `v0-prompts/` | 10 | What would we ask v0 to build, and in what order? Restates `product/` and `brand/`, adds the adapted WebTrixPro engineering rules, and has not been run |
+| Build prompts | `v0-prompts/` | 10 | The build order. Restates `product/` and `brand/`, and adds the adapted WebTrixPro engineering rules. The prototype follows that order and was not produced by sending the prompts to v0 |
 | Index | `README.md`, `workspace-guide.md` | 2 | Where do I start? |
 
 ## 3. Which page wins

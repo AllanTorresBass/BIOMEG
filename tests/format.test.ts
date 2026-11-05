@@ -1,18 +1,6 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
-import {
-  computeAge,
-  formatAge,
-  formatCedula,
-  formatDate,
-  formatMoney,
-  formatOrderNumber,
-  formatPrice,
-  formatRate,
-  formatResultNumber,
-  normalizeName,
-  parseCedulaPaste,
-} from '@/lib/utils/format'
+import { computeAge, formatAge, formatCedula, formatDate, formatMoney, formatOrderNumber, formatPrice, formatRate, formatResultNumber, normalizeName, parseCedulaPaste } from '@/lib/utils/format'
 
 describe('formatDate', () => {
   it('formats a date-only string without shifting it', () => {

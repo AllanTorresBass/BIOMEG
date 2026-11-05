@@ -17,3 +17,8 @@ export interface ShellBarProps {
   roleLabel: string
   settings: ShellSettings
 }
+
+export interface DemoRoleSwitcherProps {
+  accounts: readonly DemoAccountOption[]
+  currentUserId: string
+}

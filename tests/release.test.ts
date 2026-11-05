@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  processedByOf,
-  releaseSections,
-  reportDateOf,
-  sectionRelease,
-  sectionsWithResults,
-  writeResult,
-} from '@/lib/db/memory/result-store'
+import { processedByOf, releaseSections, reportDateOf, sectionRelease, sectionsWithResults, writeResult } from '@/lib/db/memory/result-store'
 
 const base = { source: 'teclado' as const, byId: 'u-1', byName: 'Ana', mark: null }
 const HEM = 'HEMATOLOGIA COMPLETA'
@@ -40,7 +33,7 @@ describe('releaseSections', () => {
     expect(reportDateOf('rel-3')).toBeNull()
   })
 
-  it('gives back the first releaser when a second one tries the same section', () => {
+  it('gives back the first releaser when a second one tries the same section (E-30)', () => {
     enter('rel-4', 'rl-01')
     releaseSections('rel-4', [HEM], 'b-1', 'Beatriz')
     const second = releaseSections('rel-4', [HEM], 'b-2', 'Carlos')

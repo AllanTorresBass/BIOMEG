@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
+import { AppProviders } from '@/components/providers/AppProviders'
 import { DemoRoleSwitcher } from '@/components/dev/DemoRoleSwitcher'
 import { IdleLock } from '@/components/shell/IdleLock'
-import { MenuBar, type MenuBarGroup } from '@/components/shell/MenuBar'
+import { MenuBar } from '@/components/shell/MenuBar'
+import type { MenuBarGroup } from '@/types/shell/menu-bar.props'
 import { PrimaryActions } from '@/components/shell/PrimaryActions'
 import { ShellBar } from '@/components/shell/ShellBar'
 import { UnsavedEditsProvider } from '@/components/shell/UnsavedEditsContext'
@@ -36,6 +38,7 @@ export default async function StaffLayout({ children }: { children: ReactNode })
     : PRIMARY_ACTIONS.filter((action) => mayReach(context, action.commands))
 
   return (
+    <AppProviders>
     <UnsavedEditsProvider>
       <ShellBar account={context.account} roleLabel={roleLabel(context.account.roles)} settings={getShellSettings()} />
       {groups.length > 0 ? <MenuBar groups={groups} /> : null}
@@ -49,5 +52,6 @@ export default async function StaffLayout({ children }: { children: ReactNode })
       ) : null}
       <IdleLock locked={context.locked} idleMinutes={SESSION_SETTINGS.idleLockMinutes} />
     </UnsavedEditsProvider>
+    </AppProviders>
   )
 }

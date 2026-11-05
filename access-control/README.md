@@ -1,6 +1,6 @@
 # Access-control data
 
-This repository holds documentation only, and no application is being built. The permission table, state machines, and starting settings are written out in the pages below.
+The permission rules on the pages below are the specification. A prototype at the repository root decides from them, on invented data kept in memory. A real patient record waits for Gate C in [docs/v0-prompts/README.md](../docs/v0-prompts/README.md).
 
 | If you need | Read |
 |---|---|

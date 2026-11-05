@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { computeOrderTotals } from '@/lib/domain/order-totals'
-import { createOrder, getOrder, removeSavedLine, voidSavedOrder, type NewOrder } from '@/lib/db/memory/order-store'
+import { createOrder, getOrder, removeSavedLine, voidSavedOrder } from '@/lib/db/memory/order-store'
+import type { NewOrder } from '@/types/stores/order-store.types'
 import { createQuote } from '@/lib/db/memory/quote-store'
 import { orderActionFacts } from '@/lib/server/domain/order-facts'
 import type { DraftLine, DraftPayment } from '@/types/orders/draft.types'

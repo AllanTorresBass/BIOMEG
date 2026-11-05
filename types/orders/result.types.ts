@@ -125,3 +125,8 @@ export interface SaveResultInput {
   manualMark?: ResultMark | ''
   motivo?: string
 }
+
+export type RowHistoryResult =
+  | { ok: true; entries: RowHistoryEntry[] }
+  | { ok: false; message: string }
+

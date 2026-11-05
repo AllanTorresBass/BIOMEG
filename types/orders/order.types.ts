@@ -1,4 +1,4 @@
-import type { OrderTotals } from '@/lib/domain/order-totals'
+import type { OrderTotals } from '@/types/domain/order-totals.types'
 import type { CostType, DraftBilling, DraftLine, DraftPayment, OrderPath } from '@/types/orders/draft.types'
 
 /** Why and by whom an order was voided. The order stays stored. */

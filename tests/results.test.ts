@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  discrepanciesOf,
-  dropIncoming,
-  getNote,
-  getResult,
-  holdIncoming,
-  queueDiscrepancy,
-  setNote,
-  writeResult,
-} from '@/lib/db/memory/result-store'
+import { discrepanciesOf, dropIncoming, getNote, getResult, holdIncoming, queueDiscrepancy, setNote, writeResult } from '@/lib/db/memory/result-store'
 import { autoMark, closedRange, isNumericValue, parseLabNumber, resultOrderState } from '@/lib/domain/result-rules'
 
 const base = { source: 'teclado' as const, byId: 'u-1', byName: 'Ana', mark: null }
@@ -78,14 +69,14 @@ describe('result store', () => {
     expect(getResult('t-1', 'l-1')?.value).toBe('11')
   })
 
-  it('returns the stored cell to a second writer with an old version', () => {
+  it('returns the stored cell to a second writer with an old version (E-29)', () => {
     writeResult({ ...base, orderId: 't-2', lineId: 'l-1', value: '10', expectedVersion: 0 })
     const stale = writeResult({ ...base, orderId: 't-2', lineId: 'l-1', value: '99', expectedVersion: 0 })
     expect(stale.kind).toBe('conflict')
     expect(getResult('t-2', 'l-1')?.value).toBe('10')
   })
 
-  it('holds an analyzer value beside the typed one and drops it on request', () => {
+  it('holds an analyzer value beside the typed one and drops it on request (E-27)', () => {
     writeResult({ ...base, orderId: 't-3', lineId: 'l-1', value: '10', expectedVersion: 0 })
     holdIncoming('t-3', 'l-1', '14')
     expect(getResult('t-3', 'l-1')?.value).toBe('10')
@@ -98,7 +89,7 @@ describe('result store', () => {
     expect(holdIncoming('t-4', 'missing', '1')).toBeNull()
   })
 
-  it('queues discrepancies per order', () => {
+  it('queues discrepancies per order (E-28)', () => {
     queueDiscrepancy({ orderId: 't-5', lineId: 'l-1', name: 'Glucosa', value: '99', at: new Date().toISOString() })
     expect(discrepanciesOf('t-5')).toHaveLength(1)
     expect(discrepanciesOf('t-6')).toHaveLength(0)

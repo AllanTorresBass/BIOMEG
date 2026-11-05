@@ -3,13 +3,7 @@ import 'server-only'
 import { registerOrder, updateStub } from '@/lib/db/memory/order-index'
 import { computeOrderTotals } from '@/lib/domain/order-totals'
 import type { SavedOrder } from '@/types/orders/order.types'
-
-interface OrderStoreState {
-  orders: Map<string, SavedOrder>
-  byKey: Map<string, string>
-  counter: number
-  creditNotes?: number
-}
+import type { NewOrder, OrderStoreState, RemoveLineOutcome, VoidInput } from '@/types/stores/order-store.types'
 
 const globalStore = globalThis as typeof globalThis & { __biomegOrders?: OrderStoreState }
 // The seeded stubs o-1 to o-3 already use the first ids.
@@ -24,8 +18,6 @@ export function orderForKey(key: string): SavedOrder | null {
   const id = state.byKey.get(key)
   return id ? getOrder(id) : null
 }
-
-export type NewOrder = Omit<SavedOrder, 'id' | 'number' | 'invoiceNumber' | 'controlNumber' | 'state' | 'voided' | 'version'>
 
 /** Assigns the numbers and stores the order in one step. Nothing else writes orders. */
 export function createOrder(key: string, input: NewOrder, examIds: string[]): SavedOrder {
@@ -66,13 +58,6 @@ export function createOrder(key: string, input: NewOrder, examIds: string[]): Sa
   return order
 }
 
-export interface VoidInput {
-  motivo: string
-  byId: string
-  byName: string
-  withCreditNote: boolean
-}
-
 /**
  * The order stays stored and keeps its numbers. A credit note takes its own number
  * when money was taken, so the original fiscal number is never reused or erased.
@@ -80,11 +65,7 @@ export interface VoidInput {
 export function voidSavedOrder(id: string, input: VoidInput): SavedOrder | null {
   const order = state.orders.get(id)
   if (!order || order.state === 'ANULADA') return null
-  let creditNote: string | null = null
-  if (input.withCreditNote) {
-    state.creditNotes = (state.creditNotes ?? 0) + 1
-    creditNote = `NC-${String(state.creditNotes).padStart(6, '0')}`
-  }
+  const creditNote = input.withCreditNote ? nextCreditNoteNumber() : null
   const next: SavedOrder = {
     ...order,
     state: 'ANULADA',
@@ -95,8 +76,6 @@ export function voidSavedOrder(id: string, input: VoidInput): SavedOrder | null 
   updateStub(id, { voided: true })
   return next
 }
-
-export type RemoveLineOutcome = { ok: true; order: SavedOrder; removedName: string } | { ok: false; reason: 'NOT_FOUND' | 'LAST_LINE' }
 
 /** The totals are recomputed from the rates the order was saved with. The payments stay as taken. */
 export function removeSavedLine(id: string, lineId: string): RemoveLineOutcome {
@@ -117,4 +96,33 @@ export function removeSavedLine(id: string, lineId: string): RemoveLineOutcome {
   state.orders.set(id, next)
   updateStub(id, { examIds: lines.map((candidate) => candidate.examId) })
   return { ok: true, order: next, removedName: line.examName }
+}
+
+export function findOrderByNumber(number: string): SavedOrder | null {
+  return [...state.orders.values()].find((order) => order.number === number || order.invoiceNumber === number) ?? null
+}
+
+/** An abono or a reversal changed the money. Lines, numbers, and the saved rate stay as they were. */
+export function setOrderPayments(id: string, payments: SavedOrder['payments'], totals: SavedOrder['totals']): void {
+  const order = state.orders.get(id)
+  if (order) state.orders.set(id, { ...order, payments, totals, version: order.version + 1 })
+}
+
+/** One sequence for every credit note, voids included. A number is never reused. */
+export function nextCreditNoteNumber(): string {
+  state.creditNotes = (state.creditNotes ?? 0) + 1
+  return `NC-${String(state.creditNotes).padStart(6, '0')}`
+}
+
+export function allSavedOrders(): SavedOrder[] {
+  return [...state.orders.values()]
+}
+
+export function findOrderByControl(controlNumber: string): SavedOrder | null {
+  return [...state.orders.values()].find((order) => order.controlNumber === controlNumber) ?? null
+}
+
+export function setControlNumber(id: string, controlNumber: string): void {
+  const order = state.orders.get(id)
+  if (order) state.orders.set(id, { ...order, controlNumber, version: order.version + 1 })
 }

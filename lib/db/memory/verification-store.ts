@@ -1,21 +1,7 @@
 import 'server-only'
 
 import { VERIFICATION_SETTINGS } from '@/lib/config/verification'
-
-interface RequestWindow {
-  startedAt: number
-  count: number
-}
-
-interface WrongCodes {
-  count: number
-  pausedUntil: number
-}
-
-interface VerificationState {
-  windows: Map<string, RequestWindow>
-  wrongCodes: Map<string, WrongCodes>
-}
+import type { VerificationState } from '@/types/stores/verification-store.types'
 
 const WINDOW_MS = 60_000
 

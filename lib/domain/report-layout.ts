@@ -1,19 +1,10 @@
-import type { ReportRow, ReportSection } from '@/types/orders/report.types'
+import type { ReportSection } from '@/types/orders/report.types'
+import type { PageSection, ReportPage } from '@/types/domain/report-layout.types'
 
 /** Lines a page holds. The first page also carries the laboratory and patient blocks. */
 export const FIRST_PAGE_LINES = 24
 export const NEXT_PAGE_LINES = 40
 const HEADING_COST = 2
-
-export interface PageSection {
-  title: string
-  subsection: string | null
-  rows: ReportRow[]
-  /** True when the section started on an earlier page. The heading is repeated. */
-  continued: boolean
-}
-
-export type ReportPage = PageSection[]
 
 /** A section heading with no rows is omitted. The rest flows onto as many pages as it needs. */
 export function paginate(sections: readonly ReportSection[]): ReportPage[] {

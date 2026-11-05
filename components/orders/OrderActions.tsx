@@ -2,18 +2,18 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { removeOrderLine, voidOrder } from '@/app/actions/order-actions'
+import { useOrderCommands } from '@/hooks/use-orders'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
 import { formatMoney } from '@/lib/utils/format'
 import type { OrderActionsProps } from '@/types/orders/screen.types'
+import type { Pending } from '@/types/orders/order-actions.props'
 
 const text = strings.pendingReview.orders
 
-type Pending = { kind: 'void' } | { kind: 'line'; lineId: string; name: string }
-
 export function OrderActions({ orderId, voided, hasPayment, lines }: OrderActionsProps) {
+  const { voidOrder, removeOrderLine } = useOrderCommands()
   const router = useRouter()
   const [busy, startTransition] = useTransition()
   const [pending, setPending] = useState<Pending | null>(null)

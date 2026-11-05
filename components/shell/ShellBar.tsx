@@ -1,6 +1,7 @@
-import { signOut } from '@/app/actions/session'
+import Link from 'next/link'
 import { ShellEmblem } from '@/components/brand/ShellEmblem'
 import { SalirButton } from '@/components/shell/SalirButton'
+import { SignOutButton } from '@/components/shell/SignOutButton'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { strings } from '@/lib/strings'
 import { formatDate, formatRate } from '@/lib/utils/format'
@@ -21,7 +22,7 @@ export function ShellBar({ account, roleLabel, settings }: ShellBarProps) {
 
       <dl className="flex flex-wrap items-center gap-x-5 gap-y-1">
         <div className="flex items-center gap-2">
-          <dt>{strings.shell.rate}</dt>
+          <dt><Link href="/mantenimiento/tasa" className="underline">{strings.shell.rate}</Link></dt>
           <dd>
             {hasRate ? (
               <span className="tabular-nums">
@@ -33,13 +34,13 @@ export function ShellBar({ account, roleLabel, settings }: ShellBarProps) {
           </dd>
         </div>
         <div className="flex items-center gap-2">
-          <dt>{strings.shell.qr}</dt>
+          <dt><Link href="/mantenimiento/qr" className="underline">{strings.shell.qr}</Link></dt>
           <dd>
             <StatusChip status={settings.qrEnabled ? 'ACTIVO' : 'INACTIVO'} />
           </dd>
         </div>
         <div className="flex items-center gap-2">
-          <dt>{strings.shell.saturday}</dt>
+          <dt><Link href="/mantenimiento/sabado" className="underline">{strings.shell.saturday}</Link></dt>
           <dd className="flex items-center gap-2">
             <StatusChip status={settings.saturdayPriceEnabled ? 'ACTIVO' : 'INACTIVO'} />
             <span className="text-xs">{strings.shell.saturdayCaption}</span>
@@ -54,14 +55,7 @@ export function ShellBar({ account, roleLabel, settings }: ShellBarProps) {
           <span className="block text-xs">{roleLabel}</span>
         </p>
         <SalirButton />
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="h-9 rounded-[var(--radius-control)] bg-card px-3 font-semibold text-foreground"
-          >
-            {strings.shell.signOut}
-          </button>
-        </form>
+        <SignOutButton />
       </div>
     </header>
   )

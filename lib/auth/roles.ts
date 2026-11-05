@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { Role, StaffRole } from '@/types/auth/auth.types'
 
 export const STAFF_ROLES: readonly StaffRole[] = [

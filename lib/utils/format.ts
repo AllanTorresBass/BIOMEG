@@ -1,4 +1,5 @@
 import { strings } from '@/lib/strings'
+import type { Age, CedulaType, NormalizedName, ParsedCedula } from '@/types/lib/format.types'
 
 export const LAB_TIME_ZONE = 'America/Caracas'
 
@@ -6,25 +7,22 @@ const DASH = strings.empty.dash
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
 
 export const CEDULA_TYPES = ['V', 'E', 'J', 'P', 'G'] as const
-export type CedulaType = (typeof CEDULA_TYPES)[number]
-
-export interface ParsedCedula {
-  type: CedulaType
-  digits: string
-}
-
-export interface Age {
-  value: number
-  unit: 'years' | 'months'
-}
-
-export interface NormalizedName {
-  display: string
-  key: string
-}
-
 function groupThousands(integerDigits: string): string {
   return integerDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
+/** HH:MM in laboratory time. Built from parts, so the server and the browser print the same text. */
+export function formatTime(value: Date | string): string {
+  const date = typeof value === 'string' ? new Date(value) : value
+  if (Number.isNaN(date.getTime())) return DASH
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: LAB_TIME_ZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date)
+  const pick = (type: string) => parts.find((part) => part.type === type)?.value ?? ''
+  return `${pick('hour')}:${pick('minute')}`
 }
 
 /** DD/MM/YYYY. A date-only string is never shifted by a time zone. */

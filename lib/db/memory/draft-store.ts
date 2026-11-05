@@ -2,11 +2,7 @@ import 'server-only'
 
 import { emptyPayments } from '@/lib/config/payment-methods'
 import type { OrderDraft, OrderPath } from '@/types/orders/draft.types'
-
-interface DraftState {
-  drafts: Map<string, OrderDraft>
-  counter: number
-}
+import type { DraftState } from '@/types/stores/draft-store.types'
 
 const globalStore = globalThis as typeof globalThis & { __biomegDrafts?: DraftState }
 const state: DraftState = (globalStore.__biomegDrafts ??= { drafts: new Map(), counter: 0 })

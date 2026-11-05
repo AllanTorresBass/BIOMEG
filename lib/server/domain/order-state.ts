@@ -1,21 +1,5 @@
 import 'server-only'
-
-export type ResultState = 'PENDIENTE' | 'CARGADO' | 'LIBERADO' | 'EN_CORRECCION'
-export type OrderState = 'BORRADOR' | 'ABIERTA' | 'INCOMPLETO' | 'LIBERADO' | 'EN_CORRECCION' | 'ANULADA'
-
-export interface OrderResult {
-  sectionId: string
-  state: ResultState
-}
-
-export interface OrderStateInput {
-  /** False while the Nueva orden form is unsaved. */
-  saved: boolean
-  voided: boolean
-  results: readonly OrderResult[]
-}
-
-type SectionStatus = 'PENDIENTE' | 'CARGADO' | 'LIBERADO' | 'EN_CORRECCION'
+import type { OrderResult, OrderState, OrderStateInput, ResultState, SectionStatus } from '@/types/domain/order-state.types'
 
 function sectionStatuses(results: readonly OrderResult[]): SectionStatus[] {
   const bySection = new Map<string, ResultState[]>()

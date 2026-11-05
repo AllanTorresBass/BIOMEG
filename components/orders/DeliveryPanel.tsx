@@ -2,12 +2,13 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { approveIncompleteSend, resendDelivery, sendDelivery } from '@/app/actions/delivery'
+import { useDeliveryCommands } from '@/hooks/use-delivery'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
 import { formatDate } from '@/lib/utils/format'
-import type { DeliveryChannelView, DeliveryView, SendChannel } from '@/types/orders/delivery.types'
+import type { DeliveryChannelView, SendChannel } from '@/types/orders/delivery.types'
+import type { Props } from '@/types/orders/delivery-panel.props'
 
 const text = strings.delivery
 
@@ -21,12 +22,8 @@ const blockedText: Record<NonNullable<DeliveryChannelView['blocked']>, (channel:
   NOT_PERMITTED: () => text.notAllowed,
 }
 
-interface Props {
-  orderId: string
-  view: DeliveryView
-}
-
 export function DeliveryPanel({ orderId, view }: Props) {
+  const { approveIncompleteSend, sendDelivery, resendDelivery } = useDeliveryCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [confirming, setConfirming] = useState<DeliveryChannelView | null>(null)

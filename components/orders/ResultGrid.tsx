@@ -1,50 +1,17 @@
 'use client'
 
 import { Fragment, useState, useTransition } from 'react'
+import { useResultCommands } from '@/hooks/use-results'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
-import {
-  cancelCorrection,
-  openCorrection,
-  releaseCorrection,
-  releaseResults,
-  resolveIncoming,
-  rowHistory,
-  saveResult,
-  saveSectionNote,
-} from '@/app/actions/results'
 import { strings } from '@/lib/strings'
+import { formatTime } from '@/lib/utils/format'
 import type { GridRow, GridSection, ResultGridView, ResultMark, RowHistoryEntry } from '@/types/orders/result.types'
+import type { CellState, Conflict, CorrectionOperation, Pending } from '@/types/orders/result-grid.props'
 
 const text = strings.pendingReview.results
 
-interface CellState {
-  value: string
-  mark: ResultMark | null
-  version: number
-  byName: string | null
-  at: string | null
-  incoming: GridRow['incoming']
-}
-
-type Pending =
-  | { kind: 'save'; lineId: string; value: string; manualMark?: ResultMark | '' }
-  | { kind: 'incoming'; lineId: string; choice: 'use' | 'keep' }
-
-type CorrectionOperation =
-  | { kind: 'open'; section: string; motivo: string }
-  | { kind: 'cancel'; section: string }
-  | { kind: 'release'; section: string }
-
-interface Conflict {
-  lineId: string
-  message: string
-  yourValue: string
-  version: number
-}
-
-const timeFormat = new Intl.DateTimeFormat('es-VE', { timeZone: 'America/Caracas', timeStyle: 'short' })
 
 function without<T>(record: Record<string, T>, key: string): Record<string, T> {
   return Object.fromEntries(Object.entries(record).filter(([name]) => name !== key))
@@ -68,6 +35,7 @@ function initialCells(sections: readonly GridSection[]): Record<string, CellStat
 }
 
 export function ResultGrid({ view }: { view: ResultGridView }) {
+  const { saveResult, resolveIncoming, releaseResults, rowHistory, openCorrection, cancelCorrection, releaseCorrection } = useResultCommands()
   const [cells, setCells] = useState(() => initialCells(view.sections))
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [notes, setNotes] = useState<Record<string, string>>(() =>
@@ -286,12 +254,12 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
               {section.subsection ? <p className="text-muted-foreground">{section.subsection}</p> : null}
               {section.released ? (
                 <p className="text-sm text-muted-foreground">
-                  {text.release.releasedBy(section.released.byName, timeFormat.format(new Date(section.released.at)))}
+                  {text.release.releasedBy(section.released.byName, formatTime(section.released.at))}
                 </p>
               ) : null}
               {section.correction ? (
                 <p className="text-sm font-semibold text-flag-blocked">
-                  {text.release.correct.openedBy(section.correction.byName, timeFormat.format(new Date(section.correction.at)))}
+                  {text.release.correct.openedBy(section.correction.byName, formatTime(section.correction.at))}
                   <span className="block font-normal text-muted-foreground">{text.release.correct.reason(section.correction.motivo)}</span>
                 </p>
               ) : null}
@@ -360,7 +328,7 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                         {row.name}
                         {cell?.byName && cell.at ? (
                           <span className="block text-sm text-muted-foreground">
-                            {cell.byName}, {timeFormat.format(new Date(cell.at))}
+                            {cell.byName}, {formatTime(cell.at)}
                           </span>
                         ) : null}
                         {cell?.byName ? (
@@ -465,7 +433,7 @@ export function ResultGrid({ view }: { view: ResultGridView }) {
                                 {history.entries.map((entry) => (
                                   <tr key={`${entry.at}-${entry.after}`} className="border-t border-border">
                                     <td className="py-1 pr-3">{entry.operator}</td>
-                                    <td className="py-1 pr-3">{timeFormat.format(new Date(entry.at))}</td>
+                                    <td className="py-1 pr-3">{formatTime(entry.at)}</td>
                                     <td className="py-1 pr-3 tabular-nums">{entry.before}</td>
                                     <td className="py-1 pr-3 tabular-nums">{entry.after}</td>
                                     <td className="py-1">{entry.motivo}</td>
@@ -586,6 +554,7 @@ function NoteField({
   value: string
   onChange: (value: string) => void
 }) {
+  const { saveSectionNote } = useResultCommands()
   const [status, setStatus] = useState('')
   const [, startTransition] = useTransition()
   const id = `note-${section}`

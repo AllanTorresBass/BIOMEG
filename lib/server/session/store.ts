@@ -3,7 +3,9 @@ import 'server-only'
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto'
 import { SESSION_SETTINGS } from '@/lib/config/session'
 import { demoSeed } from '@/lib/db/memory/seed'
+import { todayInLab } from '@/lib/server/domain/client-rules'
 import type { StaffRole } from '@/types/auth/auth.types'
+import type { SessionState, StaffDirectoryRow, StoredAccount } from '@/types/server/store.types'
 import type {
   PasswordChangeResult,
   PublicAccount,
@@ -13,22 +15,6 @@ import type {
 
 /** Demo only. Every invented account uses it, and the sign-in page says so. */
 export const DEMO_PASSWORD = 'Demo-2026-Lab'
-
-interface StoredAccount extends PublicAccount {
-  salt: string
-  hash: string
-}
-
-interface FailureRecord {
-  count: number
-  pausedUntil: number
-}
-
-interface SessionState {
-  accounts: Map<string, StoredAccount>
-  sessions: Map<string, StaffSession>
-  failures: Map<string, FailureRecord>
-}
 
 const KEY_LENGTH = 32
 
@@ -51,6 +37,11 @@ function buildAccount(
     mustChangePassword: false,
     salt,
     hash: hashPassword(DEMO_PASSWORD, salt),
+    active: true,
+    license: null,
+    coverRoles: [],
+    coverUntil: null,
+    passwordExpiresAt: null,
   }
 }
 
@@ -73,12 +64,22 @@ function state(): SessionState {
   return globalStore.__biomegSessionState
 }
 
+function effectiveRoles(account: StoredAccount): StaffRole[] {
+  const roles = [...account.roles]
+  const covered = account.coverUntil !== null && account.coverUntil >= todayInLab()
+  if (!covered) return roles
+  for (const role of account.coverRoles) {
+    if (role !== 'BIOANALISTA' && !roles.includes(role)) roles.push(role)
+  }
+  return roles
+}
+
 function toPublic(account: StoredAccount): PublicAccount {
   return {
     id: account.id,
     username: account.username,
     displayName: account.displayName,
-    roles: [...account.roles],
+    roles: effectiveRoles(account),
     mustChangePassword: account.mustChangePassword,
   }
 }
@@ -123,7 +124,8 @@ export function verifyCredentials(username: string, password: string): { result:
   }
 
   const account = accountByUsername(key)
-  const valid = account ? matches(account, password) : false
+  const expired = account?.passwordExpiresAt !== null && account?.passwordExpiresAt !== undefined && account.passwordExpiresAt <= now
+  const valid = account ? account.active && !expired && matches(account, password) : false
   if (account && valid) {
     failures.delete(key)
     return { result: 'OK', account: toPublic(account) }
@@ -201,6 +203,7 @@ export function changePassword(userId: string, current: string, next: string): P
   account.salt = randomBytes(16).toString('hex')
   account.hash = hashPassword(next, account.salt)
   account.mustChangePassword = false
+  account.passwordExpiresAt = null
   return 'OK'
 }
 
@@ -208,4 +211,119 @@ export function changePassword(userId: string, current: string, next: string): P
 export function setRolesForDemo(userId: string, roles: StaffRole[]): void {
   const account = state().accounts.get(userId)
   if (account) account.roles = roles
+}
+
+export function listStaffDirectory(): StaffDirectoryRow[] {
+  return [...state().accounts.values()]
+    .map((account) => ({
+      id: account.id,
+      username: account.username,
+      displayName: account.displayName,
+      roles: [...account.roles],
+      active: account.active,
+      coverRoles: account.coverUntil !== null && account.coverUntil >= todayInLab() ? [...account.coverRoles] : [],
+      coverUntil: account.coverUntil !== null && account.coverUntil >= todayInLab() ? account.coverUntil : null,
+      licensePresent: account.license !== null,
+    }))
+    .sort((left, right) => left.displayName.localeCompare(right.displayName, 'es'))
+}
+
+export function activeAdminCount(): number {
+  let count = 0
+  for (const account of state().accounts.values()) {
+    if (account.active && account.roles.includes('ADMINISTRACION')) count += 1
+  }
+  return count
+}
+
+export function endUserSessions(userId: string): void {
+  for (const session of state().sessions.values()) {
+    if (session.userId === userId) session.ended = true
+  }
+}
+
+function uniqueUsername(displayName: string): string {
+  const base = displayName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .slice(0, 24) || 'usuario'
+  let username = base
+  let n = 2
+  while (accountByUsername(username)) {
+    username = `${base}${n}`
+    n += 1
+  }
+  return username
+}
+
+function temporaryPassword(): string {
+  return randomBytes(9).toString('base64url')
+}
+
+/** A new person cannot start as Bioanalista. The password is temporary and is not stored in the clear. */
+export function createStaffAccount(displayName: string, roles: readonly StaffRole[]): { id: string; temporaryPassword: string } | null {
+  const name = displayName.trim().slice(0, 80)
+  if (name === '' || roles.length === 0 || roles.includes('BIOANALISTA')) return null
+  const password = temporaryPassword()
+  const id = `u-${randomUUID()}`
+  const account = buildAccount(id, uniqueUsername(name), name, [...roles])
+  account.mustChangePassword = true
+  account.passwordExpiresAt = Date.now() + 24 * 60 * 60 * 1000
+  const salt = randomBytes(16).toString('hex')
+  account.salt = salt
+  account.hash = hashPassword(password, salt)
+  state().accounts.set(id, account)
+  return { id, temporaryPassword: password }
+}
+
+export function setStaffActive(userId: string, active: boolean): boolean {
+  const account = state().accounts.get(userId)
+  if (!account) return false
+  account.active = active
+  if (!active) endUserSessions(userId)
+  return true
+}
+
+export function replaceStaffRoles(userId: string, roles: readonly StaffRole[]): boolean {
+  const account = state().accounts.get(userId)
+  if (!account || roles.length === 0 || roles.includes('BIOANALISTA')) return false
+  account.roles = [...roles]
+  return true
+}
+
+export function setStaffCover(userId: string, roles: readonly StaffRole[], until: string): boolean {
+  const account = state().accounts.get(userId)
+  if (!account || roles.includes('BIOANALISTA') || !/^\d{4}-\d{2}-\d{2}$/.test(until)) return false
+  account.coverRoles = [...roles]
+  account.coverUntil = until
+  return true
+}
+
+export function grantStaffBioanalista(userId: string, license: string): boolean {
+  const account = state().accounts.get(userId)
+  const value = license.trim().slice(0, 40)
+  if (!account || value === '') return false
+  account.license = value
+  if (!account.roles.includes('BIOANALISTA')) account.roles = [...account.roles, 'BIOANALISTA']
+  return true
+}
+
+/** Returns the temporary password once. The caller must not write it into the audit log. */
+export function resetStaffPassword(userId: string): string | null {
+  const account = state().accounts.get(userId)
+  if (!account) return null
+  const password = temporaryPassword()
+  const salt = randomBytes(16).toString('hex')
+  account.salt = salt
+  account.hash = hashPassword(password, salt)
+  account.mustChangePassword = true
+  account.passwordExpiresAt = Date.now() + 24 * 60 * 60 * 1000
+  endUserSessions(userId)
+  return password
+}
+
+export function resetSessionForTests(): void {
+  delete globalStore.__biomegSessionState
 }

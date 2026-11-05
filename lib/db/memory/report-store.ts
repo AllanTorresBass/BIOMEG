@@ -1,25 +1,7 @@
 import 'server-only'
 
-import type { ReportDocument, ReportMode } from '@/types/orders/report.types'
-
-export interface StoredReport {
-  id: string
-  orderId: string
-  mode: ReportMode
-  lineId: string | null
-  issueId: string | null
-  draft: boolean
-  createdAt: string
-  byName: string
-  /** What was printed. Later edits to the client or the order never rewrite it. */
-  document: ReportDocument
-  pdf: Buffer
-}
-
-interface ReportStoreState {
-  reports: StoredReport[]
-  counter: number
-}
+import type { ReportMode } from '@/types/orders/report.types'
+import type { ReportStoreState, SaveReportInput, StoredReport } from '@/types/stores/report-store.types'
 
 const globalStore = globalThis as typeof globalThis & { __biomegReports?: ReportStoreState }
 const state: ReportStoreState = (globalStore.__biomegReports ??= { reports: [], counter: 0 })
@@ -48,17 +30,6 @@ export function getReport(id: string): StoredReport | null {
 
 export function reportsOf(orderId: string): StoredReport[] {
   return state.reports.filter((report) => report.orderId === orderId)
-}
-
-export interface SaveReportInput {
-  orderId: string
-  mode: ReportMode
-  lineId: string | null
-  issueId: string | null
-  draft: boolean
-  byName: string
-  document: ReportDocument
-  pdf: Buffer
 }
 
 /** An issued report is kept as it was first made. A draft replaces the earlier draft of the same view. */

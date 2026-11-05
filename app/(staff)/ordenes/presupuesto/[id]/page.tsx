@@ -1,7 +1,6 @@
 import { PrintButton } from '@/components/orders/PrintButton'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
-import { getQuote } from '@/lib/db/memory/quote-store'
-import { guardRoute } from '@/lib/server/guard'
+import { getQuoteScreen } from '@/lib/server/queries/orders'
 import { requireReadyStaff } from '@/lib/server/session/require'
 import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE, formatMoney, formatRate } from '@/lib/utils/format'
@@ -12,10 +11,10 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
   const context = await requireReadyStaff()
   if (context.locked) return null
   const { id } = await params
-  if (!(await guardRoute(context, ['quote.create'], `/ordenes/presupuesto/${id}`))) return <BlockedNotice />
-
-  const quote = getQuote(id)
-  if (!quote) return <p className="text-muted-foreground">{text.quoteMissing}</p>
+  const screen = await getQuoteScreen(context, id)
+  if (screen.kind === 'BLOCKED') return <BlockedNotice />
+  if (screen.kind === 'MISSING') return <p className="text-muted-foreground">{text.quoteMissing}</p>
+  const { quote } = screen
 
   const issued = new Intl.DateTimeFormat('es-VE', { timeZone: LAB_TIME_ZONE, dateStyle: 'short', timeStyle: 'short' }).format(
     new Date(quote.createdAt),

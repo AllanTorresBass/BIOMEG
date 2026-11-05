@@ -10,7 +10,7 @@ import { isStepUpFresh } from '@/lib/server/session/store'
 import { strings } from '@/lib/strings'
 import type { DraftNeed, DraftResult, OrderDraft } from '@/types/orders/draft.types'
 import type { RefusalReason } from '@/types/auth/auth.types'
-import type { StaffContext } from '@/types/session/session.types'
+import type { Opened, Presented, Subject, Target } from '@/types/server/draft-gate.types'
 
 const text = strings.pendingReview.orders
 
@@ -24,11 +24,6 @@ export function done(message: string): DraftResult {
   return { ok: true, message, need: null }
 }
 
-export interface Opened {
-  context: StaffContext
-  draft: OrderDraft
-}
-
 export async function open(draftId: string): Promise<Opened | DraftResult> {
   const context = await getStaffContext()
   if (!context || context.locked) return fail(text.notAllowed)
@@ -39,23 +34,6 @@ export async function open(draftId: string): Promise<Opened | DraftResult> {
 
 export function isResult(value: Opened | DraftResult): value is DraftResult {
   return 'need' in value
-}
-
-export interface Presented {
-  confirmed?: boolean
-  motivo?: string
-}
-
-export interface Target {
-  recordType: string
-  recordId: string
-  state: string
-}
-
-/** What the gate helpers need. Order actions have no draft, so they always pass a target. */
-export interface Subject {
-  context: StaffContext
-  draft?: OrderDraft
 }
 
 function targetOf(draft: OrderDraft | undefined, target?: Target): Target {
@@ -76,6 +54,7 @@ export async function gate(
     session: toDecisionSession(context),
     command,
     facts,
+    ...(presented.ownerUserId ? { record: { ownerUserId: presented.ownerUserId } } : {}),
     gestures: {
       confirmVerified: presented.confirmed === true,
       stepUpVerified: isStepUpFresh(context.session),

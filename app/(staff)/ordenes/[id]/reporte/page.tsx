@@ -3,21 +3,11 @@ import { DeliveryPanel } from '@/components/orders/DeliveryPanel'
 import { ReportChrome } from '@/components/orders/ReportChrome'
 import { ReportPaper } from '@/components/orders/ReportPaper'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
-import { decide } from '@/lib/auth/decide'
-import { getStub } from '@/lib/db/memory/order-index'
-import { resultsOf } from '@/lib/db/memory/result-store'
-import { demoSeed } from '@/lib/db/memory/seed'
-import { resultOrderState } from '@/lib/domain/result-rules'
-import { buildDeliveryView, deliveryStateOf } from '@/lib/server/domain/delivery'
-import { buildReport } from '@/lib/server/domain/report'
-import { guardRoute } from '@/lib/server/guard'
-import { requestOrigin } from '@/lib/server/origin'
+import { getReportScreen } from '@/lib/server/queries/reports'
 import { qrModules } from '@/lib/server/qr'
-import { toDecisionSession } from '@/lib/server/session/current'
 import { requireReadyStaff } from '@/lib/server/session/require'
 import { strings } from '@/lib/strings'
 import { formatDate } from '@/lib/utils/format'
-import type { ReportMode } from '@/types/orders/report.types'
 
 const text = strings.report
 
@@ -32,41 +22,10 @@ export default async function ReportPage({
   if (context.locked) return null
   const { id } = await params
   const { prueba } = await searchParams
-  const mode: ReportMode = prueba ? 'PRUEBA' : 'PACIENTE'
-  const command = mode === 'PRUEBA' ? 'report.print.single' : 'report.print.patient'
-  if (!(await guardRoute(context, [command], `/ordenes/${id}/reporte`))) return <BlockedNotice />
-
-  const stub = getStub(id)
-  if (!stub || stub.voided) notFound()
-
-  const read = decide({
-    session: toDecisionSession(context),
-    command,
-    facts: { state: resultOrderState(stub) },
-    gestures: { confirmVerified: false, stepUpVerified: false },
-  })
-  if (!read.allowed) return <BlockedNotice />
-
-  const lineId = mode === 'PRUEBA' ? (prueba ?? null) : null
-  const report = buildReport({ stub, mode, lineId, origin: await requestOrigin() })
-  const names = new Map(demoSeed.resultLines.map((line) => [line.id, line.name]))
-  const choices = resultsOf(stub.id).filter((cell) => cell.value.trim() !== '')
-
-  const deliveryState = deliveryStateOf(stub)
-  const session = toDecisionSession(context)
-  const gestures = { confirmVerified: true, stepUpVerified: true }
-  const deliveryView =
-    mode === 'PACIENTE' && deliveryState
-      ? buildDeliveryView(stub, {
-          send: decide({
-            session,
-            command: 'delivery.send',
-            facts: { state: deliveryState, delivery_mode_allowed: true, incomplete_approved: true },
-            gestures,
-          }).allowed,
-          approve: decide({ session, command: 'delivery.approve_incomplete', facts: { state: deliveryState }, gestures }).allowed,
-        })
-      : null
+  const screen = await getReportScreen(context, id, prueba)
+  if (screen.kind === 'BLOCKED') return <BlockedNotice />
+  if (screen.kind === 'MISSING') notFound()
+  const { stub, mode, lineId, report, choices, deliveryView } = screen
 
   return (
     <section className="flex flex-col gap-4">
@@ -93,7 +52,7 @@ export default async function ReportPage({
               </option>
               {choices.map((cell) => (
                 <option key={cell.lineId} value={cell.lineId}>
-                  {names.get(cell.lineId) ?? cell.lineId}
+                  {cell.name}
                 </option>
               ))}
             </select>

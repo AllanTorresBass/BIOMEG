@@ -1,18 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  addMergeRequest,
-  correctClientCedula,
-  getClient,
-  listMergeCandidates,
-  listMergeRequests,
-  listOpenMerges,
-  mergeClients,
-  searchClients,
-  setClientActive,
-  softDeleteClient,
-  unmergeClients,
-  type Actor,
-} from '@/lib/db/memory/client-store'
+import { addMergeRequest, correctClientCedula, getClient, listMergeCandidates, listMergeRequests, listOpenMerges, mergeClients, searchClients, setClientActive, softDeleteClient, unmergeClients } from '@/lib/db/memory/client-store'
+import type { Actor } from '@/types/stores/client-store.types'
 
 const actor: Actor = { userId: 'u-test', userName: 'Prueba', now: '2026-11-04T12:00:00.000Z' }
 
