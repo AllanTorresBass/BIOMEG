@@ -3,7 +3,7 @@ import 'server-only'
 import { headers } from 'next/headers'
 import { appendAudit } from '@/lib/db/memory/audit-store'
 import { TABLE_VERSION } from '@/lib/auth/table'
-import type { AuditRow, AuditSource } from '@/types/audit/audit.types'
+import type { AuditChannel, AuditRow, AuditSource } from '@/types/audit/audit.types'
 import type { DecisionReason, Gesture } from '@/types/auth/auth.types'
 import type { PublicAccount, StaffSession } from '@/types/session/session.types'
 
@@ -16,6 +16,7 @@ export interface AuditEventInput {
   workstation?: string | null
   gesture?: Gesture
   source?: AuditSource
+  channel?: AuditChannel
   recordType?: string | null
   recordId?: string | null
   state?: string | null
@@ -51,7 +52,7 @@ export async function auditEvent(input: AuditEventInput): Promise<AuditRow> {
     },
     when: { serverTime: new Date().toISOString(), timeZone: 'America/Caracas' },
     where: {
-      channel: 'staff',
+      channel: input.channel ?? 'staff',
       workstation: input.workstation ?? input.session?.workstation ?? null,
       address,
     },
