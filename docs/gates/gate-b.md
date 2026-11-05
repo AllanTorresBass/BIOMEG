@@ -4,7 +4,7 @@
 **Status:** **Closed.** Stage 6 (V0-25 through V0-28) must not begin until every row below has an answer from the named person.  
 **Evidence label:** Each blank answer is **Unknown** until the named party fills it. Do not invent a rate, a hosting model, or a counsel conclusion to unblock code.
 
-Cross-links: [build-plan Gate B](../build-plan.md#gate-b-before-phase-6), [v0 catalog gates](../v0-prompts/README.md#gates), [security baseline](../product/10-security-baseline.md#before-any-real-patient-record).
+Cross-links: [build-plan Gate B](../build-plan.md#gate-b-before-phase-6), [v0 catalog gates](../v0-prompts/README.md#gates), [security baseline](../product/10-security-baseline.md#before-any-real-patient-record), [questions to send](gate-b-ask.md).
 
 ## Checklist
 
