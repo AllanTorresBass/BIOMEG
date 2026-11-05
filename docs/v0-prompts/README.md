@@ -4,7 +4,7 @@
 **Purpose:** Ready-to-paste prompts that would have [v0](https://v0.app/docs) build the BIOMEG application, in a safe order.  
 **Authority:** This catalog sets no rules. It restates [../product/](../product/) and [../brand/](../brand/). If a prompt differs from those pages, those pages win, so fix the prompt.
 
-**Status:** This catalog sets no rules. A prototype is in progress at the repository root, on invented data kept in memory. The prompts were not sent to v0. A real patient record waits for Gate C. Gate B, before any real backend, is still closed.
+**Status:** This catalog sets no rules. A prototype is in progress at the repository root, on invented data kept in memory. The prompts were not sent to v0. A real patient record waits for Gate C. Gate B, before any real backend, is still closed. The open questions and blank answers sit in [../gates/gate-b.md](../gates/gate-b.md); do not invent rates or hosting to start Stage 6.
 
 ## How to use it
 

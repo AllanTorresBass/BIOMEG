@@ -161,6 +161,9 @@ describe('prices and switches', () => {
     expect(warning.ok).toBe(false)
     expect(warning.need).toBe('RATE_CHANGED')
     expect(warning.orderId).toBeNull()
+    const warned = listAudit().filter((row) => row.what.event === 'order.rate.warn')
+    expect(warned).toHaveLength(1)
+    expect(warned[0]?.result.outcome).toBe('REFUSED')
   })
 
   it('toggles Precio sábado without a formula and without rewriting a saved line (E-52)', async () => {

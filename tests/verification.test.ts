@@ -49,7 +49,7 @@ describe('verification page answers', () => {
     expect(await readVerification(token)).toMatchObject({ kind: 'ESTADO', state: 'EN_CORRECCION' })
   })
 
-  it('says a replaced issue was replaced, with the date', async () => {
+  it('says a replaced issue was replaced, with the date (E-43)', async () => {
     const { token } = secrets()
     replaceIssue(ORDER, printedLinesOf(ORDER))
     expect(await readVerification(token)).toMatchObject({ kind: 'REEMPLAZADO', orderNumber: '000001' })
@@ -58,7 +58,7 @@ describe('verification page answers', () => {
   it.each([
     ['voided', { voided: true }],
     ['open', { released: false, hasResult: false }],
-  ])('answers No disponible for a %s order', async (_name, patch) => {
+  ])('answers No disponible for a %s order (E-44)', async (_name, patch) => {
     const { token } = secrets()
     updateStub(ORDER, patch)
     expect(await readVerification(token)).toEqual({ kind: 'NO_DISPONIBLE' })
@@ -82,7 +82,7 @@ describe('verification page answers', () => {
     )
   })
 
-  it('rate limits guessing by address, even for a real token', async () => {
+  it('rate limits guessing by address, even for a real token (E-45)', async () => {
     const { token } = secrets()
     for (let i = 0; i < VERIFICATION_SETTINGS.requestsPerMinute; i += 1) await readVerification(`adivina-${i}`)
     expect(await readVerification(token)).toEqual({ kind: 'NO_DISPONIBLE' })
@@ -144,7 +144,7 @@ describe('the printed report', () => {
   })
 })
 
-describe('value check, R-149', () => {
+describe('value check, R-149 (E-63)', () => {
   it('refuses while the setting is off, with the right code', async () => {
     const { token, consultCode } = secrets()
     expect(await openOriginalReport(token, consultCode)).toBeNull()

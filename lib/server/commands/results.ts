@@ -213,7 +213,14 @@ export async function simulateAnalyzer(input: { orderId: string; lineId: string;
 
   if (current && current.source === 'teclado') {
     holdIncoming(stub.id, line.id, value)
-    await auditEvent({ command: 'result.import', outcome: 'REFUSED', reason: 'OWNERSHIP', ...target, rowId: null })
+    await auditEvent({
+      command: 'result.import',
+      event: 'result.conflict',
+      outcome: 'REFUSED',
+      reason: 'OWNERSHIP',
+      ...target,
+      rowId: null,
+    })
     touch(stub.id)
     return { ok: true, message: text.analyzerHeld, need: null }
   }

@@ -55,7 +55,7 @@ describe('portal contact', () => {
 })
 
 describe('failed attempts', () => {
-  it('pauses a cédula after too many failures and lifts the pause with time', () => {
+  it('pauses a cédula after too many failures and lifts the pause with time (E-41)', () => {
     const key = failureKey('V', '12.000.001')
     const start = 1_000_000
     for (let i = 0; i < PORTAL_SETTINGS.maxFailedAttempts - 1; i += 1) registerFailure(key, start)
@@ -107,7 +107,7 @@ describe('sign-in code', () => {
 })
 
 describe('portal session', () => {
-  it('ends when left, when idle, and at the absolute limit', () => {
+  it('ends when left, when idle, and at the absolute limit (E-40)', () => {
     const now = 9_000_000
     const left = startPortalSession(['c-1'], 'Paciente', now)
     expect(getPortalSession(left.id, now + MINUTE)).not.toBeNull()
@@ -150,7 +150,7 @@ describe('portal visits', () => {
     expect(file?.name).not.toContain('parcial')
   })
 
-  it('holds back results while a correction is open', () => {
+  it('holds back results while a correction is open (E-33)', () => {
     const stub = releasedStub()
     const original = { correctionOpen: stub.correctionOpen }
     updateStub(stub.id, { correctionOpen: true })

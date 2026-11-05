@@ -6,6 +6,7 @@ import type { AuditSeverity } from '@/types/audit/audit.types'
  */
 const EVENT_BY_COMMAND: Readonly<Record<string, string>> = {
   'order.save': 'order.open',
+  'order.discount': 'order.line.change.discount',
   'client.create': 'patient.save',
   'client.update': 'patient.save',
   'client.deactivate': 'patient.deactivate',
@@ -34,6 +35,8 @@ const SEVERITY_BY_EVENT: Readonly<Record<string, AuditSeverity>> = {
   'patient.merge': 'NOTICE',
   'patient.unmerge': 'NOTICE',
   'order.line.change.discount': 'NOTICE',
+  'order.price_column.override': 'NOTICE',
+  'order.rate.warn': 'WARNING',
   'order.void': 'NOTICE',
   'bacteriology.note.add': 'NOTICE',
   'result.conflict': 'NOTICE',

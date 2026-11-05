@@ -115,7 +115,7 @@ describe('nameSimilarity', () => {
     expect(nameSimilarity(a, a)).toBe(1)
     expect(nameSimilarity(a, normalizeName('Pedro Ramirez').key)).toBeLessThan(0.3)
   })
-  it('flags a near-identical spelling at or above the threshold', () => {
+  it('flags a near-identical spelling at or above the threshold (P-03)', () => {
     const a = normalizeName('Josefina Hernandez Rodriguez').key
     const b = normalizeName('Josefina Hernandes Rodriguez').key
     expect(nameSimilarity(a, b)).toBeGreaterThanOrEqual(SIMILAR_NAME_THRESHOLD - 0.1)
@@ -154,18 +154,18 @@ describe('client store', () => {
     expect(getClient(verified.id)?.version).toBe(1)
   })
 
-  it('finds a duplicate cédula, active or inactive, but ignores the client being saved (E-16)', () => {
+  it('finds a duplicate cédula, active or inactive, but ignores the client being saved (P-01, E-16)', () => {
     const created = insertClient(valid({ fullName: 'Duplicado Tres', cedulaDigits: '19000022' }), context)
     expect(findByCedula('V', '19000022', null)?.id).toBe(created.id)
     expect(findByCedula('V', '19000022', created.id)).toBeNull()
     expect(findByCedula('E', '19000022', null)).toBeNull()
   })
 
-  it('does not count a soft-deleted client as a duplicate (c-5 in the demo data)', () => {
+  it('does not count a soft-deleted client as a duplicate (P-01, c-5 in the demo data)', () => {
     expect(findByCedula('V', '12000005', null)).toBeNull()
   })
 
-  it('finds similar names and excludes the client itself', () => {
+  it('finds similar names and excludes the client itself (P-03)', () => {
     const created = insertClient(valid({ fullName: 'Josefina Hernandez Rodriguez', cedulaDigits: '19000033' }), context)
     const key = normalizeName('Josefina Hernandez Rodriguez').key
     expect(findSimilar(key, null).map((record) => record.id)).toContain(created.id)

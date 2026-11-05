@@ -55,7 +55,7 @@ describe('scope helpers', () => {
     expect(output.suppressedGroups).toBe(1)
   })
 
-  it('keeps released sections only and flags the partial', () => {
+  it('keeps released sections only and flags the partial (E-37)', () => {
     const output = applyReleasedSectionsPartial([
       { name: 'Hematología', released: true },
       { name: 'Química', released: false },

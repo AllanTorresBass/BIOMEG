@@ -110,6 +110,13 @@ export async function addLine(input: AddLineInput): Promise<DraftResult> {
       { confirmed: input.confirmOverride, motivo: input.overrideMotivo },
     )
     if (gated(override)) return override
+    await record(
+      opened,
+      'order.price_column.override',
+      override.rowId,
+      { before: draft.costType, after: input.column },
+      input.overrideMotivo,
+    )
   }
 
   const repeated = repeatedExamIds(allOrders(), client.id, [exam.id]).length > 0

@@ -31,7 +31,7 @@ describe('correction cycle', () => {
     expect(getCorrection('cor-2', HEM)?.byName).toBe('Beatriz')
   })
 
-  it('cancels an open correction and keeps the original release', () => {
+  it('cancels an open correction and keeps the original release (E-31)', () => {
     releasedOrder('cor-3')
     startCorrection('cor-3', HEM, 'Revisar', 'b-1', 'Beatriz')
     expect(abandonCorrection('cor-3', HEM)).not.toBeNull()
@@ -41,7 +41,7 @@ describe('correction cycle', () => {
     expect(canDeliver('cor-3')).toBe(true)
   })
 
-  it('releases the correction and leaves a single current issue', () => {
+  it('releases the correction and leaves a single current issue (E-34)', () => {
     releasedOrder('cor-4')
     startCorrection('cor-4', HEM, 'Valor mal digitado', 'b-1', 'Beatriz')
     const outcome = finishCorrection('cor-4', HEM, 'b-1', 'Beatriz')

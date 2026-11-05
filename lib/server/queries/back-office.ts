@@ -170,7 +170,11 @@ export async function getStatistics(context: StaffContext, filters: AuditFilters
   const rows = listAudit().filter((row) => within(labDay(row.when.serverTime), filters))
   const metrics = auditMetrics(rows)
   const refusalGroups = metrics.refusals.map((group) => ({ label: `${group.role} ${group.command}`, count: group.count }))
-  const shown = decision.scope === 'aggregates_only' ? applyAggregatesOnly(refusalGroups) : { groups: refusalGroups, suppressedGroups: 0 }
+  const portalGroups = metrics.portalFailures.map((group) => ({ label: group.address, count: group.count }))
+  const shownRefusals =
+    decision.scope === 'aggregates_only' ? applyAggregatesOnly(refusalGroups) : { groups: refusalGroups, suppressedGroups: 0 }
+  const shownPortal =
+    decision.scope === 'aggregates_only' ? applyAggregatesOnly(portalGroups) : { groups: portalGroups, suppressedGroups: 0 }
   await auditEvent({
     command: 'report.view',
     outcome: 'ALLOWED',
@@ -189,10 +193,19 @@ export async function getStatistics(context: StaffContext, filters: AuditFilters
       [text.statsPortal, minutes(metrics.portalUptake.medianMs)],
       [text.statsCorrection, minutes(metrics.correctionTime.medianMs)],
       [text.statsResend, minutes(metrics.resendLag.medianMs)],
+      [text.statsResendOverTwoDays, String(metrics.resendLagOverTwoDays)],
+      [text.statsAdminQueue, minutes(metrics.adminQueue.medianMs)],
+      [text.statsDiscounts, String(metrics.discounts)],
+      [text.statsOverrides, String(metrics.priceColumnOverrides)],
+      [text.statsStepUpFailures, String(metrics.stepUpFailures)],
+      [text.statsSelfEntered, String(metrics.selfEnteredReleases)],
+      [text.statsConflicts, String(metrics.analyzerConflicts)],
+      [text.statsRateWarnings, String(metrics.rateWarnings)],
       [text.statsReversals, String(metrics.sameUserReversals)],
     ] as const,
-    refusals: shown.groups,
-    suppressed: shown.suppressedGroups,
+    refusals: shownRefusals.groups,
+    portalFailures: shownPortal.groups,
+    suppressed: shownRefusals.suppressedGroups + shownPortal.suppressedGroups,
   }
 }
 

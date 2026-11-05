@@ -117,7 +117,7 @@ describe('the provider', () => {
     expect(fakeProviderSent()).toHaveLength(1)
   })
 
-  it('can fail without recording a send', async () => {
+  it('can fail without recording a send (E-38)', async () => {
     setFakeProviderFailing(true)
     const result = await fakeDeliveryPort.send(message)
     expect(result.ok).toBe(false)

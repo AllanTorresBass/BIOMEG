@@ -41,7 +41,7 @@ describe('one generic answer', () => {
     expect(JSON.stringify(listAudit())).not.toContain(right.digits)
   })
 
-  it('pauses a cédula after repeated failures, and pauses an address across cédulas', async () => {
+  it('pauses a cédula after repeated failures, and pauses an address across cédulas (E-41)', async () => {
     for (let i = 0; i < 5; i += 1) await requestPortalCode({ ...right, birth: '01/01/1900' })
     expect(await requestPortalCode(right)).toEqual({ kind: 'PAUSED' })
 
