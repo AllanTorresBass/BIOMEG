@@ -1,11 +1,7 @@
 'use client'
 
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
-
-interface UnsavedEditsValue {
-  dirty: boolean
-  setDirty: (value: boolean) => void
-}
+import type { UnsavedEditsValue } from '@/types/shell/unsaved-edits-context.props'
 
 const UnsavedEditsContext = createContext<UnsavedEditsValue | null>(null)
 

@@ -1,6 +1,6 @@
 import { PAYMENT_METHODS } from '@/lib/config/payment-methods'
 import { bsFromUsdCents, centsToDecimal, parseCents } from '@/lib/domain/pricing'
-import type { DraftLine, DraftPayment } from '@/types/orders/draft.types'
+import type { OrderTotals, TotalsInput } from '@/types/domain/order-totals.types'
 
 /** Pure on purpose: the Pago screen runs it on every keystroke and the server runs it again on Guardar. */
 
@@ -20,31 +20,6 @@ export function parsePercentBp(typed: string): number | null {
   if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) return null
   const bp = Math.round(Number(trimmed) * 100)
   return bp <= 10_000 ? bp : null
-}
-
-export interface TotalsInput {
-  lines: readonly Pick<DraftLine, 'priceUsd'>[]
-  rate: string | null
-  ivaRate: string | null
-  igtfRate: string | null
-  discountPct: string
-  payments: readonly Pick<DraftPayment, 'method' | 'amount'>[]
-}
-
-export interface OrderTotals {
-  subTotal: string
-  exento: string
-  base: string
-  iva: string
-  igtf: string
-  discount: string
-  discountPct: string
-  totalUsd: string
-  totalBs: string | null
-  abono: string
-  resta: string
-  ivaConfigured: boolean
-  igtfConfigured: boolean
 }
 
 function configured(rate: string | null): rate is string {

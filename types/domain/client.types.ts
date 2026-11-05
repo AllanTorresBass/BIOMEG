@@ -1,4 +1,4 @@
-import type { CedulaType } from '@/lib/utils/format'
+import type { CedulaType } from '@/types/lib/format.types'
 
 export type Sex = 'F' | 'M'
 export type ConsentChannel = 'WHATSAPP' | 'EMAIL'
@@ -109,6 +109,7 @@ export interface ValidClientInput {
 
 export interface ClientFormState {
   error: string | null
+  redirectTo?: string
   field: ClientFieldName | null
   /** Set when the save was refused because of a similar name. The card shows these and asks. */
   similar: ClientSummary[]

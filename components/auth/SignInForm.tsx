@@ -1,14 +1,15 @@
 'use client'
 
 import { useActionState } from 'react'
-import { signIn } from '@/app/actions/session'
+import { useSessionCommands } from '@/hooks/use-session'
 import { strings } from '@/lib/strings'
 import type { FormState } from '@/types/session/session.types'
 
 const INITIAL: FormState = { error: null }
 
 export function SignInForm() {
-  const [state, action, pending] = useActionState(signIn, INITIAL)
+  const { signInForm } = useSessionCommands()
+  const [state, action, pending] = useActionState(signInForm, INITIAL)
   return (
     <form action={action} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { verifyStepUp } from '@/lib/services/session.service'
+import { useSessionCommands } from '@/hooks/use-session'
 import { strings } from '@/lib/strings'
 import type { StepUpDialogProps } from '@/types/shared/dialog.types'
 
@@ -15,6 +15,7 @@ export function StepUpDialog({
   onVerified,
   onCancel,
 }: StepUpDialogProps) {
+  const { verifyStepUp } = useSessionCommands()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -32,7 +33,7 @@ export function StepUpDialog({
     const password = String(new FormData(form).get('password') ?? '')
     setPending(true)
     setError(null)
-    const verified = await verifyStepUp(password)
+    const verified = await verifyStepUp(password).then((answer) => answer.ok, () => false)
     if (verified) {
       form.reset()
       onVerified()

@@ -2,29 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('server-only', () => ({}))
 
-import {
-  approveIncomplete,
-  completeResendTask,
-  createResendTask,
-  incompleteApprovalOf,
-  recordDelivery,
-  restoreDeliveries,
-  snapshotDeliveries,
-  updateDelivery,
-} from '@/lib/db/memory/delivery-store'
+import { approveIncomplete, completeResendTask, createResendTask, incompleteApprovalOf, recordDelivery, restoreDeliveries, snapshotDeliveries, updateDelivery } from '@/lib/db/memory/delivery-store'
 import { getStub } from '@/lib/db/memory/order-index'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { clearFakeProvider, fakeProvider, fakeProviderSent, setFakeProviderFailing } from '@/lib/server/delivery/provider'
-import {
-  blockedReason,
-  buildDeliveryView,
-  deliveryModeAllowed,
-  deliveryStateOf,
-  destinationOf,
-  messageFor,
-  modeOf,
-  resendChannelsOf,
-} from '@/lib/server/domain/delivery'
+import { blockedReason, buildDeliveryView, deliveryModeAllowed, deliveryStateOf, destinationOf, messageFor, modeOf, resendChannelsOf } from '@/lib/server/domain/delivery'
 import type { ClientRecord } from '@/types/domain/client.types'
 
 function released() {

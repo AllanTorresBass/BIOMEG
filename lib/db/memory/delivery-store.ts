@@ -1,13 +1,7 @@
 import 'server-only'
 
 import type { DeliveryRecord, IncompleteApproval, ResendTask } from '@/types/orders/issue.types'
-
-interface DeliveryStoreState {
-  deliveries: Map<string, DeliveryRecord>
-  tasks: Map<string, ResendTask>
-  approvals: Map<string, IncompleteApproval>
-  counter: number
-}
+import type { DeliveryStoreSnapshot, DeliveryStoreState } from '@/types/stores/delivery-store.types'
 
 function buildState(): DeliveryStoreState {
   const deliveries = new Map<string, DeliveryRecord>()
@@ -94,13 +88,6 @@ export function clearIncompleteApproval(orderId: string): void {
 /** A resend task is done once the order was sent again on the replacing issue. */
 export function completeResendTask(orderId: string): void {
   for (const task of resendTasksOf(orderId)) state.tasks.delete(task.id)
-}
-
-export interface DeliveryStoreSnapshot {
-  deliveries: [string, DeliveryRecord][]
-  tasks: [string, ResendTask][]
-  approvals?: [string, IncompleteApproval][]
-  counter: number
 }
 
 export function snapshotDeliveries(): DeliveryStoreSnapshot {

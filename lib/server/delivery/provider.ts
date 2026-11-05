@@ -1,31 +1,5 @@
 import 'server-only'
-
-export type ProviderChannel = 'CORREO' | 'WHATSAPP'
-
-export interface ProviderMessage {
-  channel: ProviderChannel
-  to: string
-  subject: string | null
-  body: string
-  /** A link to Ingresar. It carries no token, order detail or result. */
-  link: string | null
-  /** The file name of the report, when the message carries the report itself. */
-  attachmentName: string | null
-  /** The email header image. WhatsApp has none. */
-  headerImage: string | null
-}
-
-export type ProviderResult = { ok: true } | { ok: false; reason: string }
-
-/** The real WhatsApp and email providers are Unknown. Anything that sends goes through this one interface. */
-export interface DeliveryProvider {
-  send(message: ProviderMessage): Promise<ProviderResult>
-}
-
-interface FakeState {
-  sent: ProviderMessage[]
-  failing: boolean
-}
+import type { DeliveryProvider, FakeState, ProviderMessage } from '@/types/server/provider.types'
 
 const globalFake = globalThis as typeof globalThis & { __biomegFakeProvider?: FakeState }
 const fake: FakeState = (globalFake.__biomegFakeProvider ??= { sent: [], failing: false })

@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { todayInLab } from '@/lib/server/domain/client-rules'
 import type { OrderStub } from '@/types/domain/order-stub.types'
 import type { CostType, PriceColumn } from '@/types/orders/draft.types'

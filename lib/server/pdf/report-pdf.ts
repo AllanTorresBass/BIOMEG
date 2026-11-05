@@ -6,18 +6,13 @@ import { paginate } from '@/lib/domain/report-layout'
 import { qrModules } from '@/lib/server/qr'
 import { strings } from '@/lib/strings'
 import type { ReportDocument } from '@/types/orders/report.types'
+import type { Logo } from '@/types/server/report-pdf.types'
 
 const text = strings.report
 const PAGE_W = 595
 const PAGE_H = 842
 const MARGIN = 40
 const COL = { exam: 40, result: 215, unit: 290, reference: 365, mark: 515 }
-
-interface Logo {
-  width: number
-  height: number
-  data: Buffer
-}
 
 let cachedLogo: Logo | null = null
 

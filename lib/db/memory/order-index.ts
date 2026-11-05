@@ -2,15 +2,12 @@ import 'server-only'
 
 import { demoSeed } from '@/lib/db/memory/seed'
 import { todayInLab } from '@/lib/server/domain/client-rules'
-import type { CedulaType } from '@/lib/utils/format'
+import type { CedulaType } from '@/types/lib/format.types'
 import type { MovedOrder, OrderFacts, OrderIdentity, OrderStub } from '@/types/domain/order-stub.types'
+import type { OrderIndexState } from '@/types/stores/order-index.types'
 
 const DAY_MS = 86_400_000
 const RECENT_DAYS = 30
-
-interface OrderIndexState {
-  orders: Map<string, OrderStub>
-}
 
 function daysAgo(days: number): string {
   return new Date(Date.now() - days * DAY_MS).toISOString()

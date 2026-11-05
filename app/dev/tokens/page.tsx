@@ -4,14 +4,7 @@ import { StatusChip } from '@/components/shared/StatusChip'
 import { STATUS_KEYS } from '@/lib/config/status'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { strings } from '@/lib/strings'
-import {
-  formatCedula,
-  formatDate,
-  formatOrderNumber,
-  formatPrice,
-  formatRate,
-  formatResultNumber,
-} from '@/lib/utils/format'
+import { formatCedula, formatDate, formatOrderNumber, formatPrice, formatRate, formatResultNumber } from '@/lib/utils/format'
 
 const SWATCHES = [
   ['bg-primary', 'navy'],

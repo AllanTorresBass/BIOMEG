@@ -3,13 +3,7 @@ import 'server-only'
 import { registerOrder, updateStub } from '@/lib/db/memory/order-index'
 import { computeOrderTotals } from '@/lib/domain/order-totals'
 import type { SavedOrder } from '@/types/orders/order.types'
-
-interface OrderStoreState {
-  orders: Map<string, SavedOrder>
-  byKey: Map<string, string>
-  counter: number
-  creditNotes?: number
-}
+import type { NewOrder, OrderStoreState, RemoveLineOutcome, VoidInput } from '@/types/stores/order-store.types'
 
 const globalStore = globalThis as typeof globalThis & { __biomegOrders?: OrderStoreState }
 // The seeded stubs o-1 to o-3 already use the first ids.
@@ -24,8 +18,6 @@ export function orderForKey(key: string): SavedOrder | null {
   const id = state.byKey.get(key)
   return id ? getOrder(id) : null
 }
-
-export type NewOrder = Omit<SavedOrder, 'id' | 'number' | 'invoiceNumber' | 'controlNumber' | 'state' | 'voided' | 'version'>
 
 /** Assigns the numbers and stores the order in one step. Nothing else writes orders. */
 export function createOrder(key: string, input: NewOrder, examIds: string[]): SavedOrder {
@@ -66,13 +58,6 @@ export function createOrder(key: string, input: NewOrder, examIds: string[]): Sa
   return order
 }
 
-export interface VoidInput {
-  motivo: string
-  byId: string
-  byName: string
-  withCreditNote: boolean
-}
-
 /**
  * The order stays stored and keeps its numbers. A credit note takes its own number
  * when money was taken, so the original fiscal number is never reused or erased.
@@ -95,8 +80,6 @@ export function voidSavedOrder(id: string, input: VoidInput): SavedOrder | null 
   updateStub(id, { voided: true })
   return next
 }
-
-export type RemoveLineOutcome = { ok: true; order: SavedOrder; removedName: string } | { ok: false; reason: 'NOT_FOUND' | 'LAST_LINE' }
 
 /** The totals are recomputed from the rates the order was saved with. The payments stay as taken. */
 export function removeSavedLine(id: string, lineId: string): RemoveLineOutcome {

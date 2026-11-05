@@ -4,26 +4,9 @@ vi.mock('server-only', () => ({}))
 
 import { PORTAL_SETTINGS } from '@/lib/config/portal'
 import { getStub, updateStub } from '@/lib/db/memory/order-index'
-import {
-  checkChallenge,
-  endPortalSession,
-  failureKey,
-  getPortalSession,
-  isPaused,
-  openChallenge,
-  registerFailure,
-  resetPortalStore,
-  startPortalSession,
-} from '@/lib/db/memory/portal-store'
+import { checkChallenge, endPortalSession, failureKey, getPortalSession, isPaused, openChallenge, registerFailure, resetPortalStore, startPortalSession } from '@/lib/db/memory/portal-store'
 import { demoSeed } from '@/lib/db/memory/seed'
-import {
-  hasAnyOrder,
-  matchClients,
-  phoneFor,
-  portalFileOf,
-  visitFor,
-  visitsOf,
-} from '@/lib/server/domain/portal'
+import { hasAnyOrder, matchClients, phoneFor, portalFileOf, visitFor, visitsOf } from '@/lib/server/domain/portal'
 import type { ClientRecord } from '@/types/domain/client.types'
 
 const MINUTE = 60_000

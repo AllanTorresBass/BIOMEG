@@ -1,4 +1,4 @@
-import type { CedulaType } from '@/lib/utils/format'
+import type { CedulaType } from '@/types/lib/format.types'
 
 /**
  * The few order facts the client rules need. Step 2.3 replaces this with real orders

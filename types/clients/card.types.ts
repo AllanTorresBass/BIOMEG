@@ -21,8 +21,17 @@ export interface ClientCardData {
 }
 
 export interface ClientListProps {
-  rows: ClientSummary[]
+  rows: readonly ClientSummary[]
   selectedId: string | null
-  query: string
-  includeInactive: boolean
+}
+
+export interface ClientSearchProps {
+  canIncludeInactive: boolean
+  onSearch: (text: string, includeInactive: boolean) => void
+}
+
+export interface ClientBrowserProps {
+  initialRows: readonly ClientSummary[]
+  selectedId: string | null
+  canIncludeInactive: boolean
 }

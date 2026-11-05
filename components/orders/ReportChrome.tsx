@@ -3,27 +3,18 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { generateReportPdf } from '@/app/actions/report'
+import { useDeliveryCommands } from '@/hooks/use-delivery'
 import { strings } from '@/lib/strings'
-import type { ReportMode, StoredReportInfo } from '@/types/orders/report.types'
+import type { Props } from '@/types/orders/report-chrome.props'
 
 const text = strings.report.chrome
 
 const button =
   'inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-border px-4 font-semibold disabled:cursor-not-allowed disabled:opacity-60'
 
-interface Props {
-  orderId: string
-  mode: ReportMode
-  lineId: string | null
-  stored: StoredReportInfo | null
-  /** The issued PDF is final. A draft can be made again. */
-  final: boolean
-  storedLabel: string | null
-}
-
 /** The controls beside the paper. They never print. */
 export function ReportChrome({ orderId, mode, lineId, stored, final, storedLabel }: Props) {
+  const { generateReportPdf } = useDeliveryCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)

@@ -2,25 +2,8 @@ import 'server-only'
 
 import { demoSeed } from '@/lib/db/memory/seed'
 import { autoMark } from '@/lib/domain/result-rules'
-import type {
-  Discrepancy,
-  ResultMark,
-  ResultSource,
-  SectionCorrection,
-  SectionRelease,
-  StoredResult,
-} from '@/types/orders/result.types'
-
-interface ResultStoreState {
-  cells: Map<string, StoredResult>
-  notes: Map<string, string>
-  discrepancies: Discrepancy[]
-  releases: Map<string, SectionRelease>
-  reportDates: Map<string, string>
-  corrections: Map<string, SectionCorrection>
-  /** Earlier versions of a cell, kept when a correction is released. */
-  priorVersions: Map<string, StoredResult[]>
-}
+import type { OpenCorrectionOutcome, ReleaseOutcome, ResultStoreSnapshot, ResultStoreState, WriteInput, WriteOutcome } from '@/types/stores/result-store.types'
+import type { Discrepancy, SectionCorrection, SectionRelease, StoredResult } from '@/types/orders/result.types'
 
 const SEEDED_ORDER = 'o-1'
 const SEEDED_SEX: 'F' | 'M' | null = 'F'
@@ -72,19 +55,6 @@ export function getResult(orderId: string, lineId: string): StoredResult | null 
 export function resultsOf(orderId: string): StoredResult[] {
   return [...state.cells.values()].filter((cell) => cell.orderId === orderId)
 }
-
-export interface WriteInput {
-  orderId: string
-  lineId: string
-  value: string
-  mark: ResultMark | null
-  source: ResultSource
-  byId: string
-  byName: string
-  expectedVersion: number
-}
-
-export type WriteOutcome = { kind: 'saved'; result: StoredResult } | { kind: 'conflict'; current: StoredResult }
 
 /** Writes one cell if its version still matches. The second writer gets the stored cell back. */
 export function writeResult(input: WriteInput): WriteOutcome {
@@ -166,11 +136,6 @@ export function sectionsWithResults(orderId: string): string[] {
   return [...found]
 }
 
-export type ReleaseOutcome =
-  | { kind: 'released'; sections: string[]; reportDate: string; complete: boolean }
-  | { kind: 'already'; section: string; by: SectionRelease }
-  | { kind: 'empty'; section: string }
-
 /**
  * Releases the chosen sections together or not at all. The first release of a section wins, so a second
  * attempt on the same section gets the first releaser back.
@@ -228,11 +193,6 @@ export function sectionResultState(orderId: string, section: string): 'PENDIENTE
   return cellsOfSection(orderId, section).length > 0 ? 'CARGADO' : 'PENDIENTE'
 }
 
-export type OpenCorrectionOutcome =
-  | { kind: 'opened'; correction: SectionCorrection }
-  | { kind: 'already'; by: SectionCorrection }
-  | { kind: 'not_released' }
-
 /** Reopens a released section. The first to open it wins. What it held is kept so a cancel can put it back. */
 export function openSectionCorrection(
   orderId: string,
@@ -289,14 +249,6 @@ export function closeSectionCorrection(orderId: string, section: string, byId: s
   state.reportDates.set(orderId, at)
   state.corrections.delete(cellKey(orderId, section))
   return correction
-}
-
-export interface ResultStoreSnapshot {
-  cells: [string, StoredResult][]
-  releases: [string, SectionRelease][]
-  reportDates: [string, string][]
-  corrections: [string, SectionCorrection][]
-  priorVersions: [string, StoredResult[]][]
 }
 
 export function snapshotResults(): ResultStoreSnapshot {

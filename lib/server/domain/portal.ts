@@ -13,6 +13,7 @@ import type { ClientRecord } from '@/types/domain/client.types'
 import type { OrderStub } from '@/types/domain/order-stub.types'
 import type { ReportDocument } from '@/types/orders/report.types'
 import type { PortalVisit, PortalVisitState } from '@/types/portal/portal.types'
+import type { PortalFile } from '@/types/domain/portal.types'
 
 /** Clients whose cédula and birth date both match what was typed. Several can match; the portal lists them all. */
 export function matchClients(type: string, digits: string, birthDate: string): ClientRecord[] {
@@ -97,11 +98,6 @@ export function visitFor(clientIds: readonly string[], orderId: string): { stub:
   const stub = clientIds.flatMap((clientId) => ordersOf(clientId)).find((candidate) => candidate.id === orderId)
   if (!stub || stub.voided) return null
   return { stub, visit: visitOf(stub) }
-}
-
-export interface PortalFile {
-  pdf: Buffer
-  name: string
 }
 
 /** The file for the Descargar informe action. A released order gets its issued PDF; a partial one a labeled partial. */

@@ -9,18 +9,11 @@ import { isValueCheckOn } from '@/lib/server/settings'
 import { strings } from '@/lib/strings'
 import { computeAge, formatAge, formatCedula, formatDate, LAB_TIME_ZONE } from '@/lib/utils/format'
 import type { OrderStub } from '@/types/domain/order-stub.types'
-import type {
-  ReportAvailability,
-  ReportDocument,
-  ReportMode,
-  ReportRow,
-  ReportSection,
-} from '@/types/orders/report.types'
+import type { ReportKind, ReportRequest } from '@/types/domain/report.types'
+import type { ReportAvailability, ReportDocument, ReportRow, ReportSection } from '@/types/orders/report.types'
 
 const dash = strings.empty.dash
 const SEX_LABEL = { F: 'Femenino', M: 'Masculino' } as const
-
-export type ReportKind = 'ISSUED' | 'DRAFT'
 
 /** LIBERADO prints as issued. A partly loaded order prints as a draft. Anything else prints nothing. */
 export function reportKindOf(stub: Pick<OrderStub, 'hasResult' | 'released' | 'correctionOpen'>): ReportKind | 'EN_REVISION' | 'EMPTY' {
@@ -82,13 +75,6 @@ function processedByOf(stub: OrderStub, sections: ReportSection[]): ReportDocume
   const unique = new Set(names.map((entry) => entry.name))
   if (unique.size === 1) return [{ section: null, name: names[0]!.name }]
   return names
-}
-
-export interface ReportRequest {
-  stub: OrderStub
-  mode: ReportMode
-  lineId: string | null
-  origin: string | null
 }
 
 /** Builds what the paper and the PDF print. A stored issued report wins, so printed values stay as printed. */

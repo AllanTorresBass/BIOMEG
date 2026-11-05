@@ -4,19 +4,7 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto
 import { resultsOf } from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import type { IssuedLine, IssueRecord } from '@/types/orders/issue.types'
-
-/** What the paper prints. Lookups use only the hashes on the issue. */
-export interface IssuePrintSecrets {
-  token: string
-  consultCode: string
-}
-
-interface IssueStoreState {
-  issues: Map<string, IssueRecord>
-  /** Prototype only: lets the preview redraw the QR before a PDF is kept. Kept apart from issue records. */
-  printSecrets: Map<string, IssuePrintSecrets>
-  counter: number
-}
+import type { IssuePrintSecrets, IssueStoreSnapshot, IssueStoreState } from '@/types/stores/issue-store.types'
 
 const SEEDED_ORDER = 'o-1'
 
@@ -123,11 +111,6 @@ export function replaceIssue(orderId: string, lines: IssuedLine[]): { issue: Iss
   }
   state.issues.set(issue.id, issue)
   return { issue, replaced }
-}
-
-export interface IssueStoreSnapshot {
-  issues: [string, IssueRecord][]
-  counter: number
 }
 
 export function snapshotIssues(): IssueStoreSnapshot {

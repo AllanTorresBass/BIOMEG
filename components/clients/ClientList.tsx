@@ -4,17 +4,12 @@ import { cn } from '@/lib/utils/cn'
 import { formatCedula, formatDate } from '@/lib/utils/format'
 import type { ClientListProps } from '@/types/clients/card.types'
 
-export function ClientList({ rows, selectedId, query, includeInactive }: ClientListProps) {
+export function ClientList({ rows, selectedId }: ClientListProps) {
   if (rows.length === 0) {
     return <p className="text-muted-foreground">{strings.pendingReview.clients.none}</p>
   }
 
-  const hrefFor = (id: string) => {
-    const params = new URLSearchParams({ id })
-    if (query) params.set('q', query)
-    if (includeInactive) params.set('inactivos', '1')
-    return `/clientes?${params.toString()}`
-  }
+  const hrefFor = (id: string) => `/clientes?id=${encodeURIComponent(id)}`
 
   return (
     <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-card">

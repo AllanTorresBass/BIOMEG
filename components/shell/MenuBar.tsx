@@ -5,11 +5,7 @@ import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import { strings } from '@/lib/strings'
 import { cn } from '@/lib/utils/cn'
-
-export interface MenuBarGroup {
-  label: string
-  items: { label: string; slug: string }[]
-}
+import type { MenuBarGroup } from '@/types/shell/menu-bar.props'
 
 /** Only groups with at least one reachable item arrive here. Others are absent, not greyed. */
 export function MenuBar({ groups }: { groups: MenuBarGroup[] }) {

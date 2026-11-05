@@ -4,6 +4,7 @@ import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypt
 import { SESSION_SETTINGS } from '@/lib/config/session'
 import { demoSeed } from '@/lib/db/memory/seed'
 import type { StaffRole } from '@/types/auth/auth.types'
+import type { SessionState, StoredAccount } from '@/types/server/store.types'
 import type {
   PasswordChangeResult,
   PublicAccount,
@@ -13,22 +14,6 @@ import type {
 
 /** Demo only. Every invented account uses it, and the sign-in page says so. */
 export const DEMO_PASSWORD = 'Demo-2026-Lab'
-
-interface StoredAccount extends PublicAccount {
-  salt: string
-  hash: string
-}
-
-interface FailureRecord {
-  count: number
-  pausedUntil: number
-}
-
-interface SessionState {
-  accounts: Map<string, StoredAccount>
-  sessions: Map<string, StaffSession>
-  failures: Map<string, FailureRecord>
-}
 
 const KEY_LENGTH = 32
 

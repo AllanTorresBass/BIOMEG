@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
-import { cancelDraft, goToStep, saveVisit, selectClient } from '@/app/actions/order-draft'
+import { useOrderCommands } from '@/hooks/use-orders'
 import { PatientHeader } from '@/components/orders/PatientHeader'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { strings } from '@/lib/strings'
@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 const text = strings.pendingReview.orders
 
 export function ClientStep({ draftId, query, patient, results, visit, todayText, canCreateClient }: ClientStepProps) {
+  const { selectClient, saveVisit, goToStep, cancelDraft } = useOrderCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')

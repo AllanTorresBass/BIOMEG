@@ -1,4 +1,4 @@
-import type { CedulaType } from '@/lib/utils/format'
+import type { CedulaType } from '@/types/lib/format.types'
 import type { StaffRole } from '@/types/auth/auth.types'
 
 export type { StaffRole }

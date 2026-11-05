@@ -1,4 +1,5 @@
 import { strings } from '@/lib/strings'
+import type { Age, CedulaType, NormalizedName, ParsedCedula } from '@/types/lib/format.types'
 
 export const LAB_TIME_ZONE = 'America/Caracas'
 
@@ -6,23 +7,6 @@ const DASH = strings.empty.dash
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
 
 export const CEDULA_TYPES = ['V', 'E', 'J', 'P', 'G'] as const
-export type CedulaType = (typeof CEDULA_TYPES)[number]
-
-export interface ParsedCedula {
-  type: CedulaType
-  digits: string
-}
-
-export interface Age {
-  value: number
-  unit: 'years' | 'months'
-}
-
-export interface NormalizedName {
-  display: string
-  key: string
-}
-
 function groupThousands(integerDigits: string): string {
   return integerDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }

@@ -1,29 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import useSWR from 'swr'
-import { fetchWorklist } from '@/app/actions/worklist'
+import { useWorklist } from '@/hooks/use-worklist'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { strings } from '@/lib/strings'
 import { formatDate } from '@/lib/utils/format'
 import type { WorklistView } from '@/types/orders/worklist.types'
 
 const text = strings.pendingReview.worklist
-const REFRESH_MS = 20_000
-
-async function load([, date, reviewOnly]: readonly [string, string, boolean]): Promise<WorklistView> {
-  const view = await fetchWorklist(date, reviewOnly)
-  if (!view) throw new Error('worklist')
-  return view
-}
-
 export function WorklistTable({ initial, reviewOnly }: { initial: WorklistView; reviewOnly: boolean }) {
-  const { data, error, isValidating, mutate } = useSWR(['worklist', initial.date, reviewOnly] as const, load, {
-    fallbackData: initial,
-    refreshInterval: REFRESH_MS,
-    revalidateOnMount: false,
-    keepPreviousData: true,
-  })
+  const { data, error, isFetching, refetch } = useWorklist(initial, reviewOnly)
   const view = data ?? initial
 
   return (
@@ -31,8 +17,8 @@ export function WorklistTable({ initial, reviewOnly }: { initial: WorklistView; 
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
-          onClick={() => void mutate()}
-          disabled={isValidating}
+          onClick={() => void refetch()}
+          disabled={isFetching}
           className="inline-flex h-10 items-center rounded-[var(--radius-control)] border border-border px-4 font-semibold disabled:opacity-60"
         >
           {text.refresh}

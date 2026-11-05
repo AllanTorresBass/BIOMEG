@@ -2,26 +2,22 @@
 
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { addLine, cancelDraft, goToStep, removeLine, saveBilling } from '@/app/actions/order-draft'
+import { useOrderCommands } from '@/hooks/use-orders'
 import { PatientHeader } from '@/components/orders/PatientHeader'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { COST_TYPES, COST_TYPE_LABELS, PRICE_COLUMNS, PRICE_COLUMN_LABELS } from '@/lib/config/price-defaults'
 import { strings } from '@/lib/strings'
-import type { AddLineInput, CostType, DraftNeed, PriceColumn } from '@/types/orders/draft.types'
+import type { AddLineInput, CostType, PriceColumn } from '@/types/orders/draft.types'
 import type { ExamsStepProps } from '@/types/orders/screen.types'
+import type { Question } from '@/types/orders/exams-step.props'
 
 const text = strings.pendingReview.orders
-
-interface Question {
-  need: DraftNeed
-  examName: string
-  input: AddLineInput
-}
 
 const FIELD = 'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3'
 
 export function ExamsStep({ draftId, patient, costType, billing, catalog, lines, totals, rateMissing }: ExamsStepProps) {
+  const { saveBilling, addLine, removeLine, goToStep, cancelDraft } = useOrderCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')

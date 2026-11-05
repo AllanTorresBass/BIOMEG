@@ -1,14 +1,15 @@
 'use client'
 
 import { useActionState } from 'react'
-import { changeOwnPassword } from '@/app/actions/password'
+import { useSessionCommands } from '@/hooks/use-session'
 import { strings } from '@/lib/strings'
 import type { FormState } from '@/types/session/session.types'
 
 const INITIAL: FormState = { error: null }
 
 export function ChangePasswordForm() {
-  const [state, action, pending] = useActionState(changeOwnPassword, INITIAL)
+  const { changePasswordForm } = useSessionCommands()
+  const [state, action, pending] = useActionState(changePasswordForm, INITIAL)
   return (
     <form action={action} className="flex max-w-sm flex-col gap-4">
       <label className="flex flex-col gap-1">

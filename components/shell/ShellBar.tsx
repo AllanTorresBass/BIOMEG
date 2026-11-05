@@ -1,6 +1,6 @@
-import { signOut } from '@/app/actions/session'
 import { ShellEmblem } from '@/components/brand/ShellEmblem'
 import { SalirButton } from '@/components/shell/SalirButton'
+import { SignOutButton } from '@/components/shell/SignOutButton'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { strings } from '@/lib/strings'
 import { formatDate, formatRate } from '@/lib/utils/format'
@@ -54,14 +54,7 @@ export function ShellBar({ account, roleLabel, settings }: ShellBarProps) {
           <span className="block text-xs">{roleLabel}</span>
         </p>
         <SalirButton />
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="h-9 rounded-[var(--radius-control)] bg-card px-3 font-semibold text-foreground"
-          >
-            {strings.shell.signOut}
-          </button>
-        </form>
+        <SignOutButton />
       </div>
     </header>
   )

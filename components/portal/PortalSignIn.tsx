@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
-import { requestPortalCode, verifyPortalCode } from '@/app/actions/portal'
+import { usePortalCommands } from '@/hooks/use-portal'
 import { strings } from '@/lib/strings'
 
 const TYPES = ['V', 'E', 'P'] as const
@@ -11,6 +11,7 @@ const BUTTON =
   'h-10 rounded-[var(--radius-control)] bg-primary px-4 font-semibold text-primary-foreground disabled:opacity-60'
 
 export function PortalSignIn() {
+  const { requestPortalCode, verifyPortalCode } = usePortalCommands()
   const router = useRouter()
   const [pending, start] = useTransition()
   const [step, setStep] = useState<'data' | 'code'>('data')

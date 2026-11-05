@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { appendAudit, listAudit, resetAuditForTests } from '@/lib/db/memory/audit-store'
-import { canVoid, deriveOrderState, type OrderResult } from '@/lib/server/domain/order-state'
+import { canVoid, deriveOrderState } from '@/lib/server/domain/order-state'
+import type { OrderResult } from '@/types/domain/order-state.types'
 import { applyAggregatesOnly, applyReleasedSectionsPartial, applyStatusOnly } from '@/lib/auth/scopes'
 
 const result = (sectionId: string, state: OrderResult['state']): OrderResult => ({ sectionId, state })

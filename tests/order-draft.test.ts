@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { discardDraft, getDraft, nextLineId, startDraft } from '@/lib/db/memory/draft-store'
 import { needsColumnOverride, repeatedExamIds } from '@/lib/server/domain/order-draft-rules'
-import {
-  bsFromUsdCents,
-  centsToDecimal,
-  parseCents,
-  priceFor,
-  pricingBasis,
-  totalsOf,
-} from '@/lib/domain/pricing'
+import { bsFromUsdCents, centsToDecimal, parseCents, priceFor, pricingBasis, totalsOf } from '@/lib/domain/pricing'
 import type { DemoPriceRow } from '@/types/domain/demo.types'
 import type { OrderStub } from '@/types/domain/order-stub.types'
 

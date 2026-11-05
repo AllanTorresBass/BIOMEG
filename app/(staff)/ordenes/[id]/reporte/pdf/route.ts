@@ -1,8 +1,10 @@
 import { getReport } from '@/lib/db/memory/report-store'
+import { isDownloadAllowed } from '@/lib/server/api/with-command'
 import { mayReach } from '@/lib/server/guard'
 import { getStaffContext } from '@/lib/server/session/current'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!(await isDownloadAllowed())) return new Response(null, { status: 429 })
   const context = await getStaffContext()
   if (!context || context.locked) return new Response('Unauthorized', { status: 401 })
   if (!mayReach(context, ['report.print.patient', 'report.print.single'])) {
