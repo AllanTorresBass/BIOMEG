@@ -1,9 +1,11 @@
 import { z } from 'zod'
+import { strings } from '@/lib/strings'
 
 const shortText = z.string().max(200)
+const required = shortText.min(1, strings.pendingReview.api.required)
 
-export const signInSchema = z.strictObject({ username: shortText, password: shortText })
-export const changePasswordSchema = z.strictObject({ current: shortText, next: shortText })
+export const signInSchema = z.strictObject({ username: required, password: required })
+export const changePasswordSchema = z.strictObject({ current: required, next: required })
 export const stepUpSchema = z.strictObject({ password: shortText })
 export const demoSwitchSchema = z.strictObject({ userId: shortText })
 export const noInputSchema = z.strictObject({})

@@ -31,6 +31,18 @@ const clientFormFields = {
   confirmSimilar: z.boolean(),
 }
 
+export const clientCardSchema = z.strictObject({
+  fullName: shortText,
+  cedulaType: shortText,
+  cedulaNumber: shortText,
+  birthDate: shortText,
+  sex: shortText,
+  phone: shortText,
+  email: shortText,
+  consentWhatsapp: z.boolean(),
+  consentEmail: z.boolean(),
+})
+
 export const saveClientSchema: z.ZodType<ClientFormInput & { confirmGesture: boolean }> = z.strictObject({
   ...clientFormFields,
   confirmGesture: z.boolean(),
@@ -42,3 +54,4 @@ export type MergeInput = z.infer<typeof mergeSchema>
 export type UndoMergeInput = z.infer<typeof undoMergeSchema>
 export type ClientSearchInput = z.infer<typeof clientSearchSchema>
 export type SaveClientInput = z.infer<typeof saveClientSchema>
+export type ClientCardValues = z.infer<typeof clientCardSchema>

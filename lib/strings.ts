@@ -241,6 +241,7 @@ export const strings = {
       rateLimited: 'Demasiadas solicitudes. Espere un momento e intente de nuevo.',
       pageFailed: 'No se pudo mostrar esta pantalla.',
       sessionEnded: 'La sesión terminó. Vuelva a entrar.',
+      required: 'Este campo es obligatorio.',
       retry: 'Intentar de nuevo',
       loading: 'Cargando…',
     },
@@ -567,6 +568,9 @@ export const strings = {
       billingAddress: 'Dirección',
     },
     clients: {
+      flags: 'Estado',
+      confirmChangeTitle: 'Confirmar el cambio',
+      confirmChangeBody: 'Este cliente ya tiene órdenes. ¿Guardar el cambio?',
       searching: 'Buscando…',
       search: 'Buscar por nombre o cédula',
       searchButton: 'Buscar',

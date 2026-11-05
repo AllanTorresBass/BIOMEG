@@ -11,6 +11,20 @@ function groupThousands(integerDigits: string): string {
   return integerDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
 
+/** HH:MM in laboratory time. Built from parts, so the server and the browser print the same text. */
+export function formatTime(value: Date | string): string {
+  const date = typeof value === 'string' ? new Date(value) : value
+  if (Number.isNaN(date.getTime())) return DASH
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: LAB_TIME_ZONE,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date)
+  const pick = (type: string) => parts.find((part) => part.type === type)?.value ?? ''
+  return `${pick('hour')}:${pick('minute')}`
+}
+
 /** DD/MM/YYYY. A date-only string is never shifted by a time zone. */
 export function formatDate(value: Date | string | null | undefined): string {
   if (value === null || value === undefined || value === '') return DASH

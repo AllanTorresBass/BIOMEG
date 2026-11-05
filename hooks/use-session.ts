@@ -4,12 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useCommand } from '@/hooks/use-command'
 import { container } from '@/lib/services'
-import type { FormState } from '@/types/session/session.types'
-
-function field(data: FormData, name: string): string {
-  const value = data.get(name)
-  return typeof value === 'string' ? value : ''
-}
+import type { ChangePasswordInput, SignInInput } from '@/types/session/session.schemas'
 
 export function useSessionCommands() {
   const run = useCommand()
@@ -17,10 +12,8 @@ export function useSessionCommands() {
   return useMemo(() => {
     const service = () => container.sessionService
     return {
-      signInForm: (_previous: FormState, data: FormData) =>
-        run(() => service().signIn({ username: field(data, 'username'), password: field(data, 'password') }), { toasts: 'none' }),
-      changePasswordForm: (_previous: FormState, data: FormData) =>
-        run(() => service().changePassword({ current: field(data, 'current'), next: field(data, 'next') }), { toasts: 'none' }),
+      signIn: (input: SignInInput) => run(() => service().signIn(input), { toasts: 'none' }),
+      changePassword: (input: ChangePasswordInput) => run(() => service().changePassword(input), { toasts: 'none' }),
       signOut: () => {
         queryClient.clear()
         return run(() => service().signOut())

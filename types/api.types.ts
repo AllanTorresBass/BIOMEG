@@ -22,8 +22,8 @@ export function isApiErrorBody(value: unknown): value is ApiErrorBody {
 }
 
 export interface CommandFeedback {
-  /** 'failures' keeps a result cell quiet on success. 'none' is for the portal, whose errors stay inline. */
-  toasts?: 'all' | 'failures' | 'none'
+  /** 'failures' keeps a result cell quiet on success. 'successes' is for a form that shows its errors inline. 'none' is for the portal, whose errors stay inline. */
+  toasts?: 'all' | 'failures' | 'successes' | 'none'
   /** False for a read, or a save that shows its own state. */
   refresh?: boolean
 }

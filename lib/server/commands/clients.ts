@@ -2,7 +2,7 @@ import 'server-only'
 
 import { revalidatePath } from 'next/cache'
 import { decide } from '@/lib/auth/decide'
-import { findByCedula, findSimilar, getClient, insertClient, searchClients, summarize, updateClient } from '@/lib/db/memory/client-store'
+import { findByCedula, findSimilar, getClient, insertClient, summarize, updateClient } from '@/lib/db/memory/client-store'
 import { flagForReview, orderFacts } from '@/lib/db/memory/order-index'
 import { auditEvent } from '@/lib/server/audit'
 import { parseBirthDate, validateClientInput } from '@/lib/server/domain/client-rules'
@@ -10,6 +10,7 @@ import { getStaffContext, toDecisionSession } from '@/lib/server/session/current
 import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE } from '@/lib/utils/format'
 import type { ClientSearchInput, SaveClientInput } from '@/types/clients/clients.schemas'
+import { readableClients } from '@/lib/server/queries/clients'
 import type { ClientSummary, ClientFormInput, ClientFormState, ClientRecord, ConsentChannel } from '@/types/domain/client.types'
 
 const EMPTY: ClientFormState = {
@@ -143,7 +144,7 @@ export async function saveClient({ confirmGesture, ...input }: SaveClientInput):
   }
 
   revalidatePath('/clientes')
-  return { ...EMPTY, redirectTo: `/clientes?id=${savedId}&saved=1` }
+  return { ...EMPTY, message: strings.pendingReview.clients.saved, redirectTo: `/clientes?id=${savedId}&saved=1` }
 }
 
 /** Name or cédula arrive in the body, never in a URL. Soft-deleted clients never appear. */
@@ -151,7 +152,6 @@ export async function searchClientRows({ text, includeInactive }: ClientSearchIn
   const context = await getStaffContext()
   if (!context || context.locked) return []
   const session = toDecisionSession(context)
-  if (!decide({ session, command: 'client.read', facts: { on_worklist: false } }).allowed) return []
   const allowInactive = decide({ session, command: 'client.include_inactive' }).allowed
-  return searchClients({ text, includeInactive: includeInactive && allowInactive }).map(summarize)
+  return readableClients(session, text, includeInactive && allowInactive)
 }

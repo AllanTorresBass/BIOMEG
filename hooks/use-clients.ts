@@ -5,43 +5,17 @@ import { useMemo } from 'react'
 import { useCommand } from '@/hooks/use-command'
 import { container } from '@/lib/services'
 import { queryKeys } from '@/lib/query-keys'
-import type { CorrectCedulaInput, MergeInput, RequestMergeInput, UndoMergeInput } from '@/types/clients/clients.schemas'
+import type { CorrectCedulaInput, MergeInput, RequestMergeInput, SaveClientInput, UndoMergeInput } from '@/types/clients/clients.schemas'
 import type { LifecycleInput } from '@/types/clients/lifecycle.types'
-import type { ClientFormState, ClientSummary } from '@/types/domain/client.types'
-
-function field(data: FormData, name: string): string {
-  const value = data.get(name)
-  return typeof value === 'string' ? value : ''
-}
-
-function versionOf(data: FormData): number | null {
-  const version = Number(field(data, 'version'))
-  return Number.isInteger(version) && version > 0 ? version : null
-}
+import type { ClientSummary } from '@/types/domain/client.types'
 
 export function useClientCommands() {
   const run = useCommand()
   return useMemo(() => {
     const service = () => container.clientService
     return {
-      saveClientForm: (_previous: ClientFormState, data: FormData) =>
-        run(() =>
-          service().save({
-            id: field(data, 'id') || null,
-            version: versionOf(data),
-            fullName: field(data, 'fullName'),
-            cedulaType: field(data, 'cedulaType'),
-            cedulaNumber: field(data, 'cedulaNumber'),
-            birthDate: field(data, 'birthDate'),
-            sex: field(data, 'sex'),
-            phone: field(data, 'phone'),
-            email: field(data, 'email'),
-            consentWhatsapp: data.get('consentWhatsapp') === 'on',
-            consentEmail: data.get('consentEmail') === 'on',
-            confirmSimilar: data.get('confirmSimilar') === 'on',
-            confirmGesture: data.get('confirmGesture') === 'on',
-          }),
-        ),
+      /** Field errors stay inline on the card (rule 9). Success still toasts. */
+      saveClient: (input: SaveClientInput) => run(() => service().save(input), { toasts: 'successes' }),
       deactivateClient: (input: LifecycleInput) => run(() => service().deactivate(input)),
       deleteClient: (input: LifecycleInput) => run(() => service().softDelete(input)),
       correctCedula: (input: CorrectCedulaInput) => run(() => service().correctCedula(input)),

@@ -38,11 +38,11 @@ export function useCommand(): CommandRunner {
       const refused = outcome.ok === false || (typeof outcome.error === 'string' && outcome.error !== '')
       if (refused) {
         const message = typeof outcome.error === 'string' ? outcome.error : outcome.message
-        if (toasts !== 'none' && !outcome.need && typeof message === 'string') toast.error(message)
+        if ((toasts === 'all' || toasts === 'failures') && !outcome.need && typeof message === 'string') toast.error(message)
         return result
       }
 
-      if (toasts === 'all' && typeof outcome.message === 'string') toast.success(outcome.message)
+      if ((toasts === 'all' || toasts === 'successes') && typeof outcome.message === 'string') toast.success(outcome.message)
       if (refresh) {
         void queryClient.invalidateQueries()
         router.refresh()

@@ -9,15 +9,33 @@ import {
   searchClients,
   summarize,
 } from '@/lib/db/memory/client-store'
-import { orderFacts } from '@/lib/db/memory/order-index'
+import { orderFacts, ordersOf } from '@/lib/db/memory/order-index'
 import { todayInLab } from '@/lib/server/domain/client-rules'
+import { buildWorklist } from '@/lib/server/domain/worklist'
 import { guardRoute } from '@/lib/server/guard'
 import { toDecisionSession } from '@/lib/server/session/current'
 import { strings } from '@/lib/strings'
 import { computeAge, formatAge, formatDate } from '@/lib/utils/format'
 import type { ClientCardData } from '@/types/clients/card.types'
-import type { ClientRecord } from '@/types/domain/client.types'
+import type { DecisionSession } from '@/types/auth/auth.types'
+import type { ClientRecord, ClientSummary } from '@/types/domain/client.types'
 import type { StaffContext } from '@/types/session/session.types'
+
+/** R-010: Auxiliar reads only clients on today's worklist. Every other staff role reads all of them. */
+function isOnWorklist(clientId: string): boolean {
+  const today = todayInLab()
+  return buildWorklist(ordersOf(clientId), today).length > 0
+}
+
+function mayRead(session: DecisionSession, clientId: string): boolean {
+  return decide({ session, command: 'client.read', facts: { on_worklist: isOnWorklist(clientId) } }).allowed
+}
+
+export function readableClients(session: DecisionSession, text: string, includeInactive: boolean): ClientSummary[] {
+  return searchClients({ text, includeInactive })
+    .filter((client) => mayRead(session, client.id))
+    .map(summarize)
+}
 
 const NO_ORDERS_OR_RESULTS = {
   cedula_changed: false,
@@ -76,10 +94,9 @@ export async function getClientsScreen(context: StaffContext, selectedId: string
   const canIncludeInactive = decide({ session, command: 'client.include_inactive' }).allowed
   const canCreate = decide({ session, command: 'client.create' }).allowed
   const canEdit = decide({ session, command: 'client.update', facts: NO_ORDERS_OR_RESULTS }).allowed
-  const canRead = decide({ session, command: 'client.read', facts: { on_worklist: false } }).allowed
 
-  const rows = canRead ? searchClients({ text: '', includeInactive: false }).map(summarize) : []
-  const selected = selectedId && canRead ? getClient(selectedId) : null
+  const rows = readableClients(session, '', false)
+  const selected = selectedId && mayRead(session, selectedId) ? getClient(selectedId) : null
   const card = selected ? toCardData(selected) : wantsNew && canCreate ? NEW_CLIENT : null
 
   const may = (command: string, facts: Record<string, boolean>) => {

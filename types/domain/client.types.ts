@@ -109,6 +109,7 @@ export interface ValidClientInput {
 
 export interface ClientFormState {
   error: string | null
+  message?: string
   redirectTo?: string
   field: ClientFieldName | null
   /** Set when the save was refused because of a similar name. The card shows these and asks. */
