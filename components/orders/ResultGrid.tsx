@@ -7,33 +7,9 @@ import { StatusChip } from '@/components/shared/StatusChip'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
 import type { GridRow, GridSection, ResultGridView, ResultMark, RowHistoryEntry } from '@/types/orders/result.types'
+import type { CellState, Conflict, CorrectionOperation, Pending } from '@/types/orders/result-grid.props'
 
 const text = strings.pendingReview.results
-
-interface CellState {
-  value: string
-  mark: ResultMark | null
-  version: number
-  byName: string | null
-  at: string | null
-  incoming: GridRow['incoming']
-}
-
-type Pending =
-  | { kind: 'save'; lineId: string; value: string; manualMark?: ResultMark | '' }
-  | { kind: 'incoming'; lineId: string; choice: 'use' | 'keep' }
-
-type CorrectionOperation =
-  | { kind: 'open'; section: string; motivo: string }
-  | { kind: 'cancel'; section: string }
-  | { kind: 'release'; section: string }
-
-interface Conflict {
-  lineId: string
-  message: string
-  yourValue: string
-  version: number
-}
 
 const timeFormat = new Intl.DateTimeFormat('es-VE', { timeZone: 'America/Caracas', timeStyle: 'short' })
 

@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  discrepanciesOf,
-  dropIncoming,
-  getNote,
-  getResult,
-  holdIncoming,
-  queueDiscrepancy,
-  setNote,
-  writeResult,
-} from '@/lib/db/memory/result-store'
+import { discrepanciesOf, dropIncoming, getNote, getResult, holdIncoming, queueDiscrepancy, setNote, writeResult } from '@/lib/db/memory/result-store'
 import { autoMark, closedRange, isNumericValue, parseLabNumber, resultOrderState } from '@/lib/domain/result-rules'
 
 const base = { source: 'teclado' as const, byId: 'u-1', byName: 'Ana', mark: null }

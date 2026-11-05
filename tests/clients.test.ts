@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  findByCedula,
-  findSimilar,
-  getClient,
-  insertClient,
-  searchClients,
-  updateClient,
-} from '@/lib/db/memory/client-store'
+import { findByCedula, findSimilar, getClient, insertClient, searchClients, updateClient } from '@/lib/db/memory/client-store'
 import { parseBirthDate, validateClientInput } from '@/lib/server/domain/client-rules'
 import { nameSimilarity, SIMILAR_NAME_THRESHOLD } from '@/lib/utils/similarity'
 import { normalizeName, parseCedulaPaste } from '@/lib/utils/format'

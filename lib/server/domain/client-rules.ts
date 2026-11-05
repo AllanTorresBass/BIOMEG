@@ -1,14 +1,13 @@
 import 'server-only'
 
 import { CEDULA_TYPES, LAB_TIME_ZONE, normalizeName } from '@/lib/utils/format'
-import type { CedulaType } from '@/lib/utils/format'
-import type { ClientFormInput, ClientRefusal, Sex, ValidClientInput } from '@/types/domain/client.types'
+import type { CedulaType } from '@/types/lib/format.types'
+import type { ClientFormInput, ClientRefusal, Sex } from '@/types/domain/client.types'
+import type { CedulaPairValidation, ClientValidation } from '@/types/domain/client-rules.types'
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_DIGITS = 6
 const MAX_DIGITS = 10
-
-export type ClientValidation = { ok: true; value: ValidClientInput } | { ok: false; refusal: ClientRefusal }
 
 /** Today in the laboratory's time zone, as YYYY-MM-DD. */
 export function todayInLab(now: Date = new Date()): string {
@@ -31,10 +30,6 @@ export function parseBirthDate(text: string): string | null {
   if (probe.getUTCFullYear() !== year || probe.getUTCMonth() !== month - 1 || probe.getUTCDate() !== day) return null
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
-
-export type CedulaPairValidation =
-  | { ok: true; type: CedulaType | null; digits: string | null }
-  | { ok: false; refusal: ClientRefusal }
 
 /** Both empty is valid (a client without a cédula). One without the other, or a malformed pair, is not. */
 export function validateCedulaPair(typeRaw: string, numberRaw: string): CedulaPairValidation {

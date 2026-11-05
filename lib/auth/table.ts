@@ -1,6 +1,7 @@
 import 'server-only'
 
-import type { Condition, Gesture, Grant, PermissionRow, Role } from '@/types/auth/auth.types'
+import type { Condition, Gesture, Grant, PermissionRow } from '@/types/auth/auth.types'
+import type { Grants, RowOptions } from '@/types/auth/table.types'
 
 export const TABLE_VERSION = 5
 
@@ -13,13 +14,6 @@ const ok = (extra?: Omit<Grant, 'gesture'>) => grant('NONE', extra)
 const confirm = (extra?: Omit<Grant, 'gesture'>) => grant('CONFIRM', extra)
 const stepUp = (extra?: Omit<Grant, 'gesture'>) => grant('STEP_UP', extra)
 const readOnly = (extra?: Omit<Grant, 'gesture'>) => grant('NONE', { read: true, ...extra })
-
-type Grants = Partial<Record<Role, Grant>>
-
-interface RowOptions {
-  kind?: 'read' | 'action'
-  ownDependent?: boolean
-}
 
 function row(
   id: string,

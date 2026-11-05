@@ -4,13 +4,9 @@ import { useState, useTransition } from 'react'
 import { useResultCommands } from '@/hooks/use-results'
 import { strings } from '@/lib/strings'
 import type { Discrepancy } from '@/types/orders/result.types'
+import type { LineOption } from '@/types/orders/result-extras.props'
 
 const text = strings.pendingReview.results
-
-interface LineOption {
-  id: string
-  name: string
-}
 
 export function ResultExtras({
   orderId,

@@ -5,16 +5,15 @@ import { deliveryListOf, incompleteApprovalOf, resendTasksOf } from '@/lib/db/me
 import { sectionsWithResults } from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { reportKindOf } from '@/lib/server/domain/report'
-import type { ProviderMessage } from '@/lib/server/delivery/provider'
+import type { ProviderMessage } from '@/types/server/provider.types'
 import { strings } from '@/lib/strings'
 import type { ClientRecord } from '@/types/domain/client.types'
 import type { OrderStub } from '@/types/domain/order-stub.types'
 import type { DeliveryChannelView, DeliveryView, SendChannel } from '@/types/orders/delivery.types'
 import type { DeliveryMode } from '@/types/orders/issue.types'
+import type { DeliveryState } from '@/types/domain/delivery.types'
 
 const text = strings.delivery
-
-export type DeliveryState = 'LIBERADO' | 'INCOMPLETO'
 
 /** Only a released order or a partly loaded one can be sent. A report in review or an empty one cannot. */
 export function deliveryStateOf(stub: Pick<OrderStub, 'hasResult' | 'released' | 'correctionOpen'>): DeliveryState | null {

@@ -2,16 +2,8 @@ import 'server-only'
 
 import { revalidatePath } from 'next/cache'
 import { decide } from '@/lib/auth/decide'
-import {
-  addMergeRequest,
-  correctClientCedula,
-  getClient,
-  mergeClients,
-  setClientActive,
-  softDeleteClient,
-  unmergeClients,
-  type Actor,
-} from '@/lib/db/memory/client-store'
+import { addMergeRequest, correctClientCedula, getClient, mergeClients, setClientActive, softDeleteClient, unmergeClients } from '@/lib/db/memory/client-store'
+import type { Actor } from '@/types/stores/client-store.types'
 import { orderFacts } from '@/lib/db/memory/order-index'
 import { auditEvent } from '@/lib/server/audit'
 import { validateCedulaPair } from '@/lib/server/domain/client-rules'
@@ -21,6 +13,7 @@ import { strings } from '@/lib/strings'
 import { normalizeName } from '@/lib/utils/format'
 import type { LifecycleInput, LifecycleNeed, LifecycleResult } from '@/types/clients/lifecycle.types'
 import type { StaffContext } from '@/types/session/session.types'
+import type { Gate } from '@/types/server/client-lifecycle.types'
 
 const text = strings.pendingReview.lifecycle
 
@@ -34,13 +27,6 @@ function done(message: string): LifecycleResult {
 
 function actorOf(context: StaffContext): Actor {
   return { userId: context.account.id, userName: context.account.displayName, now: new Date().toISOString() }
-}
-
-interface Gate {
-  context: StaffContext
-  allowed: boolean
-  rowId: string | null
-  result: LifecycleResult | null
 }
 
 /**

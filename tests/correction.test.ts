@@ -4,13 +4,7 @@ vi.mock('server-only', () => ({}))
 
 import { abandonCorrection, canDeliver, finishCorrection, reportSurfaceOf, startCorrection } from '@/lib/db/memory/correction-store'
 import { issuesOf } from '@/lib/db/memory/issue-store'
-import {
-  getCorrection,
-  releaseSections,
-  sectionRelease,
-  sectionResultState,
-  writeResult,
-} from '@/lib/db/memory/result-store'
+import { getCorrection, releaseSections, sectionRelease, sectionResultState, writeResult } from '@/lib/db/memory/result-store'
 
 const base = { source: 'teclado' as const, byId: 'u-1', byName: 'Ana', mark: null }
 const HEM = 'HEMATOLOGIA COMPLETA'

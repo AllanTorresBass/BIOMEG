@@ -3,19 +3,8 @@ import 'server-only'
 import { createOrder, getOrder, orderForKey } from '@/lib/db/memory/order-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { PAYMENT_METHOD_IDS } from '@/lib/config/payment-methods'
-import {
-  activeClient,
-  done,
-  fail,
-  gate,
-  gated,
-  isResult,
-  open,
-  record,
-  recordRefusal,
-  refresh,
-  type Opened,
-} from '@/lib/server/draft-gate'
+import { activeClient, done, fail, gate, gated, isResult, open, record, recordRefusal, refresh } from '@/lib/server/draft-gate'
+import type { Opened } from '@/types/server/draft-gate.types'
 import { computeOrderTotals, parseAmountCents, parsePercentBp } from '@/lib/domain/order-totals'
 import { centsToDecimal } from '@/lib/domain/pricing'
 import { strings } from '@/lib/strings'

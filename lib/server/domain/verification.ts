@@ -15,10 +15,11 @@ import { renderReportPdf } from '@/lib/server/pdf/report-pdf'
 import { isValueCheckOn } from '@/lib/server/settings'
 import { strings } from '@/lib/strings'
 import { formatDate } from '@/lib/utils/format'
-import type { DecisionReason, DecisionSession } from '@/types/auth/auth.types'
+import type { DecisionSession } from '@/types/auth/auth.types'
 import type { OrderStub } from '@/types/domain/order-stub.types'
 import type { IssueRecord } from '@/types/orders/issue.types'
 import type { VerificationFile, VerificationView } from '@/types/verification/verification.types'
+import type { RefusalDetail } from '@/types/domain/verification.types'
 
 const PUBLIC_SESSION: DecisionSession = { valid: true, active: true, userId: 'publico', roles: ['PUBLICO'] }
 const UNAVAILABLE: VerificationView = { kind: 'NO_DISPONIBLE' }
@@ -43,14 +44,6 @@ function findTarget(token: string): { issue: IssueRecord; stub: OrderStub } | nu
 
 async function withinRequestLimit(): Promise<boolean> {
   return takeRequest((await requestAddress()) ?? 'desconocida')
-}
-
-interface RefusalDetail {
-  command: 'verify.read' | 'verify.file.read'
-  token: string
-  reason: DecisionReason
-  state: string | null
-  rowId?: string | null
 }
 
 /** The token is logged only as a hash prefix, as the audit log page requires. */

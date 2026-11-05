@@ -1,9 +1,5 @@
 import 'server-only'
-
-interface RequestWindow {
-  startedAt: number
-  count: number
-}
+import type { RequestWindow } from '@/types/stores/rate-limit-store.types'
 
 const WINDOW_MS = 60_000
 

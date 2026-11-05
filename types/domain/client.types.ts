@@ -1,4 +1,4 @@
-import type { CedulaType } from '@/lib/utils/format'
+import type { CedulaType } from '@/types/lib/format.types'
 
 export type Sex = 'F' | 'M'
 export type ConsentChannel = 'WHATSAPP' | 'EMAIL'

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { LogoLockup } from '@/components/brand/LogoLockup'
 import { readVerification } from '@/lib/server/domain/verification'
 import { strings } from '@/lib/strings'
+import type { VerificationPageProps } from '@/types/app/page.types'
 
 const text = strings.pendingReview.verification
 
@@ -18,11 +19,6 @@ function Fact({ label, value }: { label: string; value: string }) {
       <dd className="font-semibold">{value}</dd>
     </div>
   )
-}
-
-interface VerificationPageProps {
-  params: Promise<{ token: string }>
-  searchParams: Promise<{ consulta?: string | string[] }>
 }
 
 export default async function VerificationPage({ params, searchParams }: VerificationPageProps) {

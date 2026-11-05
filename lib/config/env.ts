@@ -1,15 +1,6 @@
 import 'server-only'
 
-import { z } from 'zod'
-
-const envSchema = z.object({
-  NODE_ENV: z.string().optional(),
-  BIOMEG_DEMO: z.enum(['on', 'off']).optional(),
-  BIOMEG_VALUE_CHECK: z.enum(['on', 'off']).optional(),
-  PORTAL_HASH_SECRET: z.string().min(32).optional(),
-})
-
-export type Env = z.infer<typeof envSchema>
+import { envSchema, type Env } from '@/types/config/env.schemas'
 
 /** Read on each call, so a wrong value fails loudly at the first use and tests can change it. */
 export function getEnv(): Env {

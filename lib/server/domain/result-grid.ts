@@ -1,16 +1,7 @@
 import 'server-only'
 
 import { getClient } from '@/lib/db/memory/client-store'
-import {
-  discrepanciesOf,
-  getCorrection,
-  getNote,
-  processedByOf,
-  reportDateOf,
-  resultsOf,
-  sectionRelease,
-  sectionsWithResults,
-} from '@/lib/db/memory/result-store'
+import { discrepanciesOf, getCorrection, getNote, processedByOf, reportDateOf, resultsOf, sectionRelease, sectionsWithResults } from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { isNumericValue, resultOrderState } from '@/lib/domain/result-rules'
 import { worklistState } from '@/lib/server/domain/worklist'

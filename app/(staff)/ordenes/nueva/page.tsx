@@ -20,10 +20,9 @@ import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE, computeAge, formatAge, formatCedula, formatDate } from '@/lib/utils/format'
 import type { ClientRecord } from '@/types/domain/client.types'
 import type { PatientView } from '@/types/orders/screen.types'
+import type { SearchParams } from '@/types/app/page.types'
 
 const text = strings.pendingReview.orders
-
-type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
 function one(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '')

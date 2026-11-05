@@ -7,32 +7,12 @@ import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
 import { CEDULA_TYPES, formatCedula, formatDate } from '@/lib/utils/format'
 import type { ClientLifecycleProps } from '@/types/clients/lifecycle-panel.types'
-import type { LifecycleResult } from '@/types/clients/lifecycle.types'
+import type { Call, Copy, Extra, Pending } from '@/types/clients/client-lifecycle.props'
 
 const text = strings.pendingReview.lifecycle
 
 const INPUT = 'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3'
 const SECONDARY = 'h-10 rounded-[var(--radius-control)] border border-border-strong bg-card px-4 font-semibold'
-
-interface Extra {
-  confirmed?: boolean
-  motivo?: string
-}
-
-type Call = (extra: Extra) => Promise<LifecycleResult>
-
-interface Copy {
-  title: string
-  body: string
-  confirmLabel: string
-  motivoRequired: boolean
-}
-
-interface Pending {
-  call: Call
-  copy: Copy
-  extra: Extra
-}
 
 export function ClientLifecycle({
   clientId,

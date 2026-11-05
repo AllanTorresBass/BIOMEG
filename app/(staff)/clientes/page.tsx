@@ -5,14 +5,7 @@ import { ClientLifecycle } from '@/components/clients/ClientLifecycle'
 import { ClientBrowser } from '@/components/clients/ClientBrowser'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { decide } from '@/lib/auth/decide'
-import {
-  getClient,
-  listMergeCandidates,
-  listMergeRequests,
-  listOpenMerges,
-  searchClients,
-  summarize,
-} from '@/lib/db/memory/client-store'
+import { getClient, listMergeCandidates, listMergeRequests, listOpenMerges, searchClients, summarize } from '@/lib/db/memory/client-store'
 import { orderFacts } from '@/lib/db/memory/order-index'
 import { todayInLab } from '@/lib/server/domain/client-rules'
 import { guardRoute } from '@/lib/server/guard'
@@ -22,8 +15,7 @@ import { strings } from '@/lib/strings'
 import { computeAge, formatAge, formatDate } from '@/lib/utils/format'
 import type { ClientCardData } from '@/types/clients/card.types'
 import type { ClientRecord } from '@/types/domain/client.types'
-
-type SearchParams = Promise<Record<string, string | string[] | undefined>>
+import type { SearchParams } from '@/types/app/page.types'
 
 function one(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '')

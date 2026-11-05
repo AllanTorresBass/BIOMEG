@@ -1,11 +1,7 @@
 import 'server-only'
 
 import type { Quote } from '@/types/orders/order.types'
-
-interface QuoteStoreState {
-  quotes: Map<string, Quote>
-  counter: number
-}
+import type { QuoteStoreState } from '@/types/stores/quote-store.types'
 
 const globalStore = globalThis as typeof globalThis & { __biomegQuotes?: QuoteStoreState }
 const state: QuoteStoreState = (globalStore.__biomegQuotes ??= { quotes: new Map(), counter: 0 })

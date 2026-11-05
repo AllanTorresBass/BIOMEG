@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  processedByOf,
-  releaseSections,
-  reportDateOf,
-  sectionRelease,
-  sectionsWithResults,
-  writeResult,
-} from '@/lib/db/memory/result-store'
+import { processedByOf, releaseSections, reportDateOf, sectionRelease, sectionsWithResults, writeResult } from '@/lib/db/memory/result-store'
 
 const base = { source: 'teclado' as const, byId: 'u-1', byName: 'Ana', mark: null }
 const HEM = 'HEMATOLOGIA COMPLETA'

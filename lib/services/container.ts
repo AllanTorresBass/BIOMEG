@@ -6,8 +6,7 @@ import { ResultService } from '@/lib/services/results/ResultService'
 import { SessionService } from '@/lib/services/session/SessionService'
 import { WorklistService } from '@/lib/services/worklist/WorklistService'
 import type { ServiceContainer } from '@/types/contracts/services.contracts'
-
-type Registry = { -readonly [Name in keyof ServiceContainer]?: ServiceContainer[Name] }
+import type { Registry } from '@/types/lib/container.types'
 
 const created: Registry = {}
 

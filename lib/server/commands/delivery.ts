@@ -1,35 +1,20 @@
 import 'server-only'
 
 import { revalidatePath } from 'next/cache'
-import {
-  approveIncomplete,
-  clearIncompleteApproval,
-  completeResendTask,
-  incompleteApprovalOf,
-  recordDelivery,
-  updateDelivery,
-} from '@/lib/db/memory/delivery-store'
+import { approveIncomplete, clearIncompleteApproval, completeResendTask, incompleteApprovalOf, recordDelivery, updateDelivery } from '@/lib/db/memory/delivery-store'
 import { getClient } from '@/lib/db/memory/client-store'
 import { printedLinesOf, replaceIssue, vigenteIssueOf } from '@/lib/db/memory/issue-store'
 import { getStub } from '@/lib/db/memory/order-index'
 import { resultOrderState } from '@/lib/domain/result-rules'
 import { auditEvent } from '@/lib/server/audit'
 import { currentProvider } from '@/lib/server/delivery/provider'
-import {
-  blockedReason,
-  deliveryModeAllowed,
-  deliveryStateOf,
-  destinationOf,
-  messageFor,
-  missingSectionsOf,
-  modeOf,
-  resendChannelsOf,
-} from '@/lib/server/domain/delivery'
+import { blockedReason, deliveryModeAllowed, deliveryStateOf, destinationOf, messageFor, missingSectionsOf, modeOf, resendChannelsOf } from '@/lib/server/domain/delivery'
 import { gate, gated, record } from '@/lib/server/draft-gate'
 import { requestOrigin } from '@/lib/server/origin'
 import { getStaffContext } from '@/lib/server/session/current'
 import { strings } from '@/lib/strings'
 import type { DeliveryActionResult, SendChannel } from '@/types/orders/delivery.types'
+import type { DeliverInput } from '@/types/server/delivery.types'
 
 const text = strings.delivery
 
@@ -66,13 +51,6 @@ export async function approveIncompleteSend(input: { orderId: string }): Promise
   await record({ context }, 'delivery.incomplete.approve', allowed.rowId, { before: null, after: missing, field: 'missing' }, undefined, target)
   revalidatePath(`/ordenes/${stub.id}/reporte`)
   return { ok: true, message: text.approvedDone, need: null }
-}
-
-interface DeliverInput {
-  orderId: string
-  channel: string
-  confirmed?: boolean
-  resend: boolean
 }
 
 /** Stores the delivery before the provider is called, so a failure still leaves a row and the order unchanged. */

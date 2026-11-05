@@ -14,6 +14,7 @@ import type {
 } from '@/types/auth/auth.types'
 import { isStaffRole, ALL_ROLES } from '@/lib/auth/roles'
 import { PERMISSION_ROWS, TABLE_VERSION } from '@/lib/auth/table'
+import type { Match } from '@/types/auth/decide.types'
 
 const rowsByCommand = new Map<string, PermissionRow[]>()
 for (const row of PERMISSION_ROWS) {
@@ -25,8 +26,6 @@ for (const row of PERMISSION_ROWS) {
 }
 
 const GESTURE_RANK: Record<Gesture, number> = { NONE: 0, CONFIRM: 1, STEP_UP: 2 }
-
-type Match = 'match' | 'nomatch' | 'unknown'
 
 /** A fact must be a real boolean or string. 1 is not true, and a missing fact is unknown. */
 function evaluate(conditions: readonly Condition[], facts: Readonly<Record<string, unknown>>): Match {

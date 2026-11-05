@@ -7,7 +7,8 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
 import { formatDate } from '@/lib/utils/format'
-import type { DeliveryChannelView, DeliveryView, SendChannel } from '@/types/orders/delivery.types'
+import type { DeliveryChannelView, SendChannel } from '@/types/orders/delivery.types'
+import type { Props } from '@/types/orders/delivery-panel.props'
 
 const text = strings.delivery
 
@@ -19,11 +20,6 @@ const blockedText: Record<NonNullable<DeliveryChannelView['blocked']>, (channel:
   NO_CONSENT: () => text.noConsent,
   NOT_APPROVED: () => text.needsApproval,
   NOT_PERMITTED: () => text.notAllowed,
-}
-
-interface Props {
-  orderId: string
-  view: DeliveryView
 }
 
 export function DeliveryPanel({ orderId, view }: Props) {

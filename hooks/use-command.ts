@@ -7,20 +7,11 @@ import { toast } from 'sonner'
 import { useGlobalErrorHandler } from '@/hooks/use-global-error-handler'
 import { isApiError } from '@/lib/utils/errors'
 import type { CommandFeedback } from '@/types/api.types'
-
-interface CommandOutcome {
-  ok?: unknown
-  error?: unknown
-  message?: unknown
-  need?: unknown
-  redirectTo?: unknown
-}
+import type { CommandOutcome, CommandRunner } from '@/types/lib/use-command.types'
 
 function outcomeOf(result: unknown): CommandOutcome {
   return typeof result === 'object' && result !== null ? (result as CommandOutcome) : {}
 }
-
-export type CommandRunner = <Result>(call: () => Promise<Result>, feedback?: CommandFeedback) => Promise<Result>
 
 /**
  * Runs one service call. On success it refreshes the server data on screen and clears query caches.

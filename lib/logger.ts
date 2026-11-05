@@ -1,5 +1,5 @@
 /* eslint-disable no-console -- the one place that writes to the console. */
-type Fields = Readonly<Record<string, unknown>>
+import type { LogFields } from '@/types/lib/logger.types'
 
 const SENSITIVE_KEYS = /name|nombre|cedula|phone|telefono|birth|nacimiento|email|correo|result|value|valor|password|clave|token|code|codigo/i
 const SENSITIVE_TEXT: readonly RegExp[] = [
@@ -28,13 +28,13 @@ export function redact(value: unknown, key = ''): unknown {
   return value
 }
 
-function write(level: 'info' | 'warn' | 'error', message: string, fields?: Fields): void {
+function write(level: 'info' | 'warn' | 'error', message: string, fields?: LogFields): void {
   if (level === 'info' && process.env.NODE_ENV === 'production') return
   console[level](redactText(message), fields ? redact(fields) : '')
 }
 
 export const logger = {
-  info: (message: string, fields?: Fields): void => write('info', message, fields),
-  warn: (message: string, fields?: Fields): void => write('warn', message, fields),
-  error: (message: string, fields?: Fields): void => write('error', message, fields),
+  info: (message: string, fields?: LogFields): void => write('info', message, fields),
+  warn: (message: string, fields?: LogFields): void => write('warn', message, fields),
+  error: (message: string, fields?: LogFields): void => write('error', message, fields),
 }

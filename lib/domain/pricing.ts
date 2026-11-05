@@ -1,6 +1,7 @@
 import { LAB_TIME_ZONE } from '@/lib/utils/format'
 import type { DemoPriceRow } from '@/types/domain/demo.types'
 import type { DraftLine, PriceColumn, PricingBasis } from '@/types/orders/draft.types'
+import type { LineTotals } from '@/types/domain/pricing.types'
 
 /** "8.00" to 800. Money is kept in whole cents so sums never drift. */
 export function parseCents(value: string): number {
@@ -31,14 +32,6 @@ export function priceFor(row: DemoPriceRow, column: PriceColumn | null): string 
 
 export function bsFromUsdCents(usdCents: number, rate: string): string {
   return centsToDecimal(Math.round((usdCents * parseCents(rate)) / 100))
-}
-
-export interface LineTotals {
-  usdCents: number
-  usd: string
-  bs: string | null
-  pricedCount: number
-  sinPrecioCount: number
 }
 
 /** A line without a price adds nothing and is counted apart so the screen can say so. */

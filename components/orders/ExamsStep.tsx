@@ -8,16 +8,11 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { COST_TYPES, COST_TYPE_LABELS, PRICE_COLUMNS, PRICE_COLUMN_LABELS } from '@/lib/config/price-defaults'
 import { strings } from '@/lib/strings'
-import type { AddLineInput, CostType, DraftNeed, PriceColumn } from '@/types/orders/draft.types'
+import type { AddLineInput, CostType, PriceColumn } from '@/types/orders/draft.types'
 import type { ExamsStepProps } from '@/types/orders/screen.types'
+import type { Question } from '@/types/orders/exams-step.props'
 
 const text = strings.pendingReview.orders
-
-interface Question {
-  need: DraftNeed
-  examName: string
-  input: AddLineInput
-}
 
 const FIELD = 'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3'
 

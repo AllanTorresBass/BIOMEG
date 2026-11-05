@@ -9,17 +9,9 @@ import { requestAddress } from '@/lib/server/audit'
 import { getStaffContext } from '@/lib/server/session/current'
 import { strings } from '@/lib/strings'
 import { REFUSAL_RESULT_KEY, type ApiErrorBody, type ApiErrorCode } from '@/types/api.types'
+import type { EndpointOptions } from '@/types/server/with-command.types'
 
 const text = strings.pendingReview.api
-
-export interface EndpointOptions {
-  /** Requests per minute from one address. */
-  perMinute?: number
-  /** Status for an accepted command. 201 when it creates a record. */
-  status?: 200 | 201
-  /** Staff is the default, so a new endpoint can't be left open by accident. */
-  audience?: 'staff' | 'public'
-}
 
 function errorResponse(status: number, code: ApiErrorCode, message: string, details?: Record<string, unknown>): NextResponse<ApiErrorBody> {
   return NextResponse.json({ error: { code, message, ...(details ? { details } : {}) } }, { status })

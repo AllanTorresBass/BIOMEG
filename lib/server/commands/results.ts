@@ -5,31 +5,20 @@ import { revalidatePath } from 'next/cache'
 import { decide } from '@/lib/auth/decide'
 import { getStub, updateStub } from '@/lib/db/memory/order-index'
 import { listAudit } from '@/lib/db/memory/audit-store'
-import {
-  dropIncoming,
-  getCorrection,
-  getResult,
-  sectionResultState,
-  holdIncoming,
-  queueDiscrepancy,
-  releaseSections,
-  sectionRelease,
-  setNote,
-  writeResult,
-} from '@/lib/db/memory/result-store'
+import { dropIncoming, getCorrection, getResult, sectionResultState, holdIncoming, queueDiscrepancy, releaseSections, sectionRelease, setNote, writeResult } from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { autoMark, isNumericValue, parseLabNumber, resultOrderState } from '@/lib/domain/result-rules'
 import { getClient } from '@/lib/db/memory/client-store'
 import { abandonCorrection, finishCorrection, startCorrection } from '@/lib/db/memory/correction-store'
 import { auditEvent } from '@/lib/server/audit'
-import { gate, gated, record, type Subject, type Target } from '@/lib/server/draft-gate'
+import { gate, gated, record } from '@/lib/server/draft-gate'
 import { hasBacteriologySection } from '@/lib/server/domain/result-grid'
 import { getStaffContext } from '@/lib/server/session/current'
 import { mayReach } from '@/lib/server/guard'
 import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE } from '@/lib/utils/format'
-import type { OrderStub } from '@/types/domain/order-stub.types'
 import type { ResultActionResult, SaveResultInput } from '@/types/orders/result.types'
+import type { Opened } from '@/types/server/results.types'
 
 const text = strings.pendingReview.results
 
@@ -39,11 +28,6 @@ function timeText(iso: string): string {
 
 function refuse(message: string, need: ResultActionResult['need'] = null): ResultActionResult {
   return { ok: false, message, need }
-}
-
-interface Opened extends Subject {
-  stub: OrderStub
-  target: Target
 }
 
 async function open(orderId: string): Promise<Opened | ResultActionResult> {

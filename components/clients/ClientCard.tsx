@@ -8,22 +8,12 @@ import { strings } from '@/lib/strings'
 import { CEDULA_TYPES, formatCedula, formatDate, parseCedulaPaste } from '@/lib/utils/format'
 import type { ClientCardData } from '@/types/clients/card.types'
 import type { ClientFormState, ClientFieldName } from '@/types/domain/client.types'
+import type { ClientCardProps, Values } from '@/types/clients/client-card.props'
 
 const INITIAL: ClientFormState = { error: null, field: null, similar: [], duplicate: null, conflict: null, needsConfirm: false, savedId: null }
 
 const INPUT =
   'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3 disabled:bg-sunken disabled:text-muted-foreground'
-
-interface ClientCardProps {
-  data: ClientCardData
-  canEdit: boolean
-  justSaved: boolean
-}
-
-type Values = Pick<
-  ClientCardData,
-  'fullName' | 'cedulaType' | 'cedulaNumber' | 'birthDate' | 'sex' | 'phone' | 'email' | 'consentWhatsapp' | 'consentEmail'
->
 
 function pick(data: ClientCardData): Values {
   return {

@@ -8,10 +8,9 @@ import { StepUpDialog } from '@/components/shared/StepUpDialog'
 import { strings } from '@/lib/strings'
 import { formatMoney } from '@/lib/utils/format'
 import type { OrderActionsProps } from '@/types/orders/screen.types'
+import type { Pending } from '@/types/orders/order-actions.props'
 
 const text = strings.pendingReview.orders
-
-type Pending = { kind: 'void' } | { kind: 'line'; lineId: string; name: string }
 
 export function OrderActions({ orderId, voided, hasPayment, lines }: OrderActionsProps) {
   const { voidOrder, removeOrderLine } = useOrderCommands()
