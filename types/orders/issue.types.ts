@@ -25,13 +25,38 @@ export interface IssueRecord {
 
 export type DeliveryChannel = 'CORREO' | 'WHATSAPP' | 'IMPRESO'
 
+/** A portal link carries no result. An attachment carries the report and needs recorded consent. */
+export type DeliveryMode = 'PORTAL_LINK' | 'ATTACHMENT'
+
+/** PENDING is stored before the provider is called. The send is complete only once it turns SENT. */
+export type DeliveryStatus = 'PENDING' | 'SENT' | 'FAILED'
+
 export interface DeliveryRecord {
   id: string
   orderId: string
-  issueId: string
+  /** Null for a draft sent on an incomplete order. */
+  issueId: string | null
   channel: DeliveryChannel
   recipient: string
   at: string
+  mode: DeliveryMode
+  status: DeliveryStatus
+  failure: string | null
+  operatorName: string
+  orderNumber: string
+  /** True when the order was only partly released at send time. */
+  incomplete: boolean
+  missing: string[]
+  /** True when this send replaced an earlier report that was already delivered. */
+  resend: boolean
+}
+
+/** A bioanalyst approval to send a partly released order. Stays until the order is complete or the approval is spent. */
+export interface IncompleteApproval {
+  orderId: string
+  approvedBy: string
+  approvedAt: string
+  missing: string[]
 }
 
 /** Created when a correction is released on an order that was already delivered. */

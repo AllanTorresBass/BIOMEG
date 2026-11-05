@@ -73,6 +73,8 @@ export interface DemoLabSettings {
   ivaRate: string | null
   igtfRate: string | null
   valueCheckEnabled: boolean
+  /** Whether the portal sign-in code works. When it does, a delivery is a link and not an attachment. */
+  portalCodeWorks: boolean
 }
 
 export interface DemoSeed {

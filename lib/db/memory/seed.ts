@@ -137,5 +137,6 @@ export const demoSeed: DemoSeed = {
     ivaRate: null,
     igtfRate: null,
     valueCheckEnabled: false,
+    portalCodeWorks: false,
   },
 }

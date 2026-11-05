@@ -1,18 +1,34 @@
 import 'server-only'
 
-import type { DeliveryRecord, ResendTask } from '@/types/orders/issue.types'
+import type { DeliveryRecord, IncompleteApproval, ResendTask } from '@/types/orders/issue.types'
 
 interface DeliveryStoreState {
   deliveries: Map<string, DeliveryRecord>
   tasks: Map<string, ResendTask>
+  approvals: Map<string, IncompleteApproval>
   counter: number
 }
 
 function buildState(): DeliveryStoreState {
   const deliveries = new Map<string, DeliveryRecord>()
   const at = new Date().toISOString()
-  deliveries.set('d-1', { id: 'd-1', orderId: 'o-1', issueId: 'i-1', channel: 'CORREO', recipient: 'paciente@example.com', at })
-  return { deliveries, tasks: new Map(), counter: 1 }
+  deliveries.set('d-1', {
+    id: 'd-1',
+    orderId: 'o-1',
+    issueId: 'i-1',
+    channel: 'CORREO',
+    recipient: 'paciente@example.com',
+    at,
+    mode: 'ATTACHMENT',
+    status: 'SENT',
+    failure: null,
+    operatorName: 'Recepción',
+    orderNumber: 'o-1',
+    incomplete: false,
+    missing: [],
+    resend: false,
+  })
+  return { deliveries, tasks: new Map(), approvals: new Map(), counter: 1 }
 }
 
 const globalStore = globalThis as typeof globalThis & { __biomegDeliveries?: DeliveryStoreState }
@@ -23,6 +39,14 @@ export function recordDelivery(entry: Omit<DeliveryRecord, 'id' | 'at'>): Delive
   const delivery: DeliveryRecord = { ...entry, id: `d-${state.counter}`, at: new Date().toISOString() }
   state.deliveries.set(delivery.id, delivery)
   return delivery
+}
+
+export function updateDelivery(id: string, patch: Partial<DeliveryRecord>): DeliveryRecord | null {
+  const current = state.deliveries.get(id)
+  if (!current) return null
+  const next = { ...current, ...patch }
+  state.deliveries.set(id, next)
+  return next
 }
 
 export function deliveriesOf(orderId: string): DeliveryRecord[] {
@@ -50,18 +74,47 @@ export function createResendTask(orderId: string, fromIssueId: string, toIssueId
   return task
 }
 
+/** The newest first, so the list on the order reads from the last send. */
+export function deliveryListOf(orderId: string): DeliveryRecord[] {
+  return deliveriesOf(orderId).sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id, undefined, { numeric: true }))
+}
+
+export function approveIncomplete(approval: IncompleteApproval): void {
+  state.approvals.set(approval.orderId, approval)
+}
+
+export function incompleteApprovalOf(orderId: string): IncompleteApproval | null {
+  return state.approvals.get(orderId) ?? null
+}
+
+export function clearIncompleteApproval(orderId: string): void {
+  state.approvals.delete(orderId)
+}
+
+/** A resend task is done once the order was sent again on the replacing issue. */
+export function completeResendTask(orderId: string): void {
+  for (const task of resendTasksOf(orderId)) state.tasks.delete(task.id)
+}
+
 export interface DeliveryStoreSnapshot {
   deliveries: [string, DeliveryRecord][]
   tasks: [string, ResendTask][]
+  approvals?: [string, IncompleteApproval][]
   counter: number
 }
 
 export function snapshotDeliveries(): DeliveryStoreSnapshot {
-  return { deliveries: [...state.deliveries.entries()], tasks: [...state.tasks.entries()], counter: state.counter }
+  return {
+    deliveries: [...state.deliveries.entries()],
+    tasks: [...state.tasks.entries()],
+    approvals: [...state.approvals.entries()],
+    counter: state.counter,
+  }
 }
 
 export function restoreDeliveries(snapshot: DeliveryStoreSnapshot): void {
   state.deliveries = new Map(snapshot.deliveries)
   state.tasks = new Map(snapshot.tasks)
+  state.approvals = new Map(snapshot.approvals ?? [])
   state.counter = snapshot.counter
 }

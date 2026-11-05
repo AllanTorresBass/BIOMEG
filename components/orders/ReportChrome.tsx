@@ -47,12 +47,6 @@ export function ReportChrome({ orderId, mode, lineId, stored, final, storedLabel
             {text.download}
           </a>
         ) : null}
-        <button type="button" disabled title={text.deliveryLater} className={button}>
-          {text.whatsapp}
-        </button>
-        <button type="button" disabled title={text.deliveryLater} className={button}>
-          {text.email}
-        </button>
         <Link href={`/ordenes/${orderId}/resultados`} className={button}>
           {text.exit}
         </Link>

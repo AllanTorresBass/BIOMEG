@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { DeliveryPanel } from '@/components/orders/DeliveryPanel'
 import { ReportChrome } from '@/components/orders/ReportChrome'
 import { ReportPaper } from '@/components/orders/ReportPaper'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
@@ -7,6 +8,7 @@ import { getStub } from '@/lib/db/memory/order-index'
 import { resultsOf } from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { resultOrderState } from '@/lib/domain/result-rules'
+import { buildDeliveryView, deliveryStateOf } from '@/lib/server/domain/delivery'
 import { buildReport } from '@/lib/server/domain/report'
 import { guardRoute } from '@/lib/server/guard'
 import { requestOrigin } from '@/lib/server/origin'
@@ -49,6 +51,22 @@ export default async function ReportPage({
   const report = buildReport({ stub, mode, lineId, origin: await requestOrigin() })
   const names = new Map(demoSeed.resultLines.map((line) => [line.id, line.name]))
   const choices = resultsOf(stub.id).filter((cell) => cell.value.trim() !== '')
+
+  const deliveryState = deliveryStateOf(stub)
+  const session = toDecisionSession(context)
+  const gestures = { confirmVerified: true, stepUpVerified: true }
+  const deliveryView =
+    mode === 'PACIENTE' && deliveryState
+      ? buildDeliveryView(stub, {
+          send: decide({
+            session,
+            command: 'delivery.send',
+            facts: { state: deliveryState, delivery_mode_allowed: true, incomplete_approved: true },
+            gestures,
+          }).allowed,
+          approve: decide({ session, command: 'delivery.approve_incomplete', facts: { state: deliveryState }, gestures }).allowed,
+        })
+      : null
 
   return (
     <section className="flex flex-col gap-4">
@@ -108,6 +126,8 @@ export default async function ReportPage({
           <ReportPaper doc={report.document} qr={report.document.verifyUrl ? qrModules(report.document.verifyUrl) : null} />
         </>
       ) : null}
+
+      {deliveryView ? <DeliveryPanel orderId={stub.id} view={deliveryView} /> : null}
     </section>
   )
 }
