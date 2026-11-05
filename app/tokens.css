@@ -1,0 +1,86 @@
+/*
+ * BIOMEG interface tokens
+ * Sampled from IMG-20261021-WA0099.jpg (1080×607) on 31 October 2026.
+ * Navy is the most frequent blue ink bin in the wordmark (#203860).
+ * Burgundy is the most frequent dark red ink bin in the emblem (#6C1834).
+ * Pale JPEG fringes were excluded. Semantic colors are design rules:
+ * they are not colors in the logo, so a high result is not painted
+ * with the same burgundy as the RIF line.
+ *
+ * Contrast figures are WCAG relative contrast against the paired surface.
+ * Body text and table text need 4.5:1. Every pair below clears that.
+ */
+
+:root {
+  /* Identity */
+  --color-navy: #203860; /* on #FFFFFF: 11.69 */
+  --color-navy-deep: #16304f; /* on #FFFFFF: 13.38. Shell bar and pressed navy. */
+  --color-burgundy: #6c1834; /* on #FFFFFF: 11.55 */
+  --color-burgundy-deep: #4e1226; /* on #FFFFFF: 14.60 */
+  --color-white: #ffffff;
+
+  /* Surfaces. Cool neutrals, derived so the page is not pure logo-white glare. */
+  --surface-page: #f4f7fb;
+  --surface-card: #ffffff;
+  /* The printed sheet stays white and black in every theme, since it stands for the paper. */
+  --paper-surface: #ffffff;
+  --paper-ink: #111111;
+  --paper-rule: #8a8a8a;
+  --surface-sunken: #e8eef5;
+  --surface-navy-wash: #e8eef5;
+  --surface-burgundy-wash: #f8f1f3;
+
+  /* Text and lines */
+  --text-primary: #14243c; /* on #FFFFFF: 15.59. On #F4F7FB still above 4.5. */
+  --text-secondary: #3e5168; /* on #FFFFFF: 8.13. On #F4F7FB: 7.57. */
+  --text-on-navy: #ffffff;
+  --text-on-burgundy: #ffffff;
+  --border-default: #d5dee8;
+  --border-strong: #203860;
+
+  /* Focus is a 2px navy ring, never color alone: the focused control also
+     keeps a visible label. */
+  --focus-ring: #203860;
+
+  /* Result and workflow states. Always pair with a text flag.
+     In-range results use primary text and no extra color. */
+  --flag-high: #8a1c1c; /* on #F8E8E8: 7.82 */
+  --flag-high-bg: #f8e8e8;
+  --flag-low: #0e4d62; /* on #E6F3F6: 8.21 */
+  --flag-low-bg: #e6f3f6;
+  --flag-incomplete: #7a4e00; /* on #FFF6E0: 6.69 */
+  --flag-incomplete-bg: #fff6e0;
+  --flag-blocked: #3e4651; /* on #FFFFFF: above 4.5 */
+  --flag-blocked-bg: #eef1f4;
+  --flag-released: #1f4b32; /* on #E7F4EC: 8.79. Validation released. */
+  --flag-released-bg: #e7f4ec;
+
+  /* Type */
+  --font-sans: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-size-caption: 0.75rem; /* 12px. Minimum size in a table. */
+  --font-size-body: 0.875rem; /* 14px. Dense work screens. */
+  --font-size-title: 1.25rem; /* 20px. Screen titles. */
+  --font-size-card-title: 1rem; /* 16px. Card titles. */
+  --font-size-wordmark: 1.5rem;
+  --line-height-body: 1.4;
+  --line-height-table: 1.3;
+
+  /* Space. 4px base. Tables stay dense; cards keep a 16px pad. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-control: 4px;
+  --radius-card: 8px;
+  --row-height: 36px;
+  --header-height: 56px;
+  --mark-size: 40px;
+  --focus-width: 2px;
+
+  /* Motion stays short. A status change is a color and a label, not a slide. */
+  --duration-fast: 120ms;
+}
