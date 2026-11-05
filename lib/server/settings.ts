@@ -8,3 +8,8 @@ export function getShellSettings(): ShellSettings {
   const { rateBs, rateDate, qrEnabled, saturdayPriceEnabled } = demoSeed.settings
   return { rateBs: rateBs === '' ? null : rateBs, rateDate, qrEnabled, saturdayPriceEnabled }
 }
+
+/** R-149 is a deployment setting on purpose, so nobody can switch it on from a screen. */
+export function isValueCheckOn(): boolean {
+  return process.env.BIOMEG_VALUE_CHECK === 'on'
+}

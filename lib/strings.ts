@@ -236,6 +236,18 @@ export const strings = {
     updateFailed: 'No se pudo actualizar.',
   },
   pendingReview: {
+    verification: {
+      title: 'Verificación de informe',
+      unavailable: 'No disponible',
+      disclaimer: 'Esta página confirma el estado de la orden. No confirma los valores impresos.',
+      replaced: 'Esta versión fue reemplazada',
+      replacedOn: 'Fecha',
+      labels: { order: 'N° de orden', lab: 'Laboratorio', reportDate: 'Fecha del informe', state: 'Estado' },
+      states: { LIBERADO: 'Liberado', INCOMPLETO: 'Incompleto', EN_CORRECCION: 'En revisión' },
+      codeLabel: 'Código de consulta',
+      codeNote: 'El código impreso en el informe abre el informe original.',
+      codeSubmit: 'Abrir informe',
+    },
     results: {
       title: 'Resultados',
       gridLabel: 'Resultados de la orden',
