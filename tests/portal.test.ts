@@ -39,7 +39,7 @@ describe('portal sign-in match', () => {
 describe('portal contact', () => {
   const base = { phone: null, email: null } as unknown as ClientRecord
 
-  it('returns nothing when the client has no phone on file', () => {
+  it('returns nothing when the client has no phone on file (E-60)', () => {
     expect(phoneFor([base])).toBeNull()
   })
 

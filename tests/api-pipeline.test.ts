@@ -79,7 +79,7 @@ describe('withCommand', () => {
     expect((await portal(post({ name: 'a' }))).status).toBe(200)
   })
 
-  it('answers 401 with no staff session, before running the command', async () => {
+  it('answers 401 with no staff session, before running the command (E-15)', async () => {
     const run = vi.fn(async () => ({ ok: true }))
     const response = await withCommand(schema, run)(post({ name: 'a' }))
     expect(response.status).toBe(401)

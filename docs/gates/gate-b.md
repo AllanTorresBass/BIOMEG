@@ -1,8 +1,8 @@
 # Gate B — before Stage 6 (real backend)
 
 **Authority:** This page sets no rates, hosting choice, or legal conclusion. It records who must answer before Postgres, Argon2id, the audit hash chain, or any real patient-facing hardening starts.  
-**Status:** **Closed.** Stage 6 (V0-25 through V0-28) must not begin until every row below has an answer from the named person.  
-**Evidence label:** Each blank answer is **Unknown** until the named party fills it. Do not invent a rate, a hosting model, or a counsel conclusion to unblock code.
+**Status:** **Deferred by request.** Collection is paused; Stage 6 (V0-25 through V0-28) still must not begin. Answers remain blank until people fill them.  
+**Evidence label:** Each blank answer is **Unknown**. Do not invent a rate, a hosting model, or a counsel conclusion to unblock code.
 
 Cross-links: [build-plan Gate B](../build-plan.md#gate-b-before-phase-6), [v0 catalog gates](../v0-prompts/README.md#gates), [security baseline](../product/10-security-baseline.md#before-any-real-patient-record), [questions to send](gate-b-ask.md).
 
@@ -26,7 +26,7 @@ Cross-links: [build-plan Gate B](../build-plan.md#gate-b-before-phase-6), [v0 ca
 | Owner | IVA, IGTF, rounding, Control N° (with accountant) | **Waiting** — no answer recorded |
 | Accountant | IVA, IGTF, rounding, Control N° (with owner) | **Waiting** — no answer recorded |
 
-Do not fill the Answer column with a guess, a working value from the prototype, or a caption such as `0,00`. Stage 6 stays blocked while any row above is Waiting.
+Do not fill the Answer column with a guess, a working value from the prototype, or a caption such as `0,00`. Stage 6 stays blocked while Gate B is Deferred or any party is still Waiting. Resume collection with [gate-b-ask.md](gate-b-ask.md) when the owner asks.
 
 ## How to close the gate
 

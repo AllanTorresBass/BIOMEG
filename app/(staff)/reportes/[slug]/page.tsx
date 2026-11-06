@@ -57,7 +57,8 @@ export default async function ReportPage({
         </form>
         {stats.lines.every(([, value]) => value === strings.empty.dash || value === '0') &&
         stats.refusals.length === 0 &&
-        stats.portalFailures.length === 0 ? (
+        stats.portalFailures.length === 0 &&
+        stats.deliveryFailures.length === 0 ? (
           <p>{text.statsNone}</p>
         ) : null}
         <dl className="grid gap-2 sm:grid-cols-2">
@@ -77,6 +78,12 @@ export default async function ReportPage({
         <h2 className="font-semibold">{text.statsPortalFailures}</h2>
         <ul>
           {stats.portalFailures.map((group) => (
+            <li key={group.label} className="tabular-nums">{group.label}: {group.count}</li>
+          ))}
+        </ul>
+        <h2 className="font-semibold">{text.statsDeliveryFailures}</h2>
+        <ul>
+          {stats.deliveryFailures.map((group) => (
             <li key={group.label} className="tabular-nums">{group.label}: {group.count}</li>
           ))}
         </ul>

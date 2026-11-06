@@ -146,7 +146,7 @@ function valid(overrides: Partial<{ fullName: string; cedulaType: 'V' | 'E'; ced
 }
 
 describe('client store', () => {
-  it('inserts a Verificado client when the cédula pair is complete, Sin verificar when not', () => {
+  it('inserts a Verificado client when the cédula pair is complete, Sin verificar when not (E-21)', () => {
     const verified = insertClient(valid({ fullName: 'Verificado Uno', cedulaDigits: '19000011' }), context)
     const unverified = insertClient(valid({ fullName: 'Sin Cedula Dos', cedulaDigits: null }), context)
     expect(verified.verified).toBe(true)
