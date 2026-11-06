@@ -1,15 +1,18 @@
 /**
  * Edge cases the finished stages already test. A later stage is absent until its test names the id.
  * The register does not change a clinical rule. It only fails the build when a claimed id has no test.
- * Stage 6 ids (hash chain, Argon2id, hosted hardening) stay out until Gate B opens those tests.
+ * Stage 6 ids (hash chain, Argon2id, hosted hardening) stay out while Gate B is deferred.
  */
 export const EDGE_REGISTER = [
   { id: 'E-02', testFile: 'tests/office.test.ts' },
   { id: 'E-08', testFile: 'tests/decide.test.ts' },
+  { id: 'E-09', testFile: 'tests/decide.test.ts' },
   { id: 'E-13', testFile: 'tests/payments.test.ts' },
+  { id: 'E-15', testFile: 'tests/api-pipeline.test.ts' },
   { id: 'E-16', testFile: 'tests/clients.test.ts' },
   { id: 'E-17', testFile: 'tests/decide.test.ts' },
   { id: 'E-18', testFile: 'tests/client-lifecycle.test.ts' },
+  { id: 'E-21', testFile: 'tests/clients.test.ts' },
   { id: 'E-27', testFile: 'tests/results.test.ts' },
   { id: 'E-28', testFile: 'tests/results.test.ts' },
   { id: 'E-29', testFile: 'tests/results.test.ts' },
@@ -32,6 +35,7 @@ export const EDGE_REGISTER = [
   { id: 'E-51', testFile: 'tests/office.test.ts' },
   { id: 'E-52', testFile: 'tests/office.test.ts' },
   { id: 'E-54', testFile: 'tests/office.test.ts' },
+  { id: 'E-60', testFile: 'tests/portal.test.ts' },
   { id: 'E-62', testFile: 'tests/delivery.test.ts' },
   { id: 'E-63', testFile: 'tests/verification.test.ts' },
   { id: 'P-01', testFile: 'tests/clients.test.ts' },

@@ -4,11 +4,13 @@ import { decide } from '@/lib/auth/decide'
 import { applyAggregatesOnly } from '@/lib/auth/scopes'
 import { PRICE_COLUMNS } from '@/lib/config/price-defaults'
 import { listAudit } from '@/lib/db/memory/audit-store'
+import { searchClients } from '@/lib/db/memory/client-store'
+import { allSavedOrders } from '@/lib/db/memory/order-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { listInventoryMovements, listRegistry } from '@/lib/db/memory/registry-store'
 import { listBackups, mailConfig } from '@/lib/db/memory/maintenance-store'
 import { auditEvent } from '@/lib/server/audit'
-import { auditMetrics } from '@/lib/server/domain/audit-metrics'
+import { auditMetrics, restaAging, unverifiedShare } from '@/lib/server/domain/audit-metrics'
 import { isClinicalEvent } from '@/lib/server/domain/audit-catalog'
 import { todayInLab } from '@/lib/server/domain/client-rules'
 import { guardRoute, mayReach } from '@/lib/server/guard'
@@ -163,18 +165,28 @@ function minutes(ms: number | null): string {
   return `${(ms / 60_000).toFixed(1).replace('.', ',')} min`
 }
 
+function days(ms: number | null): string {
+  if (ms === null) return strings.empty.dash
+  return `${(ms / 86_400_000).toFixed(1).replace('.', ',')} d`
+}
+
 export async function getStatistics(context: StaffContext, filters: AuditFilters) {
   const session = toDecisionSession(context)
   const decision = decide({ session, command: 'report.statistics', mode: 'read' })
   if (!decision.allowed) return { kind: 'BLOCKED' } as const
   const rows = listAudit().filter((row) => within(labDay(row.when.serverTime), filters))
   const metrics = auditMetrics(rows)
+  const resta = restaAging(allSavedOrders())
+  const share = unverifiedShare(searchClients({ text: '', includeInactive: false }))
   const refusalGroups = metrics.refusals.map((group) => ({ label: `${group.role} ${group.command}`, count: group.count }))
   const portalGroups = metrics.portalFailures.map((group) => ({ label: group.address, count: group.count }))
+  const deliveryGroups = metrics.deliveryFailures.map((group) => ({ label: group.channel, count: group.count }))
   const shownRefusals =
     decision.scope === 'aggregates_only' ? applyAggregatesOnly(refusalGroups) : { groups: refusalGroups, suppressedGroups: 0 }
   const shownPortal =
     decision.scope === 'aggregates_only' ? applyAggregatesOnly(portalGroups) : { groups: portalGroups, suppressedGroups: 0 }
+  const shownDelivery =
+    decision.scope === 'aggregates_only' ? applyAggregatesOnly(deliveryGroups) : { groups: deliveryGroups, suppressedGroups: 0 }
   await auditEvent({
     command: 'report.view',
     outcome: 'ALLOWED',
@@ -183,6 +195,8 @@ export async function getStatistics(context: StaffContext, filters: AuditFilters
     recordType: 'report',
     recordId: 'estadisticas',
   })
+  const unverifiedLabel =
+    share.activeCount === 0 ? strings.empty.dash : `${share.unverifiedCount} / ${share.activeCount}`
   return {
     kind: 'READY' as const,
     lines: [
@@ -196,17 +210,28 @@ export async function getStatistics(context: StaffContext, filters: AuditFilters
       [text.statsResend, minutes(metrics.resendLag.medianMs)],
       [text.statsResendOverTwoDays, String(metrics.resendLagOverTwoDays)],
       [text.statsAdminQueue, minutes(metrics.adminQueue.medianMs)],
+      [text.statsControlWait, minutes(metrics.controlWait.medianMs)],
       [text.statsDiscounts, String(metrics.discounts)],
       [text.statsOverrides, String(metrics.priceColumnOverrides)],
       [text.statsStepUpFailures, String(metrics.stepUpFailures)],
       [text.statsSelfEntered, String(metrics.selfEnteredReleases)],
       [text.statsConflicts, String(metrics.analyzerConflicts)],
       [text.statsRateWarnings, String(metrics.rateWarnings)],
+      [text.statsSimilarConfirms, String(metrics.similarNameConfirms)],
+      [text.statsSimilarRefusals, String(metrics.similarNameRefusals)],
+      [text.statsUnverifiedShare, unverifiedLabel],
+      [text.statsSameDayWarns, String(metrics.sameDayExamWarns)],
+      [text.statsResendBacklog, String(metrics.openResendBacklog)],
+      [text.statsConsentRefusals, String(metrics.consentRefusals)],
+      [text.statsCorrectionsAfterDelivery, String(metrics.correctionsAfterDelivery)],
+      [text.statsRestaOpen, String(resta.openCount)],
+      [text.statsRestaAge, days(resta.medianAgeMs)],
       [text.statsReversals, String(metrics.sameUserReversals)],
     ] as const,
     refusals: shownRefusals.groups,
     portalFailures: shownPortal.groups,
-    suppressed: shownRefusals.suppressedGroups + shownPortal.suppressedGroups,
+    deliveryFailures: shownDelivery.groups,
+    suppressed: shownRefusals.suppressedGroups + shownPortal.suppressedGroups + shownDelivery.suppressedGroups,
   }
 }
 

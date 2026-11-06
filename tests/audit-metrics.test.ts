@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { auditMetrics, RESEND_LAG_LIMIT_MS } from '@/lib/server/domain/audit-metrics'
+import { auditMetrics, restaAging, unverifiedShare, RESEND_LAG_LIMIT_MS } from '@/lib/server/domain/audit-metrics'
 import type { AuditRow } from '@/types/audit/audit.types'
 
 function row(partial: Pick<AuditRow, 'sequence' | 'what' | 'result'> & Partial<Pick<AuditRow, 'who' | 'change' | 'when'>>): AuditRow {
@@ -194,5 +194,99 @@ describe('audit metrics', () => {
     expect(metrics.analyzerConflicts).toBe(1)
     expect(metrics.rateWarnings).toBe(1)
     expect(JSON.stringify(metrics)).not.toContain('Bio')
+  })
+
+  it('measures control wait, similar-name, same-day warns, delivery failures, backlog, consent, and corrections after delivery', () => {
+    const metrics = auditMetrics([
+      row({
+        sequence: 1,
+        what: { command: 'order.save', event: 'order.open', recordType: 'order', recordId: 'o-c', state: 'ABIERTA' },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        when: { serverTime: '2026-11-04T10:00:00.000Z', timeZone: 'America/Caracas' },
+      }),
+      row({
+        sequence: 2,
+        what: { command: 'control.assign', event: 'control.assign', recordType: 'order', recordId: 'o-c', state: 'ABIERTA' },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        when: { serverTime: '2026-11-04T12:00:00.000Z', timeZone: 'America/Caracas' },
+      }),
+      row({
+        sequence: 3,
+        what: { command: 'patient.save', event: 'patient.save', recordType: 'client', recordId: 'c-1', state: 'SIMILAR_NAME' },
+        result: { outcome: 'REFUSED', reason: 'STATE' },
+      }),
+      row({
+        sequence: 4,
+        what: { command: 'patient.save', event: 'patient.save', recordType: 'client', recordId: 'c-2', state: null },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        change: { before: null, after: { similarConfirmedIds: ['c-9'] } },
+      }),
+      row({
+        sequence: 5,
+        what: { command: 'order.line.add', event: 'order.line.add', recordType: 'order_draft', recordId: 'd-1', state: null },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        change: { before: null, after: { repeatMotivo: 'Repetir hoy' } },
+      }),
+      row({
+        sequence: 6,
+        what: { command: 'delivery.whatsapp', event: 'delivery.whatsapp', recordType: 'order', recordId: 'o-d', state: 'LIBERADO' },
+        result: { outcome: 'FAILED', reason: 'STATE' },
+      }),
+      row({
+        sequence: 7,
+        what: { command: 'delivery.resend.task', event: 'delivery.resend.task', recordType: 'order', recordId: 'o-e', state: null },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+      }),
+      row({
+        sequence: 8,
+        what: { command: 'delivery.send', event: 'delivery.send', recordType: 'order', recordId: 'o-f', state: 'LIBERADO' },
+        result: { outcome: 'REFUSED', reason: 'STATE' },
+      }),
+      row({
+        sequence: 9,
+        what: { command: 'delivery.email', event: 'delivery.email', recordType: 'order', recordId: 'o-g', state: 'LIBERADO' },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        when: { serverTime: '2026-11-04T11:00:00.000Z', timeZone: 'America/Caracas' },
+      }),
+      row({
+        sequence: 10,
+        what: { command: 'result.correct.open', event: 'result.correct.open', recordType: 'order', recordId: 'o-g', state: 'EN_CORRECCION' },
+        result: { outcome: 'ALLOWED', reason: 'OK' },
+        when: { serverTime: '2026-11-04T14:00:00.000Z', timeZone: 'America/Caracas' },
+      }),
+    ])
+
+    expect(metrics.controlWait).toEqual({ count: 1, medianMs: 2 * 60 * 60 * 1000 })
+    expect(metrics.similarNameRefusals).toBe(1)
+    expect(metrics.similarNameConfirms).toBe(1)
+    expect(metrics.sameDayExamWarns).toBe(1)
+    expect(metrics.deliveryFailures).toEqual([{ channel: 'WHATSAPP', count: 1 }])
+    expect(metrics.openResendBacklog).toBe(1)
+    expect(metrics.consentRefusals).toBe(1)
+    expect(metrics.correctionsAfterDelivery).toBe(1)
+  })
+
+  it('ages open Resta without naming the client', () => {
+    const aging = restaAging(
+      [
+        { state: 'ABIERTA', savedAt: '2026-11-01T12:00:00.000Z', totals: { resta: '10.00' } },
+        { state: 'ABIERTA', savedAt: '2026-11-03T12:00:00.000Z', totals: { resta: '5.00' } },
+        { state: 'ANULADA', savedAt: '2026-10-01T12:00:00.000Z', totals: { resta: '99.00' } },
+        { state: 'ABIERTA', savedAt: '2026-11-04T12:00:00.000Z', totals: { resta: '0.00' } },
+      ],
+      Date.parse('2026-11-05T12:00:00.000Z'),
+    )
+    expect(aging.openCount).toBe(2)
+    expect(aging.medianAgeMs).toBe(((4 + 2) * 86_400_000) / 2)
+  })
+
+  it('counts Sin verificar among active clients only', () => {
+    expect(
+      unverifiedShare([
+        { active: true, verified: true },
+        { active: true, verified: false },
+        { active: false, verified: false },
+      ]),
+    ).toEqual({ activeCount: 2, unverifiedCount: 1 })
   })
 })

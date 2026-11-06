@@ -26,8 +26,35 @@ export interface AuditMetrics {
   selfEnteredReleases: number
   analyzerConflicts: number
   rateWarnings: number
+  /** order.open → first control.assign */
+  controlWait: DurationSummary
+  /** ALLOWED patient.save that followed a similar-name confirm. */
+  similarNameConfirms: number
+  /** REFUSED patient.save with state SIMILAR_NAME. */
+  similarNameRefusals: number
+  /** ALLOWED order.line.add that carried a same-day motivo. */
+  sameDayExamWarns: number
+  deliveryFailures: { channel: string; count: number }[]
+  /** Resend tasks with no later ALLOWED delivery. */
+  openResendBacklog: number
+  /** REFUSED delivery.send / delivery.resend on a released order (consent path). */
+  consentRefusals: number
+  /** Orders with a delivery then a later result.correct.open. */
+  correctionsAfterDelivery: number
   refusals: { role: string; command: string; count: number }[]
   sameUserReversals: number
+}
+
+export interface RestaAging {
+  /** Orders with Resta > 0 that are not voided. */
+  openCount: number
+  /** Median age of those orders from savedAt to now, in milliseconds. */
+  medianAgeMs: number | null
+}
+
+export interface ClientShare {
+  activeCount: number
+  unverifiedCount: number
 }
 
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000
@@ -170,6 +197,54 @@ function resendLagValues(grouped: Map<string, AuditRow[]>): number[] {
   return values
 }
 
+function openResendBacklog(grouped: Map<string, AuditRow[]>): number {
+  let count = 0
+  for (const list of grouped.values()) {
+    for (const task of list.filter((row) => allowed(row, 'delivery.resend.task'))) {
+      const delivered = list.some(
+        (row) => DELIVERY.has(row.what.event) && row.result.outcome === 'ALLOWED' && row.sequence > task.sequence,
+      )
+      if (!delivered) count += 1
+    }
+  }
+  return count
+}
+
+function deliveryFailures(rows: readonly AuditRow[]): { channel: string; count: number }[] {
+  const groups = new Map<string, number>()
+  for (const row of rows) {
+    if (row.result.outcome !== 'FAILED' || !DELIVERY.has(row.what.event)) continue
+    const channel = row.what.event === 'delivery.whatsapp' ? 'WHATSAPP' : 'CORREO'
+    groups.set(channel, (groups.get(channel) ?? 0) + 1)
+  }
+  return [...groups.entries()].map(([channel, count]) => ({ channel, count }))
+}
+
+function similarConfirmed(row: AuditRow): boolean {
+  const after = row.change?.after
+  if (typeof after !== 'object' || after === null || !('similarConfirmedIds' in after)) return false
+  const ids = after.similarConfirmedIds
+  return Array.isArray(ids) && ids.length > 0
+}
+
+function sameDayLine(row: AuditRow): boolean {
+  if (!allowed(row, 'order.line.add')) return false
+  if (row.why.motivo) return true
+  const after = row.change?.after
+  if (typeof after !== 'object' || after === null || !('repeatMotivo' in after)) return false
+  return typeof after.repeatMotivo === 'string' && after.repeatMotivo.trim() !== ''
+}
+
+function correctionsAfterDelivery(grouped: Map<string, AuditRow[]>): number {
+  let count = 0
+  for (const list of grouped.values()) {
+    const delivery = list.find((row) => DELIVERY.has(row.what.event) && row.result.outcome === 'ALLOWED')
+    if (!delivery) continue
+    if (list.some((row) => allowed(row, 'result.correct.open') && row.sequence > delivery.sequence)) count += 1
+  }
+  return count
+}
+
 /** Views over the audit rows. Counts and durations only: no name, cédula, phone, or result. */
 export function auditMetrics(rows: readonly AuditRow[]): AuditMetrics {
   const grouped = byRecord(rows)
@@ -202,8 +277,49 @@ export function auditMetrics(rows: readonly AuditRow[]): AuditMetrics {
     selfEnteredReleases: selfEnteredReleases(grouped),
     analyzerConflicts: rows.filter((row) => row.what.event === 'result.conflict' && row.result.outcome === 'REFUSED').length,
     rateWarnings: rows.filter((row) => row.what.event === 'order.rate.warn' && row.result.outcome === 'REFUSED').length,
+    controlWait: summary(pair(grouped, 'order.open', 'control.assign', 'first')),
+    similarNameConfirms: rows.filter((row) => allowed(row, 'patient.save') && similarConfirmed(row)).length,
+    similarNameRefusals: rows.filter(
+      (row) => row.what.event === 'patient.save' && row.result.outcome === 'REFUSED' && row.what.state === 'SIMILAR_NAME',
+    ).length,
+    sameDayExamWarns: rows.filter(sameDayLine).length,
+    deliveryFailures: deliveryFailures(rows),
+    openResendBacklog: openResendBacklog(grouped),
+    consentRefusals: rows.filter(
+      (row) =>
+        (row.what.command === 'delivery.send' || row.what.command === 'delivery.resend') &&
+        row.result.outcome === 'REFUSED' &&
+        row.result.reason === 'STATE' &&
+        row.what.state !== 'INCOMPLETO',
+    ).length,
+    correctionsAfterDelivery: correctionsAfterDelivery(grouped),
     refusals: [...refusals.values()],
     sameUserReversals: sameUserReversals(rows),
+  }
+}
+
+/** Open Resta invoices: count and median age from Guardar. No client name in the result. */
+export function restaAging(
+  orders: readonly { state: string; savedAt: string; totals: { resta: string } }[],
+  nowMs: number = Date.now(),
+): RestaAging {
+  const ages: number[] = []
+  for (const order of orders) {
+    if (order.state === 'ANULADA') continue
+    const [whole = '0', fraction = ''] = order.totals.resta.trim().split('.')
+    const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2))
+    if (!Number.isFinite(cents) || cents <= 0) continue
+    ages.push(nowMs - new Date(order.savedAt).getTime())
+  }
+  return { openCount: ages.length, medianAgeMs: median(ages) }
+}
+
+/** Active non-deleted clients: how many lack a complete cédula (Sin verificar). */
+export function unverifiedShare(clients: readonly { active: boolean; verified: boolean }[]): ClientShare {
+  const active = clients.filter((client) => client.active)
+  return {
+    activeCount: active.length,
+    unverifiedCount: active.filter((client) => !client.verified).length,
   }
 }
 

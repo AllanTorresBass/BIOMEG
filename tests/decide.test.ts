@@ -104,7 +104,7 @@ describe('decide: required cases from V0-03', () => {
     })
   })
 
-  it('Administración cannot read released clinical values', () => {
+  it('Administración cannot read released clinical values (E-54)', () => {
     expect(run([ADM], 'result.read', { facts: { state: 'LIBERADO' } }).reason).toBe('ROLE')
   })
 
@@ -142,7 +142,7 @@ describe('decide: required cases from V0-03', () => {
   })
 
   describe('user administration', () => {
-    it('refuses a role change that grants Bioanalista', () => {
+    it('refuses a role change that grants Bioanalista (E-09)', () => {
       expect(run([ADM], 'user.role.change', { facts: { grants_bioanalista: true }, gestures: STEP_UP_OK }).reason).toBe('STATE')
     })
 
@@ -151,12 +151,12 @@ describe('decide: required cases from V0-03', () => {
       expect(run([ADM], 'user.grant.temporary', { facts, gestures: { ...STEP_UP_OK, motivo: 'Vacaciones' } }).reason).toBe('STATE')
     })
 
-    it('allows the Bioanalista grant with a license and a re-entry', () => {
+    it('allows the Bioanalista grant with a license and a re-entry (E-09)', () => {
       expect(run([ADM], 'role.grant_bioanalista', { facts: { license_present: true }, gestures: STEP_UP_OK }).allowed).toBe(true)
     })
   })
 
-  it('refuses a send when the delivery mode is not allowed', () => {
+  it('refuses a send when the delivery mode is not allowed (E-62)', () => {
     const facts = { state: 'LIBERADO', delivery_mode_allowed: false }
     expect(run([REC], 'delivery.send', { facts, gestures: CONFIRM_OK }).reason).toBe('STATE')
   })
