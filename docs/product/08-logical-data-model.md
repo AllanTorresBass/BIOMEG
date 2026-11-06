@@ -122,7 +122,7 @@ Médicos, empresas (with Razón social as its name), proveedores, reactivos y se
 | Tasa BCV, with its date | Copied onto each new document | `brand/04` |
 | QR, Precio sábado | Whole laboratory. Saturday has a calendar and a manual switch | R-004, R-147 |
 | Discount limit | Starts at 0 percent | Decisions |
-| IVA, IGTF rates | **Unknown** for this laboratory (G2 / Gate B). Named on the form. Public secondary summaries (e.g. IVA 16%, IGTF 3% FX) are in [../gates/gate-b-research.md](../gates/gate-b-research.md) and are **not** Design rules | `session/facturacion.md`, Gate B |
+| IVA, IGTF rates | **Design rule** (Gate B Received 06/11/2026): IVA **16%**; IGTF **3%** on the foreign-currency payment amount when collected. Money rounds to two decimals, half-up | Gate B, `session/facturacion.md` |
 | Mail account | **Unknown** beyond "the account Enviar correo uses". The secret is write-only | R-128 |
 
 ## The visit
@@ -228,7 +228,7 @@ No password is stored.
 | Field | Rule | Source |
 |---|---|---|
 | Factura N° | Assigned at Guardar. Never reused | `05-data.md`, `04-edges.md` |
-| Control N° | A number, or `Pendiente`. A fiscal copy waits for it. How this laboratory assigns it is **Unknown** (Gate B). Public SENIAT secondary notes (printer Control N° vs máquina fiscal) are in [../gates/gate-b-research.md](../gates/gate-b-research.md) | `brand/06`, R-071 |
+| Control N° | A number, or `Pendiente`. A fiscal copy waits for it. **Design rule** (Gate B): nullable until assigned; the app does not invent a printer number. Fiscal emission medium remains G4 / Gate C | `brand/06`, R-071, Gate B |
 | Billing party | C.I., Razón social, Dirección. **Observed**. Empresa requires a razón social | `brand/04` |
 | Totals | Sub total, Total exento, Total base imp., I.V.A., IGTF, Desc., Total Bs, Total USD, Abono, Resta. **Observed** | `brand/04` |
 | Rate used | Repeated beside the totals | `brand/06` |
@@ -288,6 +288,5 @@ Each is also in [section 9 of the workspace guide](../workspace-guide.md#decisio
 
 | Question | Why it matters to the model | Who decides |
 |---|---|---|
-| How the catalog is structured: one exam to many analytes, whether Categoría is a section, and where units and reference text are kept | A panel prints many rows, and nothing yet creates those rows. Modificar valores is blocked, and Crear perfiles has **Unknown** members | Lead bioanalyst, with captures from the laboratory |
-| IVA and IGTF rates, rounding, and Control N° | Totals can't be computed as settled Design rules. Public-web context: [../gates/gate-b-research.md](../gates/gate-b-research.md) | Owner, accountant |
-| What is brought over from SICOEXC | The rules assume migrated rows, and no page defines a migration | Owner |
+| How the catalog is structured (G1): one exam to many analytes, whether Categoría is a section, and where units and reference text are kept | A panel prints many rows, and nothing yet creates those rows. Modificar valores is blocked, and Crear perfiles has **Unknown** members | Lead bioanalyst, laboratory — [../gates/gate-c.md](../gates/gate-c.md) |
+| What is brought over from SICOEXC (G3) | The rules assume migrated rows, and no page defines a migration | Owner — [../gates/gate-c.md](../gates/gate-c.md) |

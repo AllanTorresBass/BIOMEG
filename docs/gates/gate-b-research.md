@@ -1,8 +1,8 @@
 # Gate B — public-web research brief (for Stage 6)
 
 **Authority:** This page does **not** close Gate B and does **not** replace Venezuelan counsel, the laboratory, the owner, or the accountant. It summarizes what public sources say so those people can answer faster.  
-**Status:** Gate B remains **Deferred** / answers **Unknown** in [gate-b.md](gate-b.md) until a named person writes a reply.  
-**Evidence labels:** Facts below from public pages are **Published** (secondary web / firm summaries). Anything this laboratory must still choose is **Unknown**. Do not paste these rows into [gate-b.md](gate-b.md) as if counsel had signed them.
+**Status:** Gate B is **Received** (06/11/2026) in [gate-b.md](gate-b.md) after owner confirmation of the working proposals below and hosted Neon. This brief remains the **Published** source trail. Production counsel items still open under [gate-c.md](gate-c.md).  
+**Evidence labels:** Facts below from public pages are **Published** (secondary web / firm summaries).
 
 Ask sheet: [gate-b-ask.md](gate-b-ask.md).
 

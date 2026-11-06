@@ -2,9 +2,9 @@
 
 [Back to the catalog](README.md)
 
-**Stop first.** Don't start this stage until [Gate B](../gates/gate-b.md) is closed with answers from the laboratory, counsel, owner, and accountant. Collection is **Deferred by request**. Questions: [../gates/gate-b-ask.md](../gates/gate-b-ask.md). Public-web context only (does not close the gate): [../gates/gate-b-research.md](../gates/gate-b-research.md). Go-live conditions: [../product/10-security-baseline.md](../product/10-security-baseline.md#before-any-real-patient-record).
+**Gate B:** **Received** (06/11/2026) — [../gates/gate-b.md](../gates/gate-b.md). Target database: **hosted Neon**. Settled settings: IVA 16%, IGTF 3% on FX when collected, money to two decimals, Control N° nullable/`Pendiente`. Real patients wait for [Gate C](../gates/gate-c.md). Go-live checklist: [../product/10-security-baseline.md](../product/10-security-baseline.md#before-any-real-patient-record).
 
-v0 lists [Neon, Supabase, Upstash, and Vercel Blob](https://v0.app/docs/databases) as integrations. The page doesn't describe a migration system or row-level security, so a developer should review this stage's schema and access code by hand. The catalog doesn't choose a provider. Do not treat a research figure (IVA 16%, IGTF 3%, and so on) as a settled setting.
+v0 lists [Neon, Supabase, Upstash, and Vercel Blob](https://v0.app/docs/databases) as integrations. The page doesn't describe a migration system or row-level security, so a developer should review this stage's schema and access code by hand. Provider for Stage 6: **Neon**.
 
 Even after this stage, the application still uses invented data until gate C is passed.
 

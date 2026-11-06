@@ -4,7 +4,7 @@
 **Purpose:** Ready-to-paste prompts that would have [v0](https://v0.app/docs) build the BIOMEG application, in a safe order.  
 **Authority:** This catalog sets no rules. It restates [../product/](../product/) and [../brand/](../brand/). If a prompt differs from those pages, those pages win, so fix the prompt.
 
-**Status:** This catalog sets no rules. A prototype is in progress at the repository root, on invented data kept in memory. The prompts were not sent to v0. A real patient record waits for Gate C. Gate B, before any real backend, is **Deferred by request**. Blank answers sit in [../gates/gate-b.md](../gates/gate-b.md); public-web context is in [../gates/gate-b-research.md](../gates/gate-b-research.md). Do not invent rates or hosting to start Stage 6.
+**Status:** This catalog sets no rules. A prototype is in progress at the repository root. Gate B is **Received** (06/11/2026) — Stage 6 may begin ([../gates/gate-b.md](../gates/gate-b.md)). Invented data only until Gate C ([../gates/gate-c.md](../gates/gate-c.md)). The prompts were not sent to v0.
 
 ## How to use it
 
@@ -125,12 +125,11 @@ Run top to bottom. V0-A7 runs again after every stage.
 | Gate | Before | Who answers | Question |
 |---|---|---|---|
 | A | V0-01 | Owner | Do we start the application now, and is the v0 stack acceptable? |
-| B | Stage 6 | Laboratory | The deployment model, and whether a hosted database fits health data |
-| B | Stage 6 | Venezuelan counsel | Health data, retention, minors, and the portal credential |
-| B | Stage 6 | Owner, accountant | IVA and IGTF rates and rounding, and how Control N° is assigned. Laboratory answers are **Unknown**; public secondary summaries sit in [../gates/gate-b-research.md](../gates/gate-b-research.md) |
-| C | Any real patient | Lead bioanalyst | Everything marked "Lead bioanalyst to confirm" in `product/06-access-control.md` |
-| C | Any real patient | Laboratory | The correct RIF, the provider for WhatsApp and correo, and captures of unopened forms |
-| C | Any real patient | Owner | Every condition in [the security baseline](../product/10-security-baseline.md#before-any-real-patient-record), including an independent security review |
+| B | Stage 6 | — | **Received** 06/11/2026 — see [../gates/gate-b.md](../gates/gate-b.md) |
+| C | Any real patient | Lead bioanalyst | Decisions in `product/06`; G1 catalog — [../gates/gate-c.md](../gates/gate-c.md) |
+| C | Any real patient | Laboratory | RIF, G4 providers, captures — [../gates/gate-c-ask.md](../gates/gate-c-ask.md) |
+| C | Any real patient | Owner | Security baseline checklist, G3 migration — [../gates/gate-c.md](../gates/gate-c.md) |
+| C | Any real patient | Venezuelan counsel | Production health data, retention, minors, portal credential |
 
 ## Choices this catalog makes
 
@@ -147,7 +146,7 @@ The docs don't settle these. A prompt needs an answer in order to produce a scre
 | Where Tipo de costo and the Billing card sit in the four steps | Billing card above the lines in Exámenes, and repeated read-only in Pago | V0-08, V0-09 | Owner |
 | Where Motivo and Fecha muestra are entered | The Cliente step, under the selected client | V0-08 | Recepción |
 | Which similarity measure yields the 0.85 name threshold | Trigram similarity on the normalized name. The docs give the threshold and not the measure | V0-06 | Owner |
-| IVA and IGTF amounts | Rates come from a setting that starts empty, so the prototype computes and shows `0,00`, with a caption. BIOMEG has no settled rate; Gate B research is context only | V0-09 | Owner, accountant |
+| IVA and IGTF amounts | Settings: IVA **16%**, IGTF **3%** on FX when collected (Gate B Received). Prototype may still show captions until settings UI is wired | V0-09 | Owner, accountant (received) |
 | PDF method | A server-rendered PDF from the same data as the preview | V0-15 | Builder |
 | Portal layout | Works at phone width, because a client may use a phone. Staff screens are designed for desktop PCs | V0-17 | Owner |
 | Chip colors for words with no palette pair: `ABIERTA`, `EN_CORRECCION`, En revisión, Pendiente, Sin verificar, Sin imprimir, Impreso | Neutral: secondary text on the sunken surface | V0-02 | Owner |

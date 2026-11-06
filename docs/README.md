@@ -16,6 +16,6 @@ A design rule in [product/](product/) wins over a design rule in [brand/](brand/
 
 [v0-prompts/](v0-prompts/README.md) is a catalog of prompts that restates the behavior and appearance layers and sets no rules. The prototype follows that order. It was not produced by sending the prompts to v0.
 
-[gates/](gates/README.md) holds Gate B: the blank answer sheet ([gate-b.md](gates/gate-b.md)), the questions to send ([gate-b-ask.md](gates/gate-b-ask.md)), and a public-web research brief ([gate-b-research.md](gates/gate-b-research.md)). Gate B is **Deferred by request**. Laboratory answers stay **Unknown**. The research brief is **Published** secondary context only; it does not close the gate or set rates, hosting, or Control N° for BIOMEG.
+[gates/](gates/README.md) holds people gates. **Gate B** is **Received** (06/11/2026): hosted Neon, IVA 16%, IGTF 3% on FX, two-decimal rounding, Control N° nullable/`Pendiente` — Stage 6 may begin. **Gate C** stays **Open** ([gate-c.md](gates/gate-c.md), [gate-c-ask.md](gates/gate-c-ask.md)): no real patient record until counsel, G1, G3, G4, and the security checklist are filled.
 
 Start with [workspace-guide.md](workspace-guide.md) for an overview of the whole workspace, [product/README.md](product/README.md) for the application, and [brand/README.md](brand/README.md) for how a screen is drawn.

@@ -30,7 +30,7 @@ Labels follow [brand/03-documentation-standard.md](brand/03-documentation-standa
 | # | Gap | Effect on the build | Who closes it |
 |---|---|---|---|
 | G1 | **Catalog structure.** One exam to many analytes, whether Categoría is a report section, where units and reference text are kept. No command creates those rows | The result grid has no real rows. Stage 3 uses invented sections, so the grid can be built but not validated | Lead bioanalyst, with captures of Precio Examenes and Crear Perfiles |
-| G2 | **IVA and IGTF rates, rounding, Control N° assignment** | Invoice totals can't be correct. The prototype shows `0,00` with a caption | Owner, accountant |
+| G2 | **IVA and IGTF rates, rounding, Control N° assignment** | **Received** at Gate B (06/11/2026): IVA 16%, IGTF 3% FX, two-decimal rounding, Control N° Pendiente/nullable | Owner, accountant |
 | G3 | **Migration from SICOEXC.** Rules assume migrated rows. No page defines the migration | Duplicate cédulas, unmerged clients, and old orders have no landing plan | Owner, after a backup can be examined |
 | G4 | **Providers and protocols:** WhatsApp, email, analyzer, fiscal number, rate source, QR payload | Every one is a fake behind a port. The portal's one-time code depends on one of them | Laboratory |
 
@@ -217,7 +217,7 @@ Prompt IDs are from [v0-prompts/](v0-prompts/README.md). The catalog's run order
 | Health data, retention, minors, portal credential | Venezuelan counsel |
 | IVA and IGTF rates, rounding, Control N° (G2) | Owner, accountant |
 
-The blank answer sheet is [gates/gate-b.md](gates/gate-b.md). Questions to send: [gates/gate-b-ask.md](gates/gate-b-ask.md). Public-web context (does not close the gate): [gates/gate-b-research.md](gates/gate-b-research.md). **Deferred by request** — answers stay Unknown; Stage 6 still must not start on invented rates or hosting.
+Answer sheet: [gates/gate-b.md](gates/gate-b.md) (**Received** 06/11/2026). Research brief: [gates/gate-b-research.md](gates/gate-b-research.md). Hosted Neon; IVA 16%; IGTF 3% on FX; two-decimal rounding; Control N° Pendiente/nullable. Stage 6 may begin. Real patients wait for [gates/gate-c.md](gates/gate-c.md).
 
 ### Phase 6. Real backend (Stage 6)
 
@@ -245,7 +245,7 @@ Request the database integration only after Gate B. Use the documents' stack fro
 
 ### Gate C. Before any real patient record
 
-All of `product/10-security-baseline.md` under *Before any real patient record*, the lead bioanalyst's confirmations in `product/06`, the correct RIF, the chosen providers, and captures of the unopened forms. G1 and G3 close here.
+All of `product/10-security-baseline.md` under *Before any real patient record*, the lead bioanalyst's confirmations in `product/06`, the correct RIF, the chosen providers, and captures of the unopened forms. G1 and G3 close here. Blank sheet and questions: [gates/gate-c.md](gates/gate-c.md), [gates/gate-c-ask.md](gates/gate-c-ask.md).
 
 ### Phase 8. Pilot and migration
 

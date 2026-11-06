@@ -2,7 +2,7 @@
 
 **Authority:** This page sets no answers. Copy the questions to the named people. Write their replies only into [gate-b.md](gate-b.md). Do not invent a rate, hosting model, or legal conclusion. Optional attachment for them: [gate-b-research.md](gate-b-research.md) (public-web context only).
 
-**Status of Gate B:** **Deferred by request.** Collection stays paused until the owner resumes it. The gate stays closed for Stage 6 until every answer is recorded in [gate-b.md](gate-b.md).
+**Status of Gate B:** **Received** (06/11/2026). Answers live in [gate-b.md](gate-b.md). Keep this ask sheet for the historical question list. New people work for real patients: [gate-c-ask.md](gate-c-ask.md).
 
 ## To the laboratory
 

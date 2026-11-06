@@ -1,0 +1,20 @@
+erDiagram
+  laboratory_settings ||--o{ bcv_rates : uses
+  users ||--o{ user_roles : has
+  roles ||--o{ user_roles : granted
+  users ||--o{ staff_sessions : opens
+  clients ||--o{ orders : places
+  clients ||--o{ client_consents : grants
+  clients ||--o{ client_merges : merged
+  exam_sections ||--o{ exams : groups
+  exams ||--o{ exam_analytes : contains
+  exams ||--o{ order_lines : priced
+  orders ||--o{ order_lines : has
+  orders ||--o{ result_cells : results
+  orders ||--o{ issues : reports
+  orders ||--o{ invoices : bills
+  orders ||--o{ deliveries : sends
+  invoices ||--o{ payments : receives
+  invoices ||--o{ fiscal_notes : adjusts
+  issues ||--o{ verification_tokens : verifies
+  users ||--o{ audit_events : actors

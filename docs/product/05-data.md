@@ -49,8 +49,8 @@ The portal lists a Pendiente order with its date and number and no grid. A parti
 | Why | The laboratory reprints facturas and has to show IVA, IGTF, both currencies, abono, and resta |
 | When | With the order save for the header and the lines. Each payment amount as it is entered. Abono from Agregar abono. The rate is not replaced when the shell rate later changes |
 | Where | The Pago step, the totals, the libros once their columns are known |
-| How | The instruments captured on the October invoice, plus convenio when that channel is chosen. IVA and IGTF rates come from a laboratory setting that starts empty, so computed lines may show `0,00` with a caption until Gate B closes. Those rates are **Unknown** for this laboratory; public secondary summaries are in [../gates/gate-b-research.md](../gates/gate-b-research.md) and are not Design rules |
-| Leaving the laboratory | A fiscal copy waits until Control N° is a number. Reprint stores who printed and when. How this laboratory assigns Control N° is **Unknown** (Gate B); see the same research brief for printer vs máquina fiscal context |
+| How | The instruments captured on the October invoice, plus convenio when that channel is chosen. IVA and IGTF come from laboratory settings: IVA **16%**, IGTF **3%** on foreign-currency payments when collected (**Design rule**, Gate B Received 06/11/2026). Money rounds to two decimals, half-up |
+| Leaving the laboratory | A fiscal copy waits until Control N° is a number. Reprint stores who printed and when. Control N° stays `Pendiente` / null until assigned; the app does not invent it (Gate B). Emission medium is G4 / Gate C |
 
 Sin verificar reaches this write only with the billing party’s complete cédula.
 
