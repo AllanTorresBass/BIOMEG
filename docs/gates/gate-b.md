@@ -4,7 +4,7 @@
 **Status:** **Deferred by request.** Collection is paused; Stage 6 (V0-25 through V0-28) still must not begin. Answers remain blank until people fill them.  
 **Evidence label:** Each blank answer is **Unknown**. Do not invent a rate, a hosting model, or a counsel conclusion to unblock code.
 
-Cross-links: [build-plan Gate B](../build-plan.md#gate-b-before-phase-6), [v0 catalog gates](../v0-prompts/README.md#gates), [security baseline](../product/10-security-baseline.md#before-any-real-patient-record), [questions to send](gate-b-ask.md).
+Cross-links: [build-plan Gate B](../build-plan.md#gate-b-before-phase-6), [v0 catalog gates](../v0-prompts/README.md#gates), [security baseline](../product/10-security-baseline.md#before-any-real-patient-record), [questions to send](gate-b-ask.md), [public-web research brief](gate-b-research.md).
 
 ## Checklist
 
@@ -26,7 +26,7 @@ Cross-links: [build-plan Gate B](../build-plan.md#gate-b-before-phase-6), [v0 ca
 | Owner | IVA, IGTF, rounding, Control N° (with accountant) | **Waiting** — no answer recorded |
 | Accountant | IVA, IGTF, rounding, Control N° (with owner) | **Waiting** — no answer recorded |
 
-Do not fill the Answer column with a guess, a working value from the prototype, or a caption such as `0,00`. Stage 6 stays blocked while Gate B is Deferred or any party is still Waiting. Resume collection with [gate-b-ask.md](gate-b-ask.md) when the owner asks.
+Do not fill the Answer column with a guess, a working value from the prototype, a caption such as `0,00`, or a figure copied from [gate-b-research.md](gate-b-research.md). That brief is **Published** secondary context for the ask sheet; it is not a laboratory, counsel, owner, or accountant reply. Stage 6 stays blocked while Gate B is Deferred or any party is still Waiting. Resume collection with [gate-b-ask.md](gate-b-ask.md) when the owner asks.
 
 ## How to close the gate
 

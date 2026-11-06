@@ -1,8 +1,8 @@
 # Gate B — questions to send
 
-**Authority:** This page sets no answers. Copy the questions to the named people. Write their replies only into [gate-b.md](gate-b.md). Do not invent a rate, hosting model, or legal conclusion.
+**Authority:** This page sets no answers. Copy the questions to the named people. Write their replies only into [gate-b.md](gate-b.md). Do not invent a rate, hosting model, or legal conclusion. Optional attachment for them: [gate-b-research.md](gate-b-research.md) (public-web context only).
 
-**Status of Gate B:** Closed until every answer is recorded in [gate-b.md](gate-b.md).
+**Status of Gate B:** **Deferred by request.** Collection stays paused until the owner resumes it. The gate stays closed for Stage 6 until every answer is recorded in [gate-b.md](gate-b.md).
 
 ## To the laboratory
 

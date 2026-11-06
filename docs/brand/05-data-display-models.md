@@ -81,7 +81,7 @@ Two lists exist. They overlap and they are not the same list. **Observed.**
 
 Saturday price is a switch for the whole laboratory. **Observed** as Precio sábado: INACTIVO on a Friday capture. **Design rule:** each priced line shows `Precio sábado` or `Precio ordinario`, so the switch is visible on the line that used it.
 
-Currency is a filter on the matrix and a pair of totals on the invoice (Total Bs, Total USD). The rate on the shell is copied onto the totals. IGTF sits with those totals, labeled as the tax on the foreign-currency payment. The October form showed IGTF and did not show the rate it would use.
+Currency is a filter on the matrix and a pair of totals on the invoice (Total Bs, Total USD). The rate on the shell is copied onto the totals. IGTF sits with those totals, labeled as the tax on the foreign-currency payment. The October form showed IGTF and did not show the rate it would use. The laboratory’s IVA and IGTF percentages stay **Unknown** until Gate B; the setting starts empty and the prototype may show `0,00` with a caption. Public secondary summaries are in [../gates/gate-b-research.md](../gates/gate-b-research.md) and are not Design rules.
 
 ## Payment, as shown
 
