@@ -197,7 +197,8 @@ export const strings = {
     menuLabel: 'Menú principal',
     actionsLabel: 'Acciones principales',
     demoSwitch: 'Demo: cambiar rol',
-    demoHint: 'Solo para la demostración. Todas las cuentas usan la misma clave de ejemplo.',
+    demoHint:
+      'Solo para la demostración. Usuario superadmin (Administración). Clave de ejemplo: Demo-2026-Lab. También: recepcion, auxiliar, bioanalista, administracion, mixto.',
   },
   observations: {
     title: 'Nueva observación',

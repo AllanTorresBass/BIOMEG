@@ -8,7 +8,7 @@
 
 BIOMEG Laboratorio Clínico is one clinical laboratory in Venezuela. It runs a Windows program called **SICOEXC**, from the vendor Soluciones Informáticas SM. This workspace specifies a **new application to replace it**.
 
-A prototype of the application is in progress at the repository root. Its data is invented and kept in memory. There is no database. A real patient record waits for Gate C in `docs/v0-prompts/README.md`. The history is in git, at <https://github.com/AllanTorresBass/BIOMEG>. That repository is public, so anyone can read and copy what's committed.
+A prototype of the application is in progress at the repository root. Gate B is **Received** (hosted Neon; see `docs/gates/gate-b.md`); Stage 6 may begin. Invented data only until Gate C (`docs/gates/gate-c.md`). The history is in git, at <https://github.com/AllanTorresBass/BIOMEG>. That repository is public, so anyone can read and copy what's committed.
 
 The application will be in Spanish. The documents are in English and quote Spanish labels exactly.
 
@@ -42,7 +42,8 @@ The application will be in Spanish. The documents are in English and quote Spani
 | Appearance | `brand/` | 10 | How will it look, and how is a screen documented? |
 | Analysis | `access-control-analysis.md`, `access-control-plan.md` | 2 | Why do the access rules exist? |
 | Build prompts | `v0-prompts/` | 10 | The build order. Restates `product/` and `brand/`, and adds the adapted WebTrixPro engineering rules. The prototype follows that order and was not produced by sending the prompts to v0 |
-| Index | `README.md`, `workspace-guide.md` | 2 | Where do I start? |
+| People gates | `gates/` | 6 | Gate B (Received), Gate C (Open, folds G1/G3/G4), ask sheets, research brief |
+| Index | `README.md`, `workspace-guide.md`, `build-plan.md` | 3 | Where do I start, and how is the build staged? |
 
 ## 3. Which page wins
 
@@ -253,8 +254,8 @@ Full standard: `brand/03-documentation-standard.md`.
 |---|---|
 | Owner | Set the discount percent, which starts at 0, and the outage targets. Confirm everything listed under [Applied, awaiting confirmation](#applied-awaiting-confirmation) |
 | Lead bioanalyst | Confirm per-section release, the license rule, auxiliary entry, self-entered values, Fecha reporte, `SIN PRECIO` not blocking Liberar, stopping an action when its audit row can't be written, the list of clinical audit events, the order-state trigger, and Procesado por per section. Define urgent results for an outage |
-| Venezuelan counsel | Review health data, retention including the source of the "six-year" fiscal expectation, minors, the portal credential, delivery consent, the value check, Administración seeing identity changes in Auditoría, and where health data may be hosted. No page here is legal advice |
-| Accountant | Give the IVA and IGTF rates and rounding, how Control N° is assigned, and how payments and facturas work on paper during an outage |
+| Venezuelan counsel | Review health data, retention including the source of the "six-year" fiscal expectation, minors, the portal credential, delivery consent, the value check, Administración seeing identity changes in Auditoría, and where health data may be hosted. Public-web context only: [gates/gate-b-research.md](gates/gate-b-research.md). No page here is legal advice |
+| Accountant | Give the IVA and IGTF rates and rounding, how Control N° is assigned, and how payments and facturas work on paper during an outage. Public-web context only: [gates/gate-b-research.md](gates/gate-b-research.md) |
 | Laboratory | Provide captures of unopened forms, a shift interview, and the deployment model. Complete the names and contacts in the outage draft |
 | Laboratory | Say which RIF is correct. The logo prints `V-241355540`, and the preview shows `Y241355540` |
 
@@ -267,7 +268,7 @@ These can't be settled from the documents, because each needs a fact, a capture,
 | Which RIF is correct, and what prints on paper. The logo pixels hold one value, and the laboratory record may print another beside it | `brand/01-palette.md`, `brand/02-brand-style.md`, `brand/09-logo-assets.md`, `session/print-preview.md` | Confirm the number. If the logo is wrong, the laboratory supplies a new master | Laboratory |
 | How the exam catalog is structured: one exam to many analytes, whether Categoría is a section, and where units and reference text are maintained. No command creates those rows, Modificar valores is blocked, and Crear perfiles has unknown members | `product/08-logical-data-model.md`, `brand/06-edge-cases.md` | Get captures of Precio Examenes and Crear Perfiles, then decide | Lead bioanalyst, laboratory |
 | What is brought over from SICOEXC. The rules assume migrated rows, and no page defines a migration | `product/04-edges.md`, `product/06-access-control.md` | Define it once a backup or export can be examined | Owner |
-| IVA and IGTF rates and rounding, and how Control N° is assigned. The rates are kept in a setting, which starts empty | `product/05-data.md`, `session/facturacion.md` | Get them from the accountant | Owner, accountant |
+| Gate C checklist (counsel, RIF, G1, G3, G4, security review, restore/outage) | `gates/gate-c.md`, `gates/gate-c-ask.md`, `product/10-security-baseline.md` | Send ask sheet; no real patients until Received | Owner, lab, bioanalyst, counsel |
 | Where the outside copy of the audit hash lives | `product/09-audit-log.md` | Depends on the deployment model | Laboratory, owner |
 | Whether to turn on the value check, which is written and stays off. Anyone holding the paper, or a clear photo, could open the report for 90 days | `product/10-security-baseline.md` | Decide after legal review | Owner, lead bioanalyst, counsel |
 | The outage draft: its targets of 1 hour of data and 4 working hours, the named people, urgent results, and paper fiscal steps | `product/11-outage-procedure.md` | Complete it, then rehearse | Owner, lead bioanalyst, accountant |

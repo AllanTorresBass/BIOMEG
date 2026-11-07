@@ -207,7 +207,7 @@ These two wait on facts that nobody has yet.
 
 | Question | Working answer | Who decides |
 |---|---|---|
-| Where is it hosted? | Any hosting must allow encryption at rest, a private database, the outage targets, and health data under Venezuelan law | Laboratory, counsel |
+| Where is it hosted? | **Hosted** Neon Postgres (Gate B Received 06/11/2026) for Stage 6. Must allow encryption at rest, a private database, the outage targets, and health data under Venezuelan law. Production counsel sign-off remains [Gate C](../gates/gate-c.md) | Laboratory, counsel |
 | Are the second factor and password rules workable at the bench? | Apply them, and test them in the pilot | Owner, lead bioanalyst |
 
 ## Sources

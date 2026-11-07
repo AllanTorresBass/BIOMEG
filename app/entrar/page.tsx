@@ -15,6 +15,7 @@ export default async function SignInPage() {
       <LogoLockup />
       <section className="w-full max-w-sm rounded-[var(--radius-card)] border border-border bg-card p-5">
         <h1 className="mb-4 text-xl font-semibold">{strings.auth.signInTitle}</h1>
+        <p className="mb-4 text-sm text-muted-foreground">{strings.auth.demoHint}</p>
         <SignInForm />
       </section>
     </main>
