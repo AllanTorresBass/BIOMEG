@@ -55,6 +55,7 @@ function prices(
 function buildSeed(): DemoSeed {
   return {
   staff: [
+    { id: 'u-superadmin', displayName: 'Super Admin BIOMEG', role: 'ADMINISTRACION' },
     { id: 'u-recepcion', displayName: 'Recepción Demo', role: 'RECEPCION' },
     { id: 'u-auxiliar', displayName: 'Auxiliar Demo', role: 'AUXILIAR' },
     { id: 'u-bioanalista', displayName: 'Lcda. Demo', role: 'BIOANALISTA' },

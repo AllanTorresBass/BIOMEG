@@ -16,7 +16,10 @@
 ```bash
 # Uses DATABASE_URL from the environment (never commit secrets).
 psql "$DATABASE_URL" -f lib/db/migrations/001_init.sql
+psql "$DATABASE_URL" -f lib/db/migrations/002_superadmin_user.sql
 ```
+
+Demo sign-in (memory, until V0-26): usuario `superadmin`, clave `Demo-2026-Lab`. Role is **Administración** (there is no separate SUPER_ADMIN role in the permission matrix).
 
 Do not run this against a database that already holds real patient data. Gate C is still open.
 
