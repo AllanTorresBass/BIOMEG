@@ -25,6 +25,7 @@ export abstract class BaseService {
   protected async post<T>(path: string, input: unknown = {}): Promise<T> {
     const response = await fetch(`${this.basePath}${path}`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(input),
     })
@@ -33,7 +34,7 @@ export abstract class BaseService {
 
   protected async get<T>(path: string, query: Readonly<Record<string, string>>, signal?: AbortSignal): Promise<T> {
     const search = new URLSearchParams(query).toString()
-    const response = await fetch(`${this.basePath}${path}?${search}`, signal ? { signal } : {})
+    const response = await fetch(`${this.basePath}${path}?${search}`, { credentials: 'include', ...(signal ? { signal } : {}) })
     return this.read<T>(response)
   }
 }

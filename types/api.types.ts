@@ -26,4 +26,6 @@ export interface CommandFeedback {
   toasts?: 'all' | 'failures' | 'successes' | 'none'
   /** False for a read, or a save that shows its own state. */
   refresh?: boolean
+  /** A full page load. Sign-in needs it so the new cookie is sent on the next screen. */
+  document?: boolean
 }

@@ -12,7 +12,7 @@ export function useSessionCommands() {
   return useMemo(() => {
     const service = () => container.sessionService
     return {
-      signIn: (input: SignInInput) => run(() => service().signIn(input), { toasts: 'none' }),
+      signIn: (input: SignInInput) => run(() => service().signIn(input), { toasts: 'none', document: true }),
       changePassword: (input: ChangePasswordInput) => run(() => service().changePassword(input), { toasts: 'none' }),
       signOut: () => {
         queryClient.clear()
