@@ -21,3 +21,12 @@ export function isValueCheckOn(): boolean {
 export function isDemoAccessOn(): boolean {
   return process.env.NODE_ENV !== 'production' || process.env.BIOMEG_DEMO === 'on'
 }
+
+/**
+ * Staff passwords and sessions are read from Postgres.
+ * Unit tests keep the memory store, because Vitest sets VITEST.
+ */
+export function databaseAuth(): boolean {
+  if (process.env.VITEST === 'true' || process.env.BIOMEG_AUTH === 'memory') return false
+  return Boolean(process.env.DATABASE_URL)
+}

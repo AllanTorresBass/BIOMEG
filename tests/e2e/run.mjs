@@ -15,7 +15,7 @@ const match = /DEMO_PASSWORD = '([^']*)'/.exec(readFileSync('lib/server/session/
 if (!match) throw new Error('The demo password was not found in the session store.')
 
 const server = spawn('pnpm', ['exec', 'next', 'start', '-p', PORT], {
-  env: { ...process.env, BIOMEG_DEMO: 'on' },
+  env: { ...process.env, BIOMEG_DEMO: 'on', BIOMEG_AUTH: 'memory' },
   stdio: 'ignore',
   detached: true,
 })

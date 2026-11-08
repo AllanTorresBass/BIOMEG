@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { SignInForm } from '@/components/auth/SignInForm'
 import { LogoLockup } from '@/components/brand/LogoLockup'
 import { getStaffContext } from '@/lib/server/session/current'
+import { databaseAuth } from '@/lib/server/settings'
 import { strings } from '@/lib/strings'
 
 export const metadata: Metadata = { title: strings.auth.signInTitle }
@@ -15,7 +16,7 @@ export default async function SignInPage() {
       <LogoLockup />
       <section className="w-full max-w-sm rounded-[var(--radius-card)] border border-border bg-card p-5">
         <h1 className="mb-4 text-xl font-semibold">{strings.auth.signInTitle}</h1>
-        <p className="mb-4 text-sm text-muted-foreground">{strings.shell.demoHint}</p>
+        {databaseAuth() ? null : <p className="mb-4 text-sm text-muted-foreground">{strings.shell.demoHint}</p>}
         <SignInForm />
       </section>
     </main>

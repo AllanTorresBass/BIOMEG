@@ -12,7 +12,7 @@ export default async function UsersPage() {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold">{strings.pendingReview.office.usersTitle}</h1>
-      <UserPanel people={userScreen()} />
+      <UserPanel people={await userScreen()} />
     </section>
   )
 }

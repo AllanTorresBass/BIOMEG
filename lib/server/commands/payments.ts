@@ -20,7 +20,7 @@ import { parseCents } from '@/lib/domain/pricing'
 import { gate, gated, record, recordRefusal } from '@/lib/server/draft-gate'
 import { summarizeEntries } from '@/lib/server/domain/cash-summary'
 import { todayInLab } from '@/lib/server/domain/client-rules'
-import { getAccount } from '@/lib/server/session/store'
+import { getAccount } from '@/lib/server/session/accounts'
 import { getStaffContext } from '@/lib/server/session/current'
 import { strings } from '@/lib/strings'
 import type { SavedOrder } from '@/types/orders/order.types'
@@ -164,7 +164,7 @@ export async function reversePayment({ paymentId, confirmed, motivo }: ReversePa
 export async function closeCash({ userId, motivo }: CashCloseInput): Promise<PaymentResult> {
   const opened = await subject()
   if (!opened) return fail(text.notAllowed)
-  const owner = getAccount(userId)
+  const owner = await getAccount(userId)
   if (!owner) return fail(text.drawerMissing)
   const target = { recordType: 'cash_drawer', recordId: owner.id, state: 'ABIERTA' }
 

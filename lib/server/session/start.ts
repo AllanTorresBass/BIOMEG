@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { cookies } from 'next/headers'
 import { SESSION_COOKIE, WORKSTATION_COOKIE } from '@/lib/config/session'
 import { auditEvent } from '@/lib/server/audit'
-import { createSession, endSession } from '@/lib/server/session/store'
+import { createSession, endSession } from '@/lib/server/session/accounts'
 import type { PublicAccount } from '@/types/session/session.types'
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365
@@ -27,7 +27,7 @@ export async function startSession(account: PublicAccount, source: 'ui' | 'insta
   const workstation = jar.get(WORKSTATION_COOKIE)?.value ?? `PC-${randomBytes(2).toString('hex').toUpperCase()}`
   jar.set(WORKSTATION_COOKIE, workstation, cookieOptions(ONE_YEAR_SECONDS))
 
-  const { session, replaced } = createSession(account.id, workstation)
+  const { session, replaced } = await createSession(account.id, workstation)
   for (const previous of replaced) {
     await auditEvent({
       command: 'session.leave',
@@ -43,7 +43,13 @@ export async function startSession(account: PublicAccount, source: 'ui' | 'insta
 }
 
 export async function leaveSession(sessionId: string): Promise<void> {
-  endSession(sessionId)
+  await endSession(sessionId)
   const jar = await cookies()
   jar.delete(SESSION_COOKIE)
+}
+
+/** Points the browser at a session that replaced the previous one, such as after a step-up. */
+export async function adoptSession(sessionId: string): Promise<void> {
+  const jar = await cookies()
+  jar.set(SESSION_COOKIE, sessionId, cookieOptions())
 }

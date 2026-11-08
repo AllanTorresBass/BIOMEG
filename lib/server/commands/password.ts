@@ -4,7 +4,7 @@ import { strings } from '@/lib/strings'
 import { SESSION_SETTINGS } from '@/lib/config/session'
 import { auditEvent } from '@/lib/server/audit'
 import { getStaffContext } from '@/lib/server/session/current'
-import { changePassword } from '@/lib/server/session/store'
+import { changePassword } from '@/lib/server/session/accounts'
 import type { ChangePasswordInput } from '@/types/session/session.schemas'
 import type { FormState } from '@/types/session/session.types'
 
@@ -13,7 +13,7 @@ export async function changeOwnPassword({ current, next }: ChangePasswordInput):
   const context = await getStaffContext()
   if (!context || context.locked) return { error: strings.auth.passwordFailed }
 
-  const result = changePassword(context.account.id, current, next)
+  const result = await changePassword(context.account.id, current, next)
 
   if (result !== 'OK') {
     await auditEvent({

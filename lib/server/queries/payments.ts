@@ -8,7 +8,8 @@ import { currencyOf } from '@/lib/domain/cash'
 import { summarizeEntries } from '@/lib/server/domain/cash-summary'
 import { todayInLab } from '@/lib/server/domain/client-rules'
 import { guardRoute } from '@/lib/server/guard'
-import { isStepUpFresh, getAccount } from '@/lib/server/session/store'
+import { getAccount } from '@/lib/server/session/accounts'
+import { isStepUpFresh } from '@/lib/server/session/store'
 import { toDecisionSession } from '@/lib/server/session/current'
 import { formatDate, formatMoney, formatTime } from '@/lib/utils/format'
 import type { DecisionReason, DecisionSession } from '@/types/auth/auth.types'
@@ -119,9 +120,12 @@ export async function getCashScreen(context: StaffContext, requestedUserId: stri
   const self = context.account
 
   const ownerIds = new Set([self.id, ...allEntries().filter((entry) => entry.closeId === null).map((entry) => entry.byId)])
-  const drawers: DrawerOption[] = [...ownerIds]
-    .filter((id) => mayCloseFor(session, id))
-    .map((id) => ({ id, name: getAccount(id)?.displayName ?? id }))
+  const drawers: DrawerOption[] = []
+  for (const id of ownerIds) {
+    if (!mayCloseFor(session, id)) continue
+    const account = await getAccount(id)
+    drawers.push({ id, name: account?.displayName ?? id })
+  }
 
   const userId = drawers.some((drawer) => drawer.id === requestedUserId) ? requestedUserId : self.id
   const mayReopen = decide({ session, command: 'cash.reopen', gestures: { stepUpVerified: true, motivo: 'consulta' } }).allowed

@@ -15,7 +15,8 @@ import { isClinicalEvent } from '@/lib/server/domain/audit-catalog'
 import { todayInLab } from '@/lib/server/domain/client-rules'
 import { guardRoute, mayReach } from '@/lib/server/guard'
 import { toDecisionSession } from '@/lib/server/session/current'
-import { isStepUpFresh, listStaffDirectory } from '@/lib/server/session/store'
+import { listStaffDirectory } from '@/lib/server/session/accounts'
+import { isStepUpFresh } from '@/lib/server/session/store'
 import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE, formatDate, formatMoney, formatTime } from '@/lib/utils/format'
 import type { PriceColumn } from '@/types/domain/demo.types'
@@ -94,7 +95,7 @@ export function backupScreen() {
   return listBackups().map((row) => ({ ...row, atText: `${formatDate(row.at)} ${formatTime(row.at)}` }))
 }
 
-export function userScreen() {
+export async function userScreen() {
   return listStaffDirectory()
 }
 
@@ -157,7 +158,8 @@ export async function getAuditScreen(context: StaffContext, filters: AuditFilter
     recordId: 'auditoria',
     change: { before: null, after: { from: filters.from, to: filters.to } },
   })
-  return { kind: 'READY' as const, rows, users: listStaffDirectory().map((person) => ({ id: person.id, displayName: person.displayName })) }
+  const people = await listStaffDirectory()
+  return { kind: 'READY' as const, rows, users: people.map((person) => ({ id: person.id, displayName: person.displayName })) }
 }
 
 function minutes(ms: number | null): string {

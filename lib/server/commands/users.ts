@@ -12,7 +12,7 @@ import {
   resetStaffPassword,
   setStaffActive,
   setStaffCover,
-} from '@/lib/server/session/store'
+} from '@/lib/server/session/accounts'
 import { strings } from '@/lib/strings'
 import type { StaffRole } from '@/types/auth/auth.types'
 import type { OfficeResult } from '@/types/office/office.types'
@@ -29,8 +29,8 @@ function target(userId: string) {
   return { recordType: 'user', recordId: userId, state: null }
 }
 
-function isLastAdmin(userId: string, roles: readonly StaffRole[]): boolean {
-  return roles.includes('ADMINISTRACION') && activeAdminCount() === 1
+async function isLastAdmin(roles: readonly StaffRole[]): Promise<boolean> {
+  return roles.includes('ADMINISTRACION') && (await activeAdminCount()) === 1
 }
 
 export async function createUser(input: CreateUserInput): Promise<OfficeResult> {
@@ -44,7 +44,7 @@ export async function createUser(input: CreateUserInput): Promise<OfficeResult> 
     target('new'),
   )
   if ('need' in allowed) return allowed
-  const created = createStaffAccount(input.displayName, input.roles)
+  const created = await createStaffAccount(input.displayName, input.roles)
   if (!created) return officeFail(text.userBioanalista)
   await record(
     { context },
@@ -60,18 +60,18 @@ export async function createUser(input: CreateUserInput): Promise<OfficeResult> 
 export async function disableUser(input: UserIdInput): Promise<OfficeResult> {
   const context = await officeContext()
   if (!context) return officeFail(text.notAllowed)
-  const person = listStaffDirectory().find((row) => row.id === input.userId)
+  const person = (await listStaffDirectory()).find((row) => row.id === input.userId)
   if (!person) return officeFail(text.missing)
   const allowed = await officeAllow(
     context,
     'user.disable',
-    { is_self: input.userId === context.account.id, is_last_admin: isLastAdmin(person.id, person.roles) },
+    { is_self: input.userId === context.account.id, is_last_admin: await isLastAdmin(person.roles) },
     presentedOf(input),
     target(person.id),
   )
   if ('need' in allowed) return allowed
-  if (!setStaffActive(person.id, false)) return officeFail(text.missing)
-  endUserSessions(person.id)
+  if (!(await setStaffActive(person.id, false))) return officeFail(text.missing)
+  await endUserSessions(person.id)
   await record({ context }, 'user.disable', allowed.rowId, { before: true, after: false, field: 'active' }, undefined, target(person.id))
   return officeDone(text.userDisabled)
 }
@@ -79,9 +79,10 @@ export async function disableUser(input: UserIdInput): Promise<OfficeResult> {
 export async function changeUserRoles(input: ReplaceRolesInput): Promise<OfficeResult> {
   const context = await officeContext()
   if (!context) return officeFail(text.notAllowed)
-  const person = listStaffDirectory().find((row) => row.id === input.userId)
+  const person = (await listStaffDirectory()).find((row) => row.id === input.userId)
   if (!person) return officeFail(text.missing)
-  const removesLastAdmin = person.roles.includes('ADMINISTRACION') && !input.roles.includes('ADMINISTRACION') && activeAdminCount() === 1
+  const removesLastAdmin =
+    person.roles.includes('ADMINISTRACION') && !input.roles.includes('ADMINISTRACION') && (await activeAdminCount()) === 1
   const allowed = await officeAllow(
     context,
     'user.role.change',
@@ -94,7 +95,7 @@ export async function changeUserRoles(input: ReplaceRolesInput): Promise<OfficeR
     target(person.id),
   )
   if ('need' in allowed) return allowed
-  if (!replaceStaffRoles(person.id, input.roles)) return officeFail(text.userBioanalista)
+  if (!(await replaceStaffRoles(person.id, input.roles))) return officeFail(text.userBioanalista)
   await record(
     { context },
     'user.role.change',
@@ -121,7 +122,7 @@ export async function grantCover(input: CoverInput): Promise<OfficeResult> {
     target(input.userId),
   )
   if ('need' in allowed) return allowed
-  if (!setStaffCover(input.userId, input.roles, input.until)) return officeFail(text.userBioanalista)
+  if (!(await setStaffCover(input.userId, input.roles, input.until))) return officeFail(text.userBioanalista)
   await record(
     { context },
     'user.grant.temporary',
@@ -144,7 +145,7 @@ export async function grantBioanalista(input: GrantBioanalistaInput): Promise<Of
     target(input.userId),
   )
   if ('need' in allowed) return allowed
-  if (!grantStaffBioanalista(input.userId, input.license)) return officeFail(text.missing)
+  if (!(await grantStaffBioanalista(input.userId, input.license))) return officeFail(text.missing)
   await record(
     { context },
     'role.grant_bioanalista',
@@ -167,7 +168,7 @@ export async function resetUserPassword(input: UserIdInput): Promise<OfficeResul
     target(input.userId),
   )
   if ('need' in allowed) return allowed
-  const password = resetStaffPassword(input.userId)
+  const password = await resetStaffPassword(input.userId)
   if (!password) return officeFail(text.missing)
   await record({ context }, 'password.reset', allowed.rowId, { before: null, after: { reset: true }, field: 'password' }, undefined, target(input.userId))
   return officeDone(text.userTemporary(password))

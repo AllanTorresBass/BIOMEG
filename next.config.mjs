@@ -7,6 +7,7 @@ if (process.env.BIOMEG_DEMO === 'on' && process.env.VERCEL_ENV === 'production')
 const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  serverExternalPackages: ['@node-rs/argon2'],
   async headers() {
     return [
       {
