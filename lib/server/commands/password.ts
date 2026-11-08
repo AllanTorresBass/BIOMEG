@@ -23,11 +23,12 @@ export async function changeOwnPassword({ current, next }: ChangePasswordInput):
       session: context.session,
       account: context.account,
     })
+    if (result === 'WRONG_CURRENT') return { error: strings.auth.passwordWrongCurrent }
     if (result === 'TOO_SHORT') return { error: strings.auth.passwordTooShort(SESSION_SETTINGS.minPasswordLength) }
     if (result === 'SAME') return { error: strings.auth.passwordSame }
     return { error: strings.auth.passwordFailed }
   }
 
   await auditEvent({ command: 'password.change', outcome: 'ALLOWED', session: context.session, account: context.account })
-  return { error: null, done: true }
+  return { error: null, done: true, redirectTo: '/' }
 }

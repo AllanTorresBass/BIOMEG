@@ -44,7 +44,7 @@ export default async function StaffLayout({ children }: { children: ReactNode })
       {groups.length > 0 ? <MenuBar groups={groups} /> : null}
       <PrimaryActions actions={actions} />
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 p-4">{children}</main>
-      {isDemoAccessOn() ? (
+      {isDemoAccessOn() && !needsNewPassword ? (
         <DemoRoleSwitcher
           accounts={(await listDemoAccounts()).map((account) => ({ id: account.id, label: roleLabel(account.roles, ' y ') }))}
           currentUserId={context.account.id}

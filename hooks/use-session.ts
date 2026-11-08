@@ -13,7 +13,7 @@ export function useSessionCommands() {
     const service = () => container.sessionService
     return {
       signIn: (input: SignInInput) => run(() => service().signIn(input), { toasts: 'none', document: true }),
-      changePassword: (input: ChangePasswordInput) => run(() => service().changePassword(input), { toasts: 'none' }),
+      changePassword: (input: ChangePasswordInput) => run(() => service().changePassword(input), { toasts: 'none', document: true }),
       signOut: () => {
         queryClient.clear()
         return run(() => service().signOut())
