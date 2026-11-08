@@ -21,7 +21,7 @@ Actor is a **Design rule** inferred from the job. The vendor publishes the roles
 | Clave | Toolbar | Single card: current password, new password | The signed-in user | Screen not opened |
 | Cerrar sesión | Toolbar | Returns to sign-in | Any | Writes `session.leave` |
 | Salir | Toolbar and several forms | Leaves the current form. Confirm if there are unsaved edits | Any | **Observed** as a command on the invoice, the price list, and the preview |
-| Nueva observación, Mostrar, Ocultar, Buscar | Home panel, opened, list empty | Line table | Any | Distinct from section OBSERVACIONES on a result until a capture ties them |
+| Nueva observación, Mostrar, Ocultar, Buscar | Home panel. **Design rule:** Agregar opens an inline composer; list filters by date; author may retract own note the same lab day. Fields: date, author, text | Line table on `/` | Any (`observation.use`) | Distinct from section OBSERVACIONES on a result. Holds no patient linkage |
 
 Sign-in itself was not captured. **Design rule:** the sign-in screen is the full lockup, Usuario, Clave, and Entrar.
 

@@ -68,6 +68,8 @@ const SEVERITY_BY_EVENT: Readonly<Record<string, AuditSeverity>> = {
   'price.print': 'NOTICE',
   'setting.qr.change': 'NOTICE',
   'setting.saturday.change': 'NOTICE',
+  'observation.create': 'INFO',
+  'observation.retract': 'NOTICE',
   'mail.config.change': 'NOTICE',
   'policy.publish': 'NOTICE',
   'backup.run': 'NOTICE',
