@@ -67,6 +67,41 @@ export async function runSmoke(chromium, B, pw) {
     ok('trasladar stays blocked', (await rec.locator('main').innerText()).includes('BLOQUEADO') || (await rec.getByText('BLOQUEADO').count()) > 0)
   })
 
+  await step('menu IA cleanup', async () => {
+    await rec.goto(B + '/')
+    await rec.waitForTimeout(400)
+    const nav = rec.getByRole('navigation')
+    const flyoutLabels = ['Cargar resultados', 'Presupuesto', 'Reversar relación', 'Cobros Cashea', 'Lista de insumos, servicios y otros', 'Lista de paciente por fecha', 'Modificar valores', 'Imprimir por paciente']
+    for (const label of flyoutLabels) {
+      ok('flyout hides ' + label, (await nav.getByRole('link', { name: label, exact: true }).count()) === 0)
+    }
+    const primary = rec.locator('main').locator('a, button')
+    ok('primary has no Cargar resultados', (await rec.getByRole('link', { name: 'Cargar resultados' }).count()) === 0 && (await rec.getByRole('button', { name: 'Cargar resultados' }).count()) === 0)
+    ok('primary has no Presupuesto', (await rec.getByRole('link', { name: 'Presupuesto' }).count()) === 0)
+    void primary
+    await rec.goto(B + '/p/cargar-resultados')
+    await rec.waitForURL(/hoja-de-trabajo/, { timeout: 6000 })
+    ok('cargar resultados deep-links to worklist', new URL(rec.url()).pathname === '/hoja-de-trabajo')
+    await rec.goto(B + '/p/lista-de-insumos-servicios-y-otros')
+    await rec.waitForURL(/reportes/, { timeout: 6000 })
+    ok('cost list alias still resolves', new URL(rec.url()).pathname.includes('/reportes/'))
+    await rec.goto(B + '/p/notas')
+    await rec.waitForURL(/documentos\/notas/, { timeout: 6000 })
+    ok('notas hub opens', new URL(rec.url()).pathname === '/documentos/notas')
+    await rec.goto(B + '/p/reimprimir')
+    await rec.waitForURL(/documentos\/reimprimir/, { timeout: 6000 })
+    ok('reimprimir hub opens', new URL(rec.url()).pathname === '/documentos/reimprimir')
+    await rec.goto(B + '/p/precios')
+    await rec.waitForURL(/\/precios/, { timeout: 6000 })
+    ok('precios hub opens', new URL(rec.url()).pathname === '/precios')
+    await rec.goto(B + '/p/bacteriologia')
+    await rec.waitForURL(/bacteriologia/, { timeout: 6000 })
+    ok('bacteriologia hub opens', new URL(rec.url()).pathname.includes('bacteriologia'))
+    await rec.goto(B + '/p/reversar-relacion')
+    await rec.waitForTimeout(400)
+    ok('reversar stays blocked off-menu', (await rec.locator('main').innerText()).includes('BLOQUEADO') || (await rec.getByText('BLOQUEADO').count()) > 0)
+  })
+
   await step('client create', async () => {
     await rec.goto(B + '/clientes/nuevo')
     await rec.fill('input[name=fullName]', 'Prueba Navegador Nueva')
@@ -96,6 +131,20 @@ export async function runSmoke(chromium, B, pw) {
     await rec.waitForTimeout(500); ok('worklist loads and refreshes', (await rec.locator('table tr').count()) > 1)
   })
 
+  await step('orders list', async () => {
+    await rec.goto(B + '/ordenes'); await rec.waitForTimeout(600)
+    ok('orders list loads', (await rec.locator('h1').innerText()).includes('Órdenes'))
+    const link = rec.locator('table a').first()
+    if (await link.count()) {
+      await link.click()
+      await rec.waitForURL(/\/ordenes\/[^/?]+/, { timeout: 6000 })
+      ok('order row opens hub', /\/ordenes\/[^/]+$/.test(new URL(rec.url()).pathname))
+      ok('order hub has Acciones tab', (await rec.getByRole('tab', { name: 'Acciones' }).count()) > 0)
+    } else {
+      ok('order row opens hub', true, 'empty list for today')
+    }
+  })
+
   await step('sign out', async () => {
     await rec.getByRole('button', { name: /cerrar sesi/i }).click()
     await rec.waitForURL(/entrar/, { timeout: 6000 }); ok('sign-out returns to /entrar', true)
@@ -103,8 +152,23 @@ export async function runSmoke(chromium, B, pw) {
   })
 
   const bio = await fresh()
-  await step('results', async () => {
+  await step('worklist opens order hub', async () => {
     await signIn(bio, 'bioanalista')
+    await bio.goto(B + '/hoja-de-trabajo'); await bio.waitForSelector('table', { timeout: 5000 })
+    const orderLink = bio.locator('table a').first()
+    if (await orderLink.count()) {
+      await orderLink.click()
+      await bio.waitForURL(/\/ordenes\/.+desde=hoja/, { timeout: 6000 })
+      ok('worklist row opens order hub', true, new URL(bio.url()).pathname)
+      ok('hub breadcrumb back to worklist', (await bio.getByRole('navigation').getByRole('link', { name: /hoja de trabajo/i }).count()) > 0)
+      await bio.getByRole('tab', { name: 'Acciones' }).click()
+      ok('acciones offers cargar resultados', (await bio.getByRole('link', { name: /cargar resultados/i }).count()) > 0)
+    } else {
+      ok('worklist row opens order hub', false, 'no rows')
+    }
+  })
+
+  await step('results', async () => {
     await bio.goto(B + '/ordenes/o-2/resultados'); await bio.waitForTimeout(800)
     const cell = bio.locator('table input[type=text], table input:not([type])').first()
     await cell.fill('4,52'); await cell.blur(); await bio.waitForTimeout(800)

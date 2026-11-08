@@ -7,7 +7,6 @@ import { requireReadyStaff } from '@/lib/server/session/require'
 import { strings } from '@/lib/strings'
 import { REGISTRY_COMMAND } from '@/types/office/office.types'
 
-// Only menu names were seen, so these invent nothing. The cut-off title stays as captured.
 const UNKNOWN_COLUMNS = new Set([
   toSlug('Cobros Cashea'),
   toSlug('Relación de referidos'),
@@ -15,19 +14,48 @@ const UNKNOWN_COLUMNS = new Set([
   toSlug('Re-imprimir retenciones'),
 ])
 
-const DEDICATED_SCREENS: Readonly<Record<string, string>> = {
+const DESTINATIONS: Readonly<Record<string, string>> = {
   [toSlug('Agregar abono')]: '/pagos/abono',
   [toSlug('Registro de pagos')]: '/pagos/registro',
   [toSlug('Cierre de caja')]: '/pagos/cierre',
   [toSlug('Cierre mensual')]: '/pagos/cierre-mensual',
   [toSlug('Asignar Control N°')]: '/documentos/control',
+  [toSlug('Notas')]: '/documentos/notas',
   [toSlug('Nota de crédito')]: '/documentos/nota/credito',
   [toSlug('Nota de débito')]: '/documentos/nota/debito',
+  [toSlug('Reimprimir')]: '/documentos/reimprimir',
   [toSlug('Re-imprimir factura')]: '/documentos/reimprimir/factura',
   [toSlug('Re-imprimir nota de crédito')]: '/documentos/reimprimir/nota-credito',
   [toSlug('Re-imprimir nota de débito')]: '/documentos/reimprimir/nota-debito',
   [toSlug('Re-imprimir orden de entrega')]: '/documentos/reimprimir/orden-entrega',
   [toSlug('Re-imprimir orden empresa')]: '/documentos/reimprimir/orden-empresa',
+  [toSlug('Precios')]: '/precios',
+  [toSlug('Lista de precios')]: '/precios',
+  [toSlug('Precio exámenes')]: '/precios?tab=editar',
+  [toSlug('Aplicar aumento general')]: '/precios?tab=aumento',
+  [toSlug('Bacteriología')]: '/registros/bacteriologia',
+  [toSlug('Registro de parásitos')]: '/registros/bacteriologia?tab=parasites',
+  [toSlug('Registro de antibióticos')]: '/registros/bacteriologia?tab=antibiotics',
+  [toSlug('Registro de microorganismo')]: '/registros/bacteriologia?tab=organisms',
+  [toSlug('Registro de muestra de bacteriología')]: '/registros/bacteriologia?tab=bacteriology_samples',
+  [toSlug('Registro de observaciones de bacteriología')]: '/registros/bacteriologia?tab=bacteriology_observations',
+  [toSlug('Usuarios')]: '/usuarios',
+  [toSlug('Nuevo usuario')]: '/usuarios',
+  [toSlug('Órdenes de compra')]: '/compras',
+  [toSlug('Restar inventario')]: '/inventario',
+  [toSlug('Cargar resultados')]: '/hoja-de-trabajo',
+  [toSlug('Lista de insumos, servicios y otros')]: '/reportes/insumos-servicios-y-otros',
+  [toSlug('Lista de salarios de personal')]: '/reportes/salarios-de-personal',
+  [toSlug('Lista de costos de reactivos')]: '/reportes/costos-reactivos',
+  [toSlug('Lista de paciente por fecha')]: '/reportes/lista-de-pacientes',
+  [toSlug('Promedios pacientes/pruebas')]: '/reportes/promedios-pacientes-pruebas',
+  [toSlug('Lista de médicos')]: '/registros/physicians',
+  [toSlug('Lista de proveedores')]: '/registros/suppliers',
+  [toSlug('Lista de reactivos y servicios')]: '/registros/reagents',
+  [toSlug('Lista de empresas')]: '/registros/companies',
+  [toSlug('Lista de equipos')]: '/registros/equipment',
+  [toSlug('Lista de inventario de reactivos')]: '/inventario',
+  [toSlug('Lista de pagos realizados')]: '/pagos/registro',
 }
 
 const CLIENTES_MENU_REDIRECTS: Readonly<Record<string, string>> = {
@@ -47,27 +75,29 @@ export default async function ScreenPage({ params }: { params: Promise<{ slug: s
   if (slug === toSlug('Hoja de trabajo')) redirect('/hoja-de-trabajo')
   if (slug === toSlug('Ingreso particular')) redirect('/ordenes/nueva?via=particular')
   if (slug === toSlug('Ingreso empresa')) redirect('/ordenes/nueva?via=empresa')
-  const screen = DEDICATED_SCREENS[slug]
+  const screen = DESTINATIONS[slug]
   if (screen) redirect(screen)
 
-  // Removed from the Pacientes flyout; bookmarks and tests still hit these URLs.
-  if (slug === toSlug('Trasladar paciente')) {
+  if (slug === toSlug('Trasladar paciente') || slug === toSlug('Reversar relación')) {
     const context = await requireReadyStaff()
     if (context.locked) return null
+    const label = slug === toSlug('Trasladar paciente') ? 'Trasladar paciente' : 'Reversar relación'
     return (
       <section className="flex flex-col items-start gap-2">
-        <h1 className="text-xl font-semibold">Trasladar paciente</h1>
+        <h1 className="text-xl font-semibold">{label}</h1>
         <StatusChip status="BLOQUEADO" />
       </section>
     )
   }
-  if (slug === toSlug('Facturar consulta')) {
+  if (slug === toSlug('Facturar consulta') || slug === toSlug('Generar presupuesto')) {
     const context = await requireReadyStaff()
     if (context.locked) return null
-    if (!(await guardRoute(context, ['order.open'], `/p/${slug}`))) return <BlockedNotice />
+    const command = slug === toSlug('Generar presupuesto') ? 'quote.create' : 'order.open'
+    if (!(await guardRoute(context, [command], `/p/${slug}`))) return <BlockedNotice />
+    const label = slug === toSlug('Generar presupuesto') ? 'Generar presupuesto' : 'Facturar consulta'
     return (
       <section className="flex flex-col gap-2">
-        <h1 className="text-xl font-semibold">Facturar consulta</h1>
+        <h1 className="text-xl font-semibold">{label}</h1>
         <p className="text-muted-foreground">{strings.shell.pending}</p>
       </section>
     )
@@ -77,8 +107,8 @@ export default async function ScreenPage({ params }: { params: Promise<{ slug: s
   if (!entry) notFound()
   const command = entry.commands[0] ?? ''
   if (command === 'prices.list') redirect('/precios')
-  if (command === 'prices.edit') redirect('/precios/editar')
-  if (command === 'prices.general_increase') redirect('/precios/aumento')
+  if (command === 'prices.edit') redirect('/precios?tab=editar')
+  if (command === 'prices.general_increase') redirect('/precios?tab=aumento')
   if (command === 'setting.saturday.change') redirect('/mantenimiento/sabado')
   if (command === 'setting.qr.change') redirect('/mantenimiento/qr')
   if (command === 'purchase.orders') redirect('/compras')

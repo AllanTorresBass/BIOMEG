@@ -12,7 +12,14 @@ import type { Pending } from '@/types/orders/order-actions.props'
 
 const text = strings.pendingReview.orders
 
-export function OrderActions({ orderId, voided, hasPayment, lines }: OrderActionsProps) {
+export function OrderActions({
+  orderId,
+  voided,
+  hasPayment,
+  lines,
+  showLines = true,
+  showVoid = true,
+}: OrderActionsProps) {
   const { voidOrder, removeOrderLine } = useOrderCommands()
   const router = useRouter()
   const [busy, startTransition] = useTransition()
@@ -49,54 +56,58 @@ export function OrderActions({ orderId, voided, hasPayment, lines }: OrderAction
       </div>
       {voided ? null : (
         <div className="flex flex-col gap-4">
-          <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-card">
-            <table className="w-full text-left">
-              <caption className="sr-only">{text.linesTitle}</caption>
-              <thead>
-                <tr className="border-b border-border text-sm text-muted-foreground">
-                  <th scope="col" className="px-3 py-2 font-semibold">
-                    {text.lineExam}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-right font-semibold">
-                    {text.linePrice}
-                  </th>
-                  <th scope="col" className="px-3 py-2">
-                    <span className="sr-only">{text.removeLineAction}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {lines.map((line) => (
-                  <tr key={line.id} className="border-b border-border last:border-b-0">
-                    <td className="px-3 py-2">{line.name}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">
-                      {line.priceUsd === null ? strings.empty.dash : formatMoney(line.priceUsd)}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => setPending({ kind: 'line', lineId: line.id, name: line.name })}
-                        className="h-10 rounded-[var(--radius-control)] border border-border-strong px-3 font-semibold disabled:opacity-50"
-                      >
-                        {text.removeLineAction}
-                      </button>
-                    </td>
+          {showLines ? (
+            <div className="overflow-x-auto rounded-[var(--radius-card)] border border-border bg-card">
+              <table className="w-full text-left">
+                <caption className="sr-only">{text.linesTitle}</caption>
+                <thead>
+                  <tr className="border-b border-border text-sm text-muted-foreground">
+                    <th scope="col" className="px-3 py-2 font-semibold">
+                      {text.lineExam}
+                    </th>
+                    <th scope="col" className="px-3 py-2 text-right font-semibold">
+                      {text.linePrice}
+                    </th>
+                    <th scope="col" className="px-3 py-2">
+                      <span className="sr-only">{text.removeLineAction}</span>
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setPending({ kind: 'void' })}
-              className="h-11 rounded-[var(--radius-control)] border border-flag-blocked px-4 font-semibold text-flag-blocked disabled:opacity-50"
-            >
-              {text.voidAction}
-            </button>
-          </div>
+                </thead>
+                <tbody>
+                  {lines.map((line) => (
+                    <tr key={line.id} className="border-b border-border last:border-b-0">
+                      <td className="px-3 py-2">{line.name}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">
+                        {line.priceUsd === null ? strings.empty.dash : formatMoney(line.priceUsd)}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => setPending({ kind: 'line', lineId: line.id, name: line.name })}
+                          className="h-10 rounded-[var(--radius-control)] border border-border-strong px-3 font-semibold disabled:opacity-50"
+                        >
+                          {text.removeLineAction}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+          {showVoid ? (
+            <div>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setPending({ kind: 'void' })}
+                className="h-11 rounded-[var(--radius-control)] border border-flag-blocked px-4 font-semibold text-flag-blocked disabled:opacity-50"
+              >
+                {text.voidAction}
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
 

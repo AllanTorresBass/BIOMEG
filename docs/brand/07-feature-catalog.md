@@ -14,9 +14,9 @@ Actor is a **Design rule** inferred from the job. The vendor publishes the roles
 | Usuario activo, Tasa BCV, QR, Precio sábado | Shell, opened | Shell | Any signed-in role reads. Who sets each one is in [../product/06-access-control.md](../product/06-access-control.md) | Words Activo and Inactivo. Rate repeated on new totals |
 | Ingreso particular | Toolbar and Pacientes | Nueva orden. Its later steps use the patient header card, billing card, and line table | Receptionist | Starts as facturado al paciente |
 | Ingreso empresa | Toolbar and Pacientes | Same order | Receptionist | Requires an active convenio and a razón social before Guardar |
-| Hoja de trabajo | Toolbar and Hoja de trabajo | Worklist | Auxiliary, bioanalyst | Form not opened. Five minimum columns |
-| Cargar resultados | Toolbar and Hoja de trabajo | Result grid | Bioanalyst. Auxiliary before release | Form not opened. Grid shape comes from the preview |
-| Presupuesto | Toolbar. Also Generar presupuesto | Billing card + line table | Reception, administration | A quote. It does not allocate Factura N°. Screen not opened |
+| Hoja de trabajo | Toolbar and Hoja de trabajo | Worklist. Row opens the order hub (`/ordenes/{id}`) with breadcrumb back. **Design rule** | Auxiliary, bioanalyst | Form not opened. Five minimum columns. Sole item under Hoja de trabajo y resultados |
+| Cargar resultados | Order hub Acciones (and legacy `/p/cargar-resultados` → worklist). Not a flyout or primary action. **Design rule** | Result grid | Bioanalyst. Auxiliary before release | Form not opened. Grid shape comes from the preview |
+| Presupuesto | Demoted from primary until the quote flow is a real destination. Legacy slug stays pending. **Design rule** | Billing card + line table | Reception, administration | A quote. It does not allocate Factura N°. Screen not opened |
 | Cierre de caja | Toolbar and Administrativo | Fiscal report | Reception, administration | Daily close. Extra fields **Unknown** |
 | Clave | Toolbar | Single card: current password, new password | The signed-in user | Screen not opened |
 | Cerrar sesión | Toolbar | Returns to sign-in | Any | Writes `session.leave` |
@@ -55,10 +55,10 @@ Evidence: [../session/hoja-de-trabajo.md](../session/hoja-de-trabajo.md), [../se
 
 | Command | Capture | Pattern | Actor |
 |---|---|---|---|
-| Imprimir por paciente | Preview is the likely destination. Click path not confirmed | Issued report, all sections that have rows | Bioanalyst. Reception after release |
-| Imprimir prueba individual | Menu | Issued report, one analyte and its heading | Bioanalyst. Reception after release |
-| Status de impresión | Menu | Chip on the worklist: Sin imprimir, Impreso. Values of the current program are **Unknown**. These two words are a **Design rule** | Auxiliary, bioanalyst. Reception reads |
-| Imprimir referidos | Menu | Fiscal report. Columns **Unknown**. Administrativo also has Relación de referidos | Reception, administration |
+| Imprimir por paciente | Order hub Acciones → reporte. Not in the Hoja flyout. **Design rule** | Issued report, all sections that have rows | Bioanalyst. Reception after release |
+| Imprimir prueba individual | Same path as above. Not in the Hoja flyout. **Design rule** | Issued report, one analyte and its heading | Bioanalyst. Reception after release |
+| Status de impresión | Chip on the worklist only. Not a menu place. **Design rule** | Chip on the worklist: Sin imprimir, Impreso. Values of the current program are **Unknown**. These two words are a **Design rule** | Auxiliary, bioanalyst. Reception reads |
+| Imprimir referidos | Hidden from flyout until columns exist. Legacy slug stays. **Design rule** | Fiscal report. Columns **Unknown** | Reception, administration |
 | Release (no menu item is named Validar) | Gap in the session | Action Liberar on the result grid, sets `LIBERADO` and Procesado por | Bioanalyst |
 
 **Design rule.** Liberar is visible on the result grid because the vendor’s path includes validation and the captured menus do not name a Validar command. It is not described as a hidden current-program button.
@@ -69,17 +69,19 @@ Evidence: [../session/administrativo.md](../session/administrativo.md), [../sess
 
 | Command | Pattern | Actor | Rule |
 |---|---|---|---|
-| Nota de crédito | Line table against one factura | Administration | Allocates a new note |
-| Nota de débito | Line table against one factura | Administration | Allocates a new note |
-| Re-imprimir factura | Issued copy of the stored factura, watermark `COPIA` | Receptionist, administration | New number is not allocated |
-| Re-imprimir nota de crédito | Copy | Administration | Same |
-| Re-imprimir nota de débito | Copy | Administration | Same |
-| Re-imprimir retenciones | Copy | Administration | Same |
-| Re-imprimir orden de entrega | Copy of the order | Reception, administration | Same |
-| Re-imprimir orden empresa | Copy of the company order | Reception, administration | Same |
-| Cobros Cashea | Fiscal report plus a payment capture whose fields are **Unknown** | Administration | Not a box on the blank invoice |
-| Reversar relación | Blocked until a capture shows what a “relación” is, which remains **Unknown**. Then a password re-entry | Administration | Writes a reversal event and does not delete the original |
-| Agregar abono | Amount against one factura | Reception, administration | Updates Abono and Resta |
+| Notas | Hub at `/documentos/notas` choosing crédito or débito. **Design rule** | Administration | Replaces two sibling flyout rows |
+| Nota de crédito | Line table against one factura, from the Notas hub | Administration | Allocates a new note |
+| Nota de débito | Line table against one factura, from the Notas hub | Administration | Allocates a new note |
+| Reimprimir | Hub at `/documentos/reimprimir` with document type. **Design rule** | Reception, administration | Replaces six sibling flyout rows |
+| Re-imprimir factura | Issued copy of the stored factura, watermark `COPIA`, from the Reimprimir hub | Receptionist, administration | New number is not allocated |
+| Re-imprimir nota de crédito | Copy, from the Reimprimir hub | Administration | Same |
+| Re-imprimir nota de débito | Copy, from the Reimprimir hub | Administration | Same |
+| Re-imprimir retenciones | Hidden until columns known. Legacy slug stays. **Design rule** | Administration | Same |
+| Re-imprimir orden de entrega | Copy of the order, from the Reimprimir hub | Reception, administration | Same |
+| Re-imprimir orden empresa | Copy of the company order, from the Reimprimir hub | Reception, administration | Same |
+| Cobros Cashea | Off the Administrativo flyout until fields are known. Fiscal report plus a payment capture whose fields are **Unknown**. **Design rule** | Administration | Not a box on the blank invoice |
+| Reversar relación | Off the flyout. Blocked page via legacy slug until a capture shows what a “relación” is (**Unknown**). **Design rule** | Administration | Writes a reversal event and does not delete the original |
+| Agregar abono | Amount against one factura; also on order hub Acciones | Reception, administration | Updates Abono and Resta |
 | Registro de pagos | Registry table of payments. Columns beyond the invoice instruments are **Unknown** | Administration | — |
 | Cierre de caja | Fiscal report | Reception, administration | Session day, this user. Another user's drawer: administration only |
 | Cierre mensual | Fiscal report | Administration | Does not run the daily close |
@@ -105,11 +107,12 @@ Evidence: [../session/registros.md](../session/registros.md). All menu-only. Pat
 | Registro de proveedores | Nombre |
 | Registro de reactivos y servicios | Nombre |
 | Registro de equipos | Nombre |
-| Registro de parásitos | Nombre |
-| Registro de antibióticos | Nombre |
-| Registro de microorganismo | Nombre |
-| Registro de muestra de bacteriología | Nombre |
-| Registro de observaciones de bacteriología | Nombre |
+| Bacteriología (hub) | One Registros item opens `/registros/bacteriologia` with tabs for the five masters below. **Design rule** |
+| Registro de parásitos | Nombre. Reachable from the Bacteriología hub |
+| Registro de antibióticos | Nombre. Reachable from the Bacteriología hub |
+| Registro de microorganismo | Nombre. Reachable from the Bacteriología hub |
+| Registro de muestra de bacteriología | Nombre. Reachable from the Bacteriología hub |
+| Registro de observaciones de bacteriología | Nombre. Reachable from the Bacteriología hub |
 
 Agregar nota de bacteriología, under Mantenimiento, is a different command from Registro de observaciones de bacteriología. In the new application it moves to the result grid, and its actor is the bioanalyst. It opens a note on a bacteriology order. The form was not opened. Pattern: a section observation on the result grid, limited to orders that contain a bacteriology section. If the order has no such section, the action explains that and writes nothing.
 
@@ -119,17 +122,18 @@ Evidence: [../session/lista-de-precios.md](../session/lista-de-precios.md), [../
 
 | Command | Capture | Pattern | Actor |
 |---|---|---|---|
-| Lista de precios | Opened | Price matrix | Reception reads. Print via Imprimir lista |
-| Precio exámenes | Menu | Price matrix, editable | Administration |
-| Aplicar aumento general | Menu | Password re-entry, with a percent and the price columns it will touch. Preview of the change before write | Administration |
+| Precios | Design rule | One place (`/precios`) with modes Lista / Editar / Aumento | Reception reads list. Administration edits |
+| Lista de precios | Opened; now the Lista mode on Precios | Price matrix | Reception reads. Print via Imprimir lista |
+| Precio exámenes | Editar mode on Precios | Price matrix, editable | Administration |
+| Aplicar aumento general | Aumento mode on Precios | Password re-entry, with a percent and the price columns it will touch. Preview of the change before write | Administration |
 | Precio sábado | Menu, and the shell chip | Shell switch for the whole laboratory, plus a calendar | Administration |
 | Promedios pacientes/pruebas | Menu | Fiscal report. Formula **Unknown**, so no average is displayed | Administration |
 | Insumos, servicios y otros | Menu | Fiscal report. Columns **Unknown** | Administration |
 | Salarios de personal | Menu | Fiscal report. Columns **Unknown**. This is cost accounting, not the user directory | Administration |
 | Costos reactivos | Menu | Fiscal report. Columns **Unknown** | Administration |
-| Lista de insumos, servicios y otros | Costos / Reportes flyout | Fiscal report | Administration |
-| Lista de salarios de personal | Flyout | Fiscal report | Administration |
-| Lista de costos de reactivos | Flyout | Fiscal report | Administration |
+| Lista de insumos, servicios y otros | Alias removed; same `costs.supplies`. Legacy slug redirects. **Design rule** | Fiscal report | Administration |
+| Lista de salarios de personal | Alias removed; same `costs.salaries`. **Design rule** | Fiscal report | Administration |
+| Lista de costos de reactivos | Alias removed; same `costs.reagents`. **Design rule** | Fiscal report | Administration |
 
 Cancelar and Salir on the price list leave prices unchanged.
 
@@ -139,23 +143,23 @@ Evidence: [../session/reportes.md](../session/reportes.md). Pattern for all of t
 
 | Command | Flyout or note |
 |---|---|
-| Lista de pacientes | General. Por nombre o cédula |
-| Lista de paciente por fecha | The menu uses the singular Paciente |
-| Lista de médicos | — |
-| Lista de proveedores | — |
-| Lista de reactivos y servicios | — |
-| Lista de inventario de reactivos | Label slightly cut. Readable ending is Reactivos |
-| Lista de empresas | — |
-| Lista de ventas | Resumen de ventas. Detalle de ventas. Libro de ventas. Resumen de IGTF. Ventas por Cashea. Lista de ventas por empresa |
-| Lista de compras | Libro de compras. Órdenes de compra |
-| Lista de retenciones | Comprobantes de retenciones varias (ARCV). XML de retenciones de ISLR. Retenciones del IVA |
-| Lista de pagos realizados | — |
-| Lista de cuentas por pagar | General. Por pagar |
-| Lista de cuentas por cobrar | Flyout not opened |
-| Lista de equipos | Flyout not opened |
-| Lista de presupuestos | Flyout not opened |
-| Evolución de pacientes | Flyout not opened. Shows prior results once columns are known. Until then the empty-column sentence |
-| Estadísticas | Flyout not opened. Same |
+| Lista de pacientes | On Reportes flyout. General. Por nombre o cédula |
+| Lista de paciente por fecha | Same `report.patients` as Lista de pacientes; removed from flyout. Legacy redirects. **Design rule** |
+| Lista de médicos | Off Reportes until Exportar exists on Registro de médicos. Legacy redirects to the registry. **Design rule** |
+| Lista de proveedores | Same: registry export, not a Reportes stub. **Design rule** |
+| Lista de reactivos y servicios | Same. **Design rule** |
+| Lista de inventario de reactivos | Same → inventario. **Design rule** |
+| Lista de empresas | Same. **Design rule** |
+| Lista de ventas | Hidden until columns ship. Legacy slug stays. **Design rule** |
+| Lista de compras | Hidden until columns ship. **Design rule** |
+| Lista de retenciones | Hidden until columns ship. **Design rule** |
+| Lista de pagos realizados | Redirects to Registro de pagos. **Design rule** |
+| Lista de cuentas por pagar | Hidden until columns ship. **Design rule** |
+| Lista de cuentas por cobrar | Hidden until columns ship. **Design rule** |
+| Lista de equipos | Registry export path. **Design rule** |
+| Lista de presupuestos | Hidden until columns ship. **Design rule** |
+| Evolución de pacientes | Hidden until columns ship. **Design rule** |
+| Estadísticas | On Reportes flyout |
 
 The ISLR command offers Descargar XML. The other fiscal commands offer Imprimir. Libro de ventas, Resumen de IGTF, ARCV, the ISLR XML, and Retenciones del IVA are Venezuelan fiscal outputs. Their column layouts are **Unknown**.
 
@@ -181,9 +185,9 @@ Evidence: [../session/mantenimiento.md](../session/mantenimiento.md).
 | Command | Pattern | Actor | Rule |
 |---|---|---|---|
 | Crear perfiles | Registry of panels. A profile’s member exams are **Unknown** | Bioanalyst, administration | The reading “panel of exams” stays a reading. The screen does not invent members |
-| Modificar valores | Blocked panel | — | Writes nothing. See [06-edge-cases.md](06-edge-cases.md) |
+| Modificar valores | Off the Mantenimiento flyout until captured. Legacy slug shows the blocked panel. **Design rule** | — | Writes nothing. See [06-edge-cases.md](06-edge-cases.md) |
 | Registro de correo | Single card. Fields **Unknown** beyond “the account Enviar correo uses” | Administration | — |
-| Nuevo usuario | Registry table: display name, role, Activo | Administration | Roles are those in [../product/06-access-control.md](../product/06-access-control.md). A person may hold several |
+| Usuarios | Mantenimiento opens `/usuarios` (list → create/edit; label Usuarios, not Nuevo usuario). Registry table: display name, role, Activo. **Design rule** | Administration | Roles are those in [../product/06-access-control.md](../product/06-access-control.md). A person may hold several |
 | Respaldo de la BD | Password re-entry | Administration | `backup.run`. Path and engine **Unknown** |
 | Auditoría | Fiscal report. Columns in [../product/09-audit-log.md](../product/09-audit-log.md). The current program's are **Unknown** | Administration, with clinical text masked. Bioanalyst, clinical events | Must be able to list every event |
 
@@ -195,7 +199,7 @@ The patterns connect in this order for a visit. Steps the session did not open s
 2. Clientes finds the person or creates one. Nombre and Fecha de nac. are required. A missing cédula is Sin verificar.
 3. Ingreso particular or Ingreso empresa opens Nueva orden at Cliente with that person. Empresa requires a convenio before Pago.
 4. Exámenes, optional Médico, then Pago. Sin verificar needs the billing party’s complete cédula at Pago. Guardar assigns N° orden and Factura N°, and leaves Control N° as a number or `Pendiente`.
-5. Hoja de trabajo lists the order.
+5. Hoja de trabajo lists the order. A row opens the order hub; Acciones opens Cargar resultados.
 6. Cargar resultados fills the result grid. Empty sections stay off the grid.
 7. Liberar, per section, sets that section `LIBERADO` and Procesado por. The order is `LIBERADO` once every section is.
 8. The issued report shows the lockup, the header, the grid, and the QR when Activo.
