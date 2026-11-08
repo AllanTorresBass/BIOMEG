@@ -36,6 +36,10 @@ export function useCommand(): CommandRunner {
 
       const outcome = outcomeOf(result)
       const refused = outcome.ok === false || (typeof outcome.error === 'string' && outcome.error !== '')
+      if (!refused && feedback.document && typeof outcome.redirectTo === 'string') {
+        window.location.assign(outcome.redirectTo)
+        return result
+      }
       if (refused) {
         const message = typeof outcome.error === 'string' ? outcome.error : outcome.message
         if ((toasts === 'all' || toasts === 'failures') && !outcome.need && typeof message === 'string' && message !== '') toast.error(message)
