@@ -18,6 +18,9 @@ export interface ClientCardData {
   active: boolean
   consentWhatsapp: boolean
   consentEmail: boolean
+  /** True when any order exists, including voided. C.I. fields stay locked. */
+  cedulaLocked: boolean
+  hasOrders: boolean
 }
 
 export interface ClientListProps {
@@ -27,11 +30,14 @@ export interface ClientListProps {
 
 export interface ClientSearchProps {
   canIncludeInactive: boolean
+  initialIncludeInactive?: boolean
   onSearch: (text: string, includeInactive: boolean) => void
+  resultCount?: number
 }
 
 export interface ClientBrowserProps {
   initialRows: readonly ClientSummary[]
   selectedId: string | null
   canIncludeInactive: boolean
+  initialIncludeInactive?: boolean
 }

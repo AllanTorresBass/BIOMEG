@@ -3,6 +3,7 @@ import type { ClientCardData } from '@/types/clients/card.types'
 export interface ClientCardProps {
   data: ClientCardData
   canEdit: boolean
+  canOpenOrder: boolean
   justSaved: boolean
 }
 

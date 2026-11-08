@@ -23,6 +23,21 @@ describe('deactivate', () => {
   })
 })
 
+describe('reactivate', () => {
+  it('brings an inactive client back into the normal search', () => {
+    // c-2 was deactivated in the suite above.
+    expect(getClient('c-2')?.active).toBe(false)
+    const result = setClientActive('c-2', true, actor)
+    expect(result).toMatchObject({ ok: true, changed: true })
+    expect(getClient('c-2')?.active).toBe(true)
+    expect(searchClients({ text: 'Paciente Demo Dos', includeInactive: false }).map((c) => c.id)).toContain('c-2')
+  })
+
+  it('does nothing when the client is already active', () => {
+    expect(setClientActive('c-1', true, actor)).toMatchObject({ ok: true, changed: false })
+  })
+})
+
 describe('delete', () => {
   it('keeps the record but takes it out of every search (M-02)', () => {
     expect(softDeleteClient('c-6', actor)).toMatchObject({ ok: true })

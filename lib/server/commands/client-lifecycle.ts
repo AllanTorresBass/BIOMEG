@@ -115,6 +115,20 @@ export async function deactivateClient(input: LifecycleInput): Promise<Lifecycle
   return done(text.deactivated)
 }
 
+export async function reactivateClient(input: LifecycleInput): Promise<LifecycleResult> {
+  const current = getClient(input.clientId)
+  if (!current) return fail(text.notFound)
+  const gated = await gate('client.reactivate', input.clientId, {}, { confirmed: input.confirmed })
+  if (isResult(gated)) return gated
+
+  const result = setClientActive(input.clientId, true, actorOf(gated.context))
+  if (!result.ok) return fail(text.notFound)
+  if (!result.changed) return done(text.alreadyActive)
+  await record(gated, 'client.reactivate', input.clientId, { before: { active: false }, after: { active: true } })
+  refresh()
+  return done(text.reactivated)
+}
+
 export async function deleteClient(input: LifecycleInput): Promise<LifecycleResult> {
   const current = getClient(input.clientId)
   if (!current) return fail(text.notFound)

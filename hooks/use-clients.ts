@@ -17,6 +17,7 @@ export function useClientCommands() {
       /** Field errors stay inline on the card (rule 9). Success still toasts. */
       saveClient: (input: SaveClientInput) => run(() => service().save(input), { toasts: 'successes' }),
       deactivateClient: (input: LifecycleInput) => run(() => service().deactivate(input)),
+      reactivateClient: (input: LifecycleInput) => run(() => service().reactivate(input)),
       deleteClient: (input: LifecycleInput) => run(() => service().softDelete(input)),
       correctCedula: (input: CorrectCedulaInput) => run(() => service().correctCedula(input)),
       requestMerge: (input: RequestMergeInput) => run(() => service().requestMerge(input)),

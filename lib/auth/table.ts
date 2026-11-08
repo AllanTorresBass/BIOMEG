@@ -3,7 +3,7 @@ import 'server-only'
 import type { Condition, Gesture, Grant, PermissionRow } from '@/types/auth/auth.types'
 import type { Grants, RowOptions } from '@/types/auth/table.types'
 
-export const TABLE_VERSION = 5
+export const TABLE_VERSION = 6
 
 const T = (fact: string): Condition => ({ fact, is: true })
 const F = (fact: string): Condition => ({ fact, is: false })
@@ -81,7 +81,7 @@ export const PERMISSION_ROWS: readonly PermissionRow[] = [
   row('R-016', 'Incluir inactivos', ['client.include_inactive'], ALWAYS, {
     RECEPCION: ok(), ADMINISTRACION: ok(),
   }),
-  row('R-017', 'Desactivar', ['client.deactivate'], ALWAYS, {
+  row('R-017', 'Desactivar or Reactivar', ['client.deactivate', 'client.reactivate'], ALWAYS, {
     RECEPCION: confirm(), ADMINISTRACION: confirm(),
   }),
   row('R-018', 'Eliminar', ['client.delete'], [F('order_last_30_days')], {

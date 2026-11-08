@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { ClientCard } from '@/components/clients/ClientCard'
+import { ClientDetailPane } from '@/components/clients/ClientDetailPane'
 import { ClientLifecycle } from '@/components/clients/ClientLifecycle'
 import { ClientBrowser } from '@/components/clients/ClientBrowser'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
+import { Button } from '@/components/ui/button'
 import { getClientsScreen } from '@/lib/server/queries/clients'
 import { requireReadyStaff } from '@/lib/server/session/require'
 import { strings } from '@/lib/strings'
@@ -18,25 +20,31 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
   const selectedId = one(params.id)
   const wantsNew = one(params.nuevo) === '1'
   const justSaved = one(params.saved) === '1'
+  const includeInactive = one(params.incluirInactivos) === '1'
 
   const context = await requireReadyStaff()
   if (context.locked) return null
   const screen = await getClientsScreen(context, selectedId, wantsNew)
   if (screen.kind === 'BLOCKED') return <BlockedNotice />
-  const { rows, card, lifecycle, canCreate, canEdit, canIncludeInactive } = screen
+  const { rows, card, lifecycle, canCreate, canEdit, canIncludeInactive, canOpenOrder } = screen
+
+  const detailTitle = card?.id
+    ? strings.pendingReview.clients.cardTitle
+    : wantsNew
+      ? strings.pendingReview.clients.newTitle
+      : strings.clients.title
 
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">{strings.clients.title}</h1>
         {canCreate ? (
-          <Link
-            href="/clientes?nuevo=1"
-            className="inline-flex h-10 items-center gap-2 rounded-[var(--radius-control)] bg-primary px-4 font-semibold text-primary-foreground"
-          >
-            <Plus aria-hidden className="size-4" />
-            {strings.pendingReview.clients.newClient}
-          </Link>
+          <Button asChild size="lg" className="h-10 rounded-[var(--radius-control)] px-4 font-semibold">
+            <Link href="/clientes?nuevo=1">
+              <Plus aria-hidden className="size-4" />
+              {strings.pendingReview.clients.newClient}
+            </Link>
+          </Button>
         ) : null}
       </div>
 
@@ -45,18 +53,22 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
           initialRows={rows}
           selectedId={screen.selectedId}
           canIncludeInactive={canIncludeInactive}
+          initialIncludeInactive={includeInactive && canIncludeInactive}
         />
-        {card ? (
-          <div className="flex flex-col gap-4">
-            <ClientCard
-              key={card.id ?? 'new'}
-              data={card}
-              canEdit={card.id ? canEdit : canCreate}
-              justSaved={justSaved}
-            />
-            {lifecycle ? <ClientLifecycle key={`lifecycle-${lifecycle.clientId}`} {...lifecycle} /> : null}
-          </div>
-        ) : null}
+        <ClientDetailPane open={card !== null} title={detailTitle}>
+          {card ? (
+            <>
+              <ClientCard
+                key={card.id ?? 'new'}
+                data={card}
+                canEdit={card.id ? canEdit : canCreate}
+                canOpenOrder={canOpenOrder}
+                justSaved={justSaved}
+              />
+              {lifecycle ? <ClientLifecycle key={`lifecycle-${lifecycle.clientId}`} {...lifecycle} /> : null}
+            </>
+          ) : null}
+        </ClientDetailPane>
       </div>
     </section>
   )

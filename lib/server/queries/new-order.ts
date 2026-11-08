@@ -40,8 +40,15 @@ export async function canOpenOrders(context: StaffContext): Promise<boolean> {
   return guardRoute(context, ['order.open'], '/ordenes/nueva')
 }
 
-export function beginDraft(context: StaffContext, path: OrderPath): string {
-  return startDraft(context.account.id, path).id
+export function beginDraft(context: StaffContext, path: OrderPath, clientId?: string): string {
+  const draft = startDraft(context.account.id, path)
+  if (clientId) {
+    const client = getClient(clientId)
+    if (client && client.active && !client.deletedAt) {
+      draft.clientId = client.id
+    }
+  }
+  return draft.id
 }
 
 export function getNewOrderScreen(context: StaffContext, draftId: string) {

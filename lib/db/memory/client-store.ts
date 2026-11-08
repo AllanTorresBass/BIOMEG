@@ -3,7 +3,8 @@ import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { moveOrders, restoreOrders, syncIdentity } from '@/lib/db/memory/order-index'
 import { demoSeed } from '@/lib/db/memory/seed'
-import { normalizeName } from '@/lib/utils/format'
+import { todayInLab } from '@/lib/server/domain/client-rules'
+import { computeAge, formatAge, normalizeName } from '@/lib/utils/format'
 import type { CedulaType } from '@/types/lib/format.types'
 import { nameSimilarity, SIMILAR_NAME_THRESHOLD } from '@/lib/utils/similarity'
 import type { ActiveResult, Actor, ClientQuery, ClientState, CorrectResult, LifecycleState, MergeRecord, MergeRequest, MergeResult, SaveContext, UnmergeResult, UpdateResult } from '@/types/stores/client-store.types'
@@ -51,6 +52,7 @@ export function summarize(record: ClientRecord): ClientSummary {
     cedulaType: record.cedulaType,
     cedulaDigits: record.cedulaDigits,
     birthDate: record.birthDate,
+    ageText: formatAge(computeAge(record.birthDate, todayInLab())),
     active: record.active,
     verified: record.verified,
   }

@@ -3,6 +3,7 @@ import type { ClientSummary } from '@/types/domain/client.types'
 /** Which lifecycle buttons the permission table lets this person see for this client. */
 export interface LifecycleCapabilities {
   deactivate: boolean
+  reactivate: boolean
   remove: boolean
   correctCedula: boolean
   requestMerge: boolean
@@ -27,6 +28,7 @@ export interface ClientLifecycleProps {
   clientId: string
   clientName: string
   active: boolean
+  currentCedula: string
   capabilities: LifecycleCapabilities
   candidates: ClientSummary[]
   merges: OpenMergeRow[]

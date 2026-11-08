@@ -3,7 +3,7 @@
 **Type:** [01-application-type.md](01-application-type.md)
 **Analysis and evidence:** [../access-control-plan.md](../access-control-plan.md)
 **Row conditions and command names:** [07-rule-reference.md](07-rule-reference.md)  
-**Table version:** 5. Each change to the table raises it, and each audit row stores the version that decided it
+**Table version:** 6. Each change to the table raises it, and each audit row stores the version that decided it
 
 This page says who may run each command, in which state, with which gesture, and what is recorded. If an actor on another page differs, this page wins. All of it is a **design rule**. The vendor published no permission matrix, and the screens that would show the current program’s rules were not opened.
 
@@ -52,6 +52,7 @@ Accepted on 1 November 2026, on the instruction to apply the recommendations.
 | Physician | No account in the first release | |
 | Minors and representatives | A billing party’s cédula on the factura, and staff delivery. A portal link comes later | Legal review |
 | Two different cédulas | A merge is refused. A wrong cédula goes through Corregir cédula | |
+| Reactivar | Same roles and confirm as Desactivar (R-017). Soft-deleted clients stay hidden | |
 | Self-entered values | No second reviewer. Recorded and reviewed | Lead bioanalyst to confirm |
 | Money owed | Does not block the portal or the release | |
 | `SIN PRECIO` | Blocks the fiscal issue. Does not block Liberar. This replaces the earlier rule | Lead bioanalyst to confirm |
@@ -120,7 +121,7 @@ A correction works on one released section, and that section’s results move to
 | R-014 | Create client, Modificar pacientes | ● | — | — | — |  |
 | R-015 | Corregir cédula after an order exists | — | — | — | S + motivo | New command. Issued documents keep what they printed |
 | R-016 | Incluir inactivos | ● | — | — | ● |  |
-| R-017 | Desactivar | C | — | — | C |  |
+| R-017 | Desactivar, Reactivar | C | — | — | C | Same gesture for both. Soft-deleted clients stay out of Reactivar |
 | R-018 | Eliminar | — | — | — | C | The 30-day rule stays |
 | R-019 | Request Fusionar | ● | — | — | — | New command. Reception asks and administration acts |
 | R-020 | Fusionar | — | — | — | S | Two complete, different cédulas are refused |

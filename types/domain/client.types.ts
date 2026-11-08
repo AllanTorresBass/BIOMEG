@@ -92,6 +92,8 @@ export interface ClientSummary {
   cedulaType: CedulaType | null
   cedulaDigits: string | null
   birthDate: string
+  /** Computed for the list Edad column. Never typed. */
+  ageText: string
   active: boolean
   verified: boolean
 }
