@@ -1,8 +1,5 @@
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import { ClientCard } from '@/components/clients/ClientCard'
-import { ClientDetailPane } from '@/components/clients/ClientDetailPane'
-import { ClientLifecycle } from '@/components/clients/ClientLifecycle'
 import { ClientBrowser } from '@/components/clients/ClientBrowser'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { Button } from '@/components/ui/button'
@@ -17,30 +14,27 @@ function one(value: string | string[] | undefined): string {
 
 export default async function ClientsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams
-  const selectedId = one(params.id)
-  const wantsNew = one(params.nuevo) === '1'
-  const justSaved = one(params.saved) === '1'
   const includeInactive = one(params.incluirInactivos) === '1'
 
   const context = await requireReadyStaff()
   if (context.locked) return null
-  const screen = await getClientsScreen(context, selectedId, wantsNew)
-  if (screen.kind === 'BLOCKED') return <BlockedNotice />
-  const { rows, card, lifecycle, canCreate, canEdit, canIncludeInactive, canOpenOrder } = screen
 
-  const detailTitle = card?.id
-    ? strings.pendingReview.clients.cardTitle
-    : wantsNew
-      ? strings.pendingReview.clients.newTitle
-      : strings.clients.title
+  const screen = await getClientsScreen(context, '', false)
+  if (screen.kind === 'BLOCKED') return <BlockedNotice />
+  const { rows, canCreate, canIncludeInactive } = screen
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">{strings.clients.title}</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b-2 border-[var(--color-burgundy)] pb-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl font-semibold">{strings.clients.title}</h1>
+          <p className="text-sm text-muted-foreground">
+            {canCreate ? strings.clients.selectPrompt : strings.clients.selectPromptReadOnly}
+          </p>
+        </div>
         {canCreate ? (
           <Button asChild size="lg" className="h-10 rounded-[var(--radius-control)] px-4 font-semibold">
-            <Link href="/clientes?nuevo=1">
+            <Link href="/clientes/nuevo">
               <Plus aria-hidden className="size-4" />
               {strings.pendingReview.clients.newClient}
             </Link>
@@ -48,28 +42,11 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
         ) : null}
       </div>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <ClientBrowser
-          initialRows={rows}
-          selectedId={screen.selectedId}
-          canIncludeInactive={canIncludeInactive}
-          initialIncludeInactive={includeInactive && canIncludeInactive}
-        />
-        <ClientDetailPane open={card !== null} title={detailTitle} canCreate={canCreate}>
-          {card ? (
-            <>
-              <ClientCard
-                key={card.id ?? 'new'}
-                data={card}
-                canEdit={card.id ? canEdit : canCreate}
-                canOpenOrder={canOpenOrder}
-                justSaved={justSaved}
-              />
-              {lifecycle ? <ClientLifecycle key={`lifecycle-${lifecycle.clientId}`} {...lifecycle} /> : null}
-            </>
-          ) : null}
-        </ClientDetailPane>
-      </div>
+      <ClientBrowser
+        initialRows={rows}
+        canIncludeInactive={canIncludeInactive}
+        initialIncludeInactive={includeInactive && canIncludeInactive}
+      />
     </section>
   )
 }

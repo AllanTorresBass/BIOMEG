@@ -48,6 +48,30 @@ export default async function ScreenPage({ params }: { params: Promise<{ slug: s
   if (slug === toSlug('Ingreso empresa')) redirect('/ordenes/nueva?via=empresa')
   const screen = DEDICATED_SCREENS[slug]
   if (screen) redirect(screen)
+
+  // Removed from the Pacientes flyout; bookmarks and tests still hit these URLs.
+  if (slug === toSlug('Trasladar paciente')) {
+    const context = await requireReadyStaff()
+    if (context.locked) return null
+    return (
+      <section className="flex flex-col items-start gap-2">
+        <h1 className="text-xl font-semibold">Trasladar paciente</h1>
+        <StatusChip status="BLOQUEADO" />
+      </section>
+    )
+  }
+  if (slug === toSlug('Facturar consulta')) {
+    const context = await requireReadyStaff()
+    if (context.locked) return null
+    if (!(await guardRoute(context, ['order.open'], `/p/${slug}`))) return <BlockedNotice />
+    return (
+      <section className="flex flex-col gap-2">
+        <h1 className="text-xl font-semibold">Facturar consulta</h1>
+        <p className="text-muted-foreground">{strings.shell.pending}</p>
+      </section>
+    )
+  }
+
   const entry = findMenuItem(slug)
   if (!entry) notFound()
   const command = entry.commands[0] ?? ''

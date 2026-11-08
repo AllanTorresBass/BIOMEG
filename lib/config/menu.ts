@@ -18,16 +18,8 @@ export const MENU_GROUPS: readonly MenuGroup[] = [
   {
     label: 'Pacientes',
     items: [
+      // Lifecycle and filters live on /clientes. Ingreso is on the primary toolbar.
       item('Clientes', 'client.read'),
-      item('Modificar pacientes', 'client.update'),
-      item('Ingreso particular', 'order.open'),
-      item('Ingreso empresa', 'order.open'),
-      item('Facturar consulta', 'order.open'),
-      item('Incluir inactivos', 'client.include_inactive'),
-      item('Fusionar', 'client.merge'),
-      item('Desactivar', 'client.deactivate'),
-      item('Eliminar', 'client.delete'),
-      item('Trasladar paciente', 'client.transfer'),
     ],
   },
   {

@@ -76,7 +76,7 @@ export function ClientStep({ draftId, patient, visit, todayText, canCreateClient
           </button>
           {canCreateClient ? (
             <Link
-              href="/clientes?nuevo=1"
+              href="/clientes/nuevo"
               className="inline-flex h-10 items-center rounded-[var(--radius-control)] border border-border-strong px-4 font-semibold"
             >
               {text.createClient}

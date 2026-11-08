@@ -5,9 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState, useTransition, type ClipboardEvent } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
-import { StatusChip } from '@/components/shared/StatusChip'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -19,7 +17,9 @@ import { CEDULA_TYPES, formatCedula, formatDate, parseCedulaPaste } from '@/lib/
 import { clientCardSchema } from '@/types/clients/clients.schemas'
 import type { ClientCardData } from '@/types/clients/card.types'
 import type { ClientFormState, ClientFieldName } from '@/types/domain/client.types'
-import type { ClientCardProps, Values } from '@/types/clients/client-card.props'
+import type { ClientCardProps, ClientFormPanel, Values } from '@/types/clients/client-card.props'
+
+const CONTACT_FIELDS = new Set(['phone', 'email'])
 
 const INITIAL: ClientFormState = {
   error: null,
@@ -45,7 +45,15 @@ function pick(data: ClientCardData): Values {
   }
 }
 
-export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCardProps) {
+export function ClientCard({
+  data,
+  canEdit,
+  canOpenOrder,
+  justSaved,
+  panel = 'ficha',
+  embedded = false,
+  onFieldPanel,
+}: ClientCardProps) {
   const { saveClient } = useClientCommands()
   const text = strings.pendingReview.clients
   const [state, setState] = useState<ClientFormState>(INITIAL)
@@ -69,6 +77,12 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
     form.setError(state.field as ClientFieldName, { type: 'server', message: state.error })
   }, [state.field, state.error, form])
 
+  useEffect(() => {
+    if (!state.field || !onFieldPanel) return
+    const next: ClientFormPanel = CONTACT_FIELDS.has(state.field) ? 'contacto' : 'ficha'
+    onFieldPanel(next)
+  }, [state.field, onFieldPanel])
+
   const onPaste = (event: ClipboardEvent<HTMLInputElement>) => {
     const parsed = parseCedulaPaste(event.clipboardData.getData('text'))
     if (!parsed) return
@@ -79,20 +93,27 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
 
   /** The server judges the fields, so its one rule set decides. A confirm comes back as needsConfirm. */
   const save = (confirm: { similar?: boolean; gesture?: boolean } = {}) =>
-    form.handleSubmit((current) => {
-      startSave(async () => {
-        form.clearErrors()
-        const result = await saveClient({
-          ...current,
-          id: data.id,
-          version: data.version,
-          confirmSimilar: confirm.similar === true,
-          confirmGesture: confirm.gesture === true,
+    form.handleSubmit(
+      (current) => {
+        startSave(async () => {
+          form.clearErrors()
+          const result = await saveClient({
+            ...current,
+            id: data.id,
+            version: data.version,
+            confirmSimilar: confirm.similar === true,
+            confirmGesture: confirm.gesture === true,
+          })
+          setState({ ...INITIAL, ...result })
+          if (!result.error && result.redirectTo) setDirty(false)
         })
-        setState({ ...INITIAL, ...result })
-        if (!result.error && result.redirectTo) setDirty(false)
-      })
-    })()
+      },
+      (errors) => {
+        const key = Object.keys(errors)[0]
+        if (!key || !onFieldPanel) return
+        onFieldPanel(CONTACT_FIELDS.has(key) ? 'contacto' : 'ficha')
+      },
+    )()
 
   const cedulaPreview = cedulaType && cedulaNumber ? formatCedula(cedulaType as 'V', cedulaNumber) : ''
   const cedulaDisabled = !canEdit || pending || data.cedulaLocked
@@ -106,21 +127,11 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
         }}
         className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-card p-4"
       >
-        <div className="flex flex-col gap-2 border-b-2 border-[var(--color-burgundy)] pb-3">
-          <div className="flex flex-wrap items-center gap-3">
+        {embedded ? null : (
+          <div className="flex flex-col gap-2 border-b-2 border-[var(--color-burgundy)] pb-3">
             <h2 className="text-lg font-semibold">{data.id ? text.cardTitle : text.newTitle}</h2>
-            {data.id ? (
-              data.verified ? (
-                <Badge className="rounded-[var(--radius-control)] border-transparent bg-flag-released-bg text-xs font-semibold text-flag-released uppercase">
-                  {strings.clients.verified}
-                </Badge>
-              ) : (
-                <StatusChip status="SIN_VERIFICAR" />
-              )
-            ) : null}
-            {data.id && !data.active ? <StatusChip status="INACTIVO" /> : null}
           </div>
-        </div>
+        )}
 
         {justSaved ? (
           <Alert className="border-flag-released bg-flag-released-bg text-flag-released">
@@ -130,6 +141,13 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
         {!canEdit ? <p className="text-muted-foreground">{text.readOnly}</p> : null}
 
         <fieldset disabled={!canEdit || pending} className="flex flex-col gap-4">
+          <div
+            role="tabpanel"
+            id="client-panel-ficha"
+            aria-labelledby="client-tab-ficha"
+            hidden={panel !== 'ficha'}
+            className="flex flex-col gap-4"
+          >
           <FormField
             control={form.control}
             name="fullName"
@@ -247,7 +265,15 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
               )}
             />
           </div>
+          </div>
 
+          <div
+            role="tabpanel"
+            id="client-panel-contacto"
+            aria-labelledby="client-tab-contacto"
+            hidden={panel !== 'contacto'}
+            className="flex flex-col gap-4"
+          >
           <div className="flex flex-wrap gap-4">
             <FormField
               control={form.control}
@@ -300,6 +326,7 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
             />
             <span className="text-sm text-muted-foreground">{text.consentNote}</span>
           </fieldset>
+          </div>
         </fieldset>
 
         {state.error && !state.field ? (
@@ -315,7 +342,7 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
 
         {state.duplicate ? (
           <p>
-            <Link href={`/clientes?id=${state.duplicate.id}`} className="font-semibold text-primary underline">
+            <Link href={`/clientes/${encodeURIComponent(state.duplicate.id)}`} className="font-semibold text-primary underline">
               {text.openExisting}: {state.duplicate.fullName},{' '}
               {formatCedula(state.duplicate.cedulaType ?? 'V', state.duplicate.cedulaDigits ?? '')}
             </Link>
@@ -330,7 +357,7 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
               <ul className="flex flex-col gap-1">
                 {state.similar.map((match) => (
                   <li key={match.id} className="tabular-nums">
-                    <Link href={`/clientes?id=${match.id}`} className="font-semibold text-primary underline">
+                    <Link href={`/clientes/${encodeURIComponent(match.id)}`} className="font-semibold text-primary underline">
                       {match.fullName}
                     </Link>
                     {match.cedulaType && match.cedulaDigits ? `, ${formatCedula(match.cedulaType, match.cedulaDigits)}` : ''}
@@ -356,7 +383,7 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
             <AlertDescription className="flex flex-col gap-2">
               <p>{text.conflict(state.conflict.savedBy, state.conflict.savedAt)}</p>
               {data.id ? (
-                <Link href={`/clientes?id=${data.id}`} className="font-semibold underline">
+                <Link href={`/clientes/${encodeURIComponent(data.id)}`} className="font-semibold underline">
                   {text.reload}
                 </Link>
               ) : null}
@@ -374,7 +401,7 @@ export function ClientCard({ data, canEdit, canOpenOrder, justSaved }: ClientCar
               {pending ? text.saving : text.save}
             </Button>
           ) : null}
-          {data.id && data.active && canOpenOrder ? (
+          {!embedded && data.id && data.active && canOpenOrder ? (
             <Button asChild variant="outline" className="h-10 rounded-[var(--radius-control)] px-4 font-semibold">
               <Link href={`/ordenes/nueva?via=particular&clientId=${encodeURIComponent(data.id)}`}>
                 {strings.clients.newOrder}

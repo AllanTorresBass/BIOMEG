@@ -33,4 +33,6 @@ export interface ClientLifecycleProps {
   candidates: ClientSummary[]
   merges: OpenMergeRow[]
   requests: MergeRequestRow[]
+  /** The tab already names the section. */
+  hideTitle?: boolean
 }

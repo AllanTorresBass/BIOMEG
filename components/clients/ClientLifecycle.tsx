@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { useClientCommands } from '@/hooks/use-clients'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StepUpDialog } from '@/components/shared/StepUpDialog'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +15,28 @@ import type { Call, Copy, Extra, Pending } from '@/types/clients/client-lifecycl
 
 const text = strings.pendingReview.lifecycle
 
+export function hasLifecycleActions({ capabilities, requests }: Pick<ClientLifecycleProps, 'capabilities' | 'requests'>): boolean {
+  return (
+    capabilities.deactivate ||
+    capabilities.reactivate ||
+    capabilities.remove ||
+    capabilities.correctCedula ||
+    capabilities.requestMerge ||
+    capabilities.merge ||
+    capabilities.unmerge ||
+    requests.length > 0
+  )
+}
+
+function ActionBlock({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-card p-4">
+      <h3 className="border-b-2 border-[var(--color-burgundy)] pb-2 text-base font-semibold">{title}</h3>
+      {children}
+    </section>
+  )
+}
+
 export function ClientLifecycle({
   clientId,
   clientName,
@@ -25,6 +46,7 @@ export function ClientLifecycle({
   candidates,
   merges,
   requests,
+  hideTitle = false,
 }: ClientLifecycleProps) {
   const { deactivateClient, reactivateClient, deleteClient, correctCedula, requestMerge, mergeClientRecords, undoMerge } =
     useClientCommands()
@@ -120,23 +142,220 @@ export function ClientLifecycle({
   const showStatus = capabilities.deactivate || capabilities.reactivate || capabilities.remove
   const showCedula = capabilities.correctCedula
   const showMerge = capabilities.requestMerge || capabilities.merge || capabilities.unmerge || requests.length > 0
-  const showAny = showStatus || showCedula || showMerge
-  if (!showAny) return null
+  if (!hasLifecycleActions({ capabilities, requests })) return null
 
-  const defaults = [
-    showStatus ? 'status' : null,
-    showCedula ? 'cedula' : null,
-    showMerge ? 'merge' : null,
-  ].filter(Boolean) as string[]
+  // Reception often only asks for a merge; Administración sees Estado first.
+  const receptionFirst = capabilities.requestMerge && !capabilities.merge && !showStatus
+
+  const statusBlock = showStatus ? (
+    <ActionBlock key="status" title={text.statusSection}>
+      <div className="flex flex-wrap gap-2">
+        {capabilities.deactivate && active ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            className="h-10 rounded-[var(--radius-control)]"
+            onClick={() => void start((extra) => deactivateClient({ clientId, ...extra }), deactivateCopy)}
+          >
+            {text.deactivate}
+          </Button>
+        ) : null}
+        {capabilities.reactivate && !active ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            className="h-10 rounded-[var(--radius-control)]"
+            onClick={() => void start((extra) => reactivateClient({ clientId, ...extra }), reactivateCopy)}
+          >
+            {text.reactivate}
+          </Button>
+        ) : null}
+        {capabilities.remove ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            className="h-10 rounded-[var(--radius-control)]"
+            onClick={() => void start((extra) => deleteClient({ clientId, ...extra }), deleteCopy)}
+          >
+            {text.delete}
+          </Button>
+        ) : null}
+      </div>
+    </ActionBlock>
+  ) : null
+
+  const cedulaBlock = showCedula ? (
+    <ActionBlock key="cedula" title={text.cedulaSection}>
+      <form onSubmit={submitCedula} className="flex flex-col gap-3">
+        <p className="text-sm text-muted-foreground">{text.correctCedulaHelp}</p>
+        <p className="text-sm">
+          <span className="font-semibold">{text.currentCedula}: </span>
+          <span className="tabular-nums">{currentCedula}</span>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <select
+            aria-label={text.newCedulaType}
+            value={cedulaType}
+            onChange={(event) => setCedulaType(event.target.value)}
+            className="h-10 w-24 rounded-[var(--radius-control)] border border-input bg-background px-3"
+          >
+            <option value="">{strings.empty.dash}</option>
+            {CEDULA_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+          <Input
+            aria-label={text.newCedulaNumber}
+            placeholder={text.newCedulaNumber}
+            inputMode="numeric"
+            value={cedulaNumber}
+            onChange={(event) => setCedulaNumber(event.target.value)}
+            autoComplete="off"
+            className="h-10 min-w-40 flex-1 rounded-[var(--radius-control)] tabular-nums"
+          />
+        </div>
+        <Input
+          aria-label={text.motivo}
+          placeholder={text.motivo}
+          value={cedulaMotivo}
+          onChange={(event) => setCedulaMotivo(event.target.value)}
+          autoComplete="off"
+          className="h-10 rounded-[var(--radius-control)]"
+        />
+        <Button type="submit" variant="outline" disabled={busy} className="h-10 self-start rounded-[var(--radius-control)]">
+          {text.correctSubmit}
+        </Button>
+      </form>
+    </ActionBlock>
+  ) : null
+
+  const mergeBlock = showMerge ? (
+    <ActionBlock key="merge" title={text.mergeSection}>
+      <div className="flex flex-col gap-4">
+        {capabilities.requestMerge ? (
+          <form onSubmit={submitRequest} className="flex flex-col gap-2">
+            <h4 className="font-semibold">{text.requestMerge}</h4>
+            <p className="text-sm text-muted-foreground">{text.requestMergeHelp}</p>
+            <Input
+              aria-label={text.requestMergeNote}
+              placeholder={text.requestMergeNote}
+              value={mergeNote}
+              onChange={(event) => setMergeNote(event.target.value)}
+              autoComplete="off"
+              className="h-10 rounded-[var(--radius-control)]"
+            />
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={busy || mergeNote.trim() === ''}
+              className="h-10 self-start rounded-[var(--radius-control)]"
+            >
+              {text.requestMerge}
+            </Button>
+          </form>
+        ) : null}
+
+        {capabilities.merge ? (
+          <form onSubmit={submitMerge} className="flex flex-col gap-2">
+            <h4 className="font-semibold">{text.merge}</h4>
+            <p className="text-sm text-muted-foreground">{text.mergeHelp}</p>
+            <div className="flex flex-col gap-1">
+              <Label>{text.mergeSource}</Label>
+              <select
+                value={sourceId}
+                onChange={(event) => setSourceId(event.target.value)}
+                className="h-10 rounded-[var(--radius-control)] border border-input bg-background px-3"
+              >
+                <option value="">{text.mergeSourcePlaceholder}</option>
+                {candidates.map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {candidate.fullName}
+                    {candidate.cedulaType && candidate.cedulaDigits
+                      ? `, ${formatCedula(candidate.cedulaType, candidate.cedulaDigits)}`
+                      : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label>
+                {text.mergeRetype}: <strong>{clientName}</strong>
+              </Label>
+              <Input
+                value={retypedName}
+                onChange={(event) => setRetypedName(event.target.value)}
+                autoComplete="off"
+                className="h-10 rounded-[var(--radius-control)]"
+              />
+            </div>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={busy || sourceId === ''}
+              className="h-10 self-start rounded-[var(--radius-control)]"
+            >
+              {text.mergeSubmit}
+            </Button>
+          </form>
+        ) : null}
+
+        {capabilities.unmerge ? (
+          <div className="flex flex-col gap-2">
+            <h4 className="font-semibold">{text.mergesTitle}</h4>
+            {merges.length === 0 ? (
+              <p className="text-muted-foreground">{text.mergesEmpty}</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {merges.map((merge) => (
+                  <li key={merge.id} className="flex flex-wrap items-center justify-between gap-2">
+                    <span>
+                      {merge.sourceName}, {formatDate(merge.mergedAt.slice(0, 10))}, {merge.mergedBy}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={busy}
+                      className="h-10 rounded-[var(--radius-control)]"
+                      onClick={() =>
+                        askFirst((extra) => undoMerge({ mergeId: merge.id, clientId, motivo: extra.motivo ?? '' }), {
+                          title: text.unmergeTitle,
+                          body: merge.sourceName,
+                          confirmLabel: text.unmerge,
+                          motivoRequired: true,
+                        })
+                      }
+                    >
+                      {text.unmerge}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </ActionBlock>
+  ) : null
+
+  const blocks = receptionFirst
+    ? [mergeBlock, statusBlock, cedulaBlock]
+    : [statusBlock, cedulaBlock, mergeBlock]
 
   return (
-    <section
-      aria-labelledby="lifecycle-title"
-      className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-card p-4"
+    <div
+      aria-labelledby={hideTitle ? 'client-tab-acciones' : 'lifecycle-title'}
+      className="flex flex-col gap-4"
     >
-      <h2 id="lifecycle-title" className="text-lg font-semibold">
-        {text.title}
-      </h2>
+      {hideTitle ? null : (
+        <h2 id="lifecycle-title" className="text-lg font-semibold">
+          {text.title}
+        </h2>
+      )}
 
       {message ? (
         <Alert className={message.ok ? 'border-flag-released bg-flag-released-bg' : undefined} variant={message.ok ? 'default' : 'destructive'}>
@@ -157,209 +376,7 @@ export function ClientLifecycle({
         </ul>
       ) : null}
 
-      <Accordion type="multiple" defaultValue={defaults} className="w-full">
-        {showStatus ? (
-          <AccordionItem value="status">
-            <AccordionTrigger className="font-semibold">{text.statusSection}</AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {capabilities.deactivate && active ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={busy}
-                    className="h-10 rounded-[var(--radius-control)]"
-                    onClick={() => void start((extra) => deactivateClient({ clientId, ...extra }), deactivateCopy)}
-                  >
-                    {text.deactivate}
-                  </Button>
-                ) : null}
-                {capabilities.reactivate && !active ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={busy}
-                    className="h-10 rounded-[var(--radius-control)]"
-                    onClick={() => void start((extra) => reactivateClient({ clientId, ...extra }), reactivateCopy)}
-                  >
-                    {text.reactivate}
-                  </Button>
-                ) : null}
-                {capabilities.remove ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={busy}
-                    className="h-10 rounded-[var(--radius-control)]"
-                    onClick={() => void start((extra) => deleteClient({ clientId, ...extra }), deleteCopy)}
-                  >
-                    {text.delete}
-                  </Button>
-                ) : null}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ) : null}
-
-        {showCedula ? (
-          <AccordionItem value="cedula">
-            <AccordionTrigger className="font-semibold">{text.cedulaSection}</AccordionTrigger>
-            <AccordionContent>
-              <form onSubmit={submitCedula} className="flex flex-col gap-3 pt-1">
-                <p className="text-sm text-muted-foreground">{text.correctCedulaHelp}</p>
-                <p className="text-sm">
-                  <span className="font-semibold">{text.currentCedula}: </span>
-                  <span className="tabular-nums">{currentCedula}</span>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <select
-                    aria-label={text.newCedulaType}
-                    value={cedulaType}
-                    onChange={(event) => setCedulaType(event.target.value)}
-                    className="h-10 w-24 rounded-[var(--radius-control)] border border-input bg-background px-3"
-                  >
-                    <option value="">{strings.empty.dash}</option>
-                    {CEDULA_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                  <Input
-                    aria-label={text.newCedulaNumber}
-                    placeholder={text.newCedulaNumber}
-                    inputMode="numeric"
-                    value={cedulaNumber}
-                    onChange={(event) => setCedulaNumber(event.target.value)}
-                    autoComplete="off"
-                    className="h-10 min-w-40 flex-1 rounded-[var(--radius-control)] tabular-nums"
-                  />
-                </div>
-                <Input
-                  aria-label={text.motivo}
-                  placeholder={text.motivo}
-                  value={cedulaMotivo}
-                  onChange={(event) => setCedulaMotivo(event.target.value)}
-                  autoComplete="off"
-                  className="h-10 rounded-[var(--radius-control)]"
-                />
-                <Button type="submit" variant="outline" disabled={busy} className="h-10 self-start rounded-[var(--radius-control)]">
-                  {text.correctSubmit}
-                </Button>
-              </form>
-            </AccordionContent>
-          </AccordionItem>
-        ) : null}
-
-        {showMerge ? (
-          <AccordionItem value="merge">
-            <AccordionTrigger className="font-semibold">{text.mergeSection}</AccordionTrigger>
-            <AccordionContent className="flex flex-col gap-4 pt-1">
-              {capabilities.requestMerge ? (
-                <form onSubmit={submitRequest} className="flex flex-col gap-2">
-                  <h3 className="font-semibold">{text.requestMerge}</h3>
-                  <p className="text-sm text-muted-foreground">{text.requestMergeHelp}</p>
-                  <Input
-                    aria-label={text.requestMergeNote}
-                    placeholder={text.requestMergeNote}
-                    value={mergeNote}
-                    onChange={(event) => setMergeNote(event.target.value)}
-                    autoComplete="off"
-                    className="h-10 rounded-[var(--radius-control)]"
-                  />
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    disabled={busy || mergeNote.trim() === ''}
-                    className="h-10 self-start rounded-[var(--radius-control)]"
-                  >
-                    {text.requestMerge}
-                  </Button>
-                </form>
-              ) : null}
-
-              {capabilities.merge ? (
-                <form onSubmit={submitMerge} className="flex flex-col gap-2">
-                  <h3 className="font-semibold">{text.merge}</h3>
-                  <p className="text-sm text-muted-foreground">{text.mergeHelp}</p>
-                  <div className="flex flex-col gap-1">
-                    <Label>{text.mergeSource}</Label>
-                    <select
-                      value={sourceId}
-                      onChange={(event) => setSourceId(event.target.value)}
-                      className="h-10 rounded-[var(--radius-control)] border border-input bg-background px-3"
-                    >
-                      <option value="">{text.mergeSourcePlaceholder}</option>
-                      {candidates.map((candidate) => (
-                        <option key={candidate.id} value={candidate.id}>
-                          {candidate.fullName}
-                          {candidate.cedulaType && candidate.cedulaDigits
-                            ? `, ${formatCedula(candidate.cedulaType, candidate.cedulaDigits)}`
-                            : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <Label>
-                      {text.mergeRetype}: <strong>{clientName}</strong>
-                    </Label>
-                    <Input
-                      value={retypedName}
-                      onChange={(event) => setRetypedName(event.target.value)}
-                      autoComplete="off"
-                      className="h-10 rounded-[var(--radius-control)]"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    disabled={busy || sourceId === ''}
-                    className="h-10 self-start rounded-[var(--radius-control)]"
-                  >
-                    {text.mergeSubmit}
-                  </Button>
-                </form>
-              ) : null}
-
-              {capabilities.unmerge ? (
-                <div className="flex flex-col gap-2">
-                  <h3 className="font-semibold">{text.mergesTitle}</h3>
-                  {merges.length === 0 ? (
-                    <p className="text-muted-foreground">{text.mergesEmpty}</p>
-                  ) : (
-                    <ul className="flex flex-col gap-2">
-                      {merges.map((merge) => (
-                        <li key={merge.id} className="flex flex-wrap items-center justify-between gap-2">
-                          <span>
-                            {merge.sourceName}, {formatDate(merge.mergedAt.slice(0, 10))}, {merge.mergedBy}
-                          </span>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={busy}
-                            className="h-10 rounded-[var(--radius-control)]"
-                            onClick={() =>
-                              askFirst((extra) => undoMerge({ mergeId: merge.id, clientId, motivo: extra.motivo ?? '' }), {
-                                title: text.unmergeTitle,
-                                body: merge.sourceName,
-                                confirmLabel: text.unmerge,
-                                motivoRequired: true,
-                              })
-                            }
-                          >
-                            {text.unmerge}
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ) : null}
-            </AccordionContent>
-          </AccordionItem>
-        ) : null}
-      </Accordion>
+      {blocks}
 
       <ConfirmDialog
         open={confirming !== null}
@@ -380,6 +397,6 @@ export function ClientLifecycle({
         onVerified={onVerified}
         onCancel={() => setStepUp(null)}
       />
-    </section>
+    </div>
   )
 }
