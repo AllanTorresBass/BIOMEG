@@ -97,7 +97,7 @@ async function record(
 }
 
 function refresh(): void {
-  revalidatePath('/clientes')
+  revalidatePath('/clientes', 'layout')
 }
 
 export async function deactivateClient(input: LifecycleInput): Promise<LifecycleResult> {

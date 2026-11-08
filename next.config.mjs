@@ -8,6 +8,31 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   serverExternalPackages: ['@node-rs/argon2'],
+  async redirects() {
+    return [
+      {
+        source: '/clientes',
+        has: [{ type: 'query', key: 'nuevo', value: '1' }],
+        destination: '/clientes/nuevo',
+        permanent: false,
+      },
+      {
+        source: '/clientes',
+        has: [
+          { type: 'query', key: 'id', value: '(?<id>[^&]+)' },
+          { type: 'query', key: 'saved', value: '1' },
+        ],
+        destination: '/clientes/:id?saved=1',
+        permanent: false,
+      },
+      {
+        source: '/clientes',
+        has: [{ type: 'query', key: 'id', value: '(?<id>[^&]+)' }],
+        destination: '/clientes/:id',
+        permanent: false,
+      },
+    ]
+  },
   async headers() {
     return [
       {

@@ -30,15 +30,15 @@ Buscar cliente ──► Crear cliente
 ## Clientes
 
 **Who.** Recepción.  
-**Screen.** Clientes.  
+**Screen.** Pacientes (route `/clientes`). The Pacientes menu item opens this screen directly. **Design rule.**  
 **Must exist.** A signed-in session.  
 **Writes.** The client master: one name string, cédula type and number or neither, Fecha de nac., computed Edad, sex, teléfono, email.  
-**Shows.** The client list and the client card.  
+**Shows.** The patient list on `/clientes`. Opening a row opens the ficha on `/clientes/{id}` with tabs Ficha, Contacto, and Acciones when the role may run lifecycle commands. Breadcrumb: Pacientes → name.  
 **Why.** The next order and the portal have to find the same person.
 
-Search matches nombre or cédula. The October invoice had a dropdown beside C.I. and did not show its options. The types `V`, `E`, `J`, `P`, and `G` are the **design rule** for that dropdown: Venezolano, Extranjero, Jurídico, Pasaporte, Gobierno.
+Search matches nombre or cédula. Incluir inactivos is a checkbox on the list, not a menu command. The October invoice had a dropdown beside C.I. and did not show its options. The types `V`, `E`, `J`, `P`, and `G` are the **design rule** for that dropdown: Venezolano, Extranjero, Jurídico, Pasaporte, Gobierno.
 
-A similar name requires confirmación before a second row is saved. Fusionar, run by Administración, keeps one id on the orders. Desactivar hides the client from the default search and leaves the orders. Fecha de nac. is required. Edad is computed from that date and Fecha muestra. It is not typed. Email and teléfono stay on the card because Enviar correo and Enviar WhatsApp need them. Email is not printed on the clinical report.
+A similar name requires confirmación before a second row is saved. Fusionar, Desactivar, Eliminar, and Corregir cédula run from the Acciones tab after the operator opens the client. Fusionar, run by Administración, keeps one id on the orders. Desactivar hides the client from the default search and leaves the orders. Fecha de nac. is required. Edad is computed from that date and Fecha muestra. It is not typed. Email and teléfono stay on Contacto because Enviar correo and Enviar WhatsApp need them. Email is not printed on the clinical report.
 
 ## Nueva orden
 

@@ -143,8 +143,8 @@ export async function saveClient({ confirmGesture, ...input }: SaveClientInput):
     await auditEvent({ ...audit, outcome: 'ALLOWED', recordId: savedId, change: { before: null, after: created } })
   }
 
-  revalidatePath('/clientes')
-  return { ...EMPTY, message: strings.pendingReview.clients.saved, redirectTo: `/clientes?id=${savedId}&saved=1` }
+  revalidatePath('/clientes', 'layout')
+  return { ...EMPTY, message: strings.pendingReview.clients.saved, redirectTo: `/clientes/${encodeURIComponent(savedId)}?saved=1` }
 }
 
 /** Name or cédula arrive in the body, never in a URL. Soft-deleted clients never appear. */

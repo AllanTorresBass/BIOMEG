@@ -31,19 +31,19 @@ Evidence for the October commands: [../session/pacientes.md](../session/paciente
 
 | Command | Capture | Pattern | Actor | Write |
 |---|---|---|---|---|
-| Clientes | Not a separate October form. The invoice typed the person | Patient header card, saved before the order | Receptionist | `patient.save`. Nombre and Fecha de nac. required. C.I. may be empty, then Sin verificar |
-| Incluir inactivos | Design rule | Filter on the client list | Reception, administration | Shows deactivated clients. Hides soft-deleted ones |
-| Fusionar | Design rule | Confirm that retypes the surviving name, with a password re-entry | Administration | Moves orders. Soft-deletes the source |
-| Desactivar | Design rule | Client row action on Clientes | Reception, administration | Hides the client from search and from Nueva orden. Portal still opens |
-| Reactivar | Design rule | Client row action on Clientes | Reception, administration | Returns a deactivated client to search and Nueva orden. Soft-deleted stay hidden |
-| Corregir cédula | Design rule | Lifecycle panel on Clientes | Administration | Password re-entry and motivo. Issued documents keep what they printed |
-| Deshacer fusión | Design rule | Lifecycle panel on Clientes | Administration | Password re-entry and motivo. Restores orders from the stored map |
-| Eliminar | Design rule | Confirm | Administration | Refused when an order exists in the last 30 days. Otherwise soft-delete |
-| Ingreso particular | Toolbar and Pacientes | Nueva orden, step Cliente, no convenio | Receptionist | Does not create the client by itself |
-| Ingreso empresa | Toolbar and Pacientes | Nueva orden, step Cliente, convenio required before Pago | Receptionist | Same |
-| Facturar consulta | Invoice opened, blank | Steps Exámenes, Personal, and Pago on that client | Receptionist | Order, lines, payments. Sin verificar needs the billing party’s complete cédula at Pago |
-| Modificar pacientes | Menu | Client card | Receptionist | `patient.save`. Open orders show the new name. Issued reports keep the printed name |
-| Trasladar paciente | Menu | Blocked until a capture names the destination **Unknown** | None | Does not offer invented destinations |
+| Pacientes (Clientes) | Not a separate October form. The invoice typed the person | List on `/clientes`, then ficha on `/clientes/{id}` with tabs Ficha, Contacto, Acciones. The Pacientes menu item opens this screen directly. **Design rule** | Receptionist, administration | `patient.save`. Nombre and Fecha de nac. required. C.I. may be empty, then Sin verificar |
+| Incluir inactivos | Design rule | Checkbox on the Clientes list (not a menu item) | Reception, administration | Shows deactivated clients. Hides soft-deleted ones |
+| Fusionar | Design rule | Acciones tab on the client ficha. Confirm that retypes the surviving name, with a password re-entry | Administration | Moves orders. Soft-deletes the source |
+| Desactivar | Design rule | Acciones tab on the client ficha | Reception, administration | Hides the client from search and from Nueva orden. Portal still opens |
+| Reactivar | Design rule | Acciones tab on the client ficha | Reception, administration | Returns a deactivated client to search and Nueva orden. Soft-deleted stay hidden |
+| Corregir cédula | Design rule | Acciones tab on the client ficha | Administration | Password re-entry and motivo. Issued documents keep what they printed |
+| Deshacer fusión | Design rule | Acciones tab on the client ficha | Administration | Password re-entry and motivo. Restores orders from the stored map |
+| Eliminar | Design rule | Acciones tab confirm | Administration | Refused when an order exists in the last 30 days. Otherwise soft-delete |
+| Ingreso particular | Toolbar | Nueva orden, step Cliente, no convenio | Receptionist | Does not create the client by itself |
+| Ingreso empresa | Toolbar | Nueva orden, step Cliente, convenio required before Pago | Receptionist | Same |
+| Facturar consulta | Invoice opened, blank | Steps Exámenes, Personal, and Pago on that client. Not in the Pacientes flyout until a route exists | Receptionist | Order, lines, payments. Sin verificar needs the billing party’s complete cédula at Pago |
+| Modificar pacientes | Design rule | Same as opening a row on Clientes and editing Ficha / Contacto. Old `/p/modificar-pacientes` redirects to `/clientes` | Receptionist, administration | `patient.save`. Open orders show the new name. Issued reports keep the printed name |
+| Trasladar paciente | Design rule | Blocked until a capture names the destination **Unknown**. Not in the Pacientes flyout | None | Does not offer invented destinations |
 
 Invoice actions **observed** on the form: Nuevo, Guardar, Cancelar, Salir. Nuevo clears the order form and does not invent a birth date. Cancelar discards unsaved order edits and leaves the client and the last saved order stored.
 

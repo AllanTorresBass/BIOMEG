@@ -14,7 +14,7 @@ Patient identifiers from the October preview are not repeated here.
 | Question | Answer |
 |---|---|
 | Why | The next visit has to find the same person, and the report header has to name them |
-| When | First Guardar in Clientes. Again on Modificar pacientes. Desactivar / Reactivar / Eliminar / Fusionar on the Clientes lifecycle panel. Open orders show a renamed client. An issued PDF keeps the name it was printed with |
+| When | First Guardar in Clientes. Again on the ficha Ficha / Contacto tabs. Desactivar / Reactivar / Eliminar / Fusionar on the Acciones tab. Open orders show a renamed client. An issued PDF keeps the name it was printed with |
 | Where | Clientes. The Cliente step of Nueva orden. Patient header card. Report header for the fields the preview prints. Email stays off the paper |
 | Who | Reception writes. Bioanalyst reads the header on the result grid, and may change Fecha de nac. or sex after a result. The client reads the portal after sign-in. Physician reads the issued report. The physician’s own screen is **Unknown** |
 | How | One name string, cédula type and digits or Sin verificar, birth date, computed age, sex (Masculino, Femenino, or blank), phone, email, and the link to orders |

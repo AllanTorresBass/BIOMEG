@@ -18,16 +18,8 @@ export const MENU_GROUPS: readonly MenuGroup[] = [
   {
     label: 'Pacientes',
     items: [
-      item('Clientes', 'client.read'),
-      item('Modificar pacientes', 'client.update'),
-      item('Ingreso particular', 'order.open'),
-      item('Ingreso empresa', 'order.open'),
-      item('Facturar consulta', 'order.open'),
-      item('Incluir inactivos', 'client.include_inactive'),
-      item('Fusionar', 'client.merge'),
-      item('Desactivar', 'client.deactivate'),
-      item('Eliminar', 'client.delete'),
-      item('Trasladar paciente', 'client.transfer'),
+      // Single item: the menu bar links Pacientes straight to the list (no nested Clientes).
+      item('Pacientes', 'client.read'),
     ],
   },
   {

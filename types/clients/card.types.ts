@@ -25,7 +25,11 @@ export interface ClientCardData {
 
 export interface ClientListProps {
   rows: readonly ClientSummary[]
-  selectedId: string | null
+  selectedId?: string | null
+  /** True when the operator typed a search or turned on Incluir inactivos. */
+  searching?: boolean
+  canIncludeInactive?: boolean
+  includeInactive?: boolean
 }
 
 export interface ClientSearchProps {
@@ -37,7 +41,6 @@ export interface ClientSearchProps {
 
 export interface ClientBrowserProps {
   initialRows: readonly ClientSummary[]
-  selectedId: string | null
   canIncludeInactive: boolean
   initialIncludeInactive?: boolean
 }

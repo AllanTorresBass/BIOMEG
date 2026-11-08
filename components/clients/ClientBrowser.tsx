@@ -9,10 +9,9 @@ import { useClientSearch } from '@/hooks/use-clients'
 import { strings } from '@/lib/strings'
 import type { ClientBrowserProps } from '@/types/clients/card.types'
 
-/** Search and list together. Opening a client keeps this state, because the page segment stays mounted. */
+/** Search and list. Choosing a name opens that client's ficha on its own page. */
 export function ClientBrowser({
   initialRows,
-  selectedId,
   canIncludeInactive,
   initialIncludeInactive = false,
 }: ClientBrowserProps) {
@@ -44,7 +43,12 @@ export function ClientBrowser({
           <Skeleton className="h-10 w-full" />
         </div>
       ) : (
-        <ClientList rows={rows} selectedId={selectedId} />
+        <ClientList
+          rows={rows}
+          searching={search.text !== '' || search.includeInactive}
+          canIncludeInactive={canIncludeInactive}
+          includeInactive={search.includeInactive}
+        />
       )}
     </div>
   )
