@@ -55,7 +55,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
           canIncludeInactive={canIncludeInactive}
           initialIncludeInactive={includeInactive && canIncludeInactive}
         />
-        <ClientDetailPane open={card !== null} title={detailTitle}>
+        <ClientDetailPane open={card !== null} title={detailTitle} canCreate={canCreate}>
           {card ? (
             <>
               <ClientCard

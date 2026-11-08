@@ -232,6 +232,7 @@ export const strings = {
     cedulaLockedHelp: 'Use Corregir cédula en Administración si el dato está mal.',
     deleteRecent: 'No se puede eliminar: órdenes en los últimos 30 días.',
     selectPrompt: 'Seleccione un cliente de la lista, o cree uno nuevo.',
+    selectPromptReadOnly: 'Seleccione un cliente de la lista.',
     resultCount: (n: number) => (n === 1 ? '1 cliente' : `${n} clientes`),
     softDeletedHidden: 'Los eliminados no aparecen, aunque Incluir inactivos esté marcado.',
     newOrder: 'Nueva orden',

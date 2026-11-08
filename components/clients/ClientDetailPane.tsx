@@ -1,18 +1,22 @@
 'use client'
 
+import Link from 'next/link'
+import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { strings } from '@/lib/strings'
 
 interface ClientDetailPaneProps {
   open: boolean
   title: string
+  canCreate: boolean
   children: ReactNode
 }
 
 /** Desktop: sticky column. Mobile: sheet so the list stays usable. */
-export function ClientDetailPane({ open, title, children }: ClientDetailPaneProps) {
+export function ClientDetailPane({ open, title, canCreate, children }: ClientDetailPaneProps) {
   const router = useRouter()
   const [isNarrow, setIsNarrow] = useState(false)
 
@@ -26,8 +30,18 @@ export function ClientDetailPane({ open, title, children }: ClientDetailPaneProp
 
   if (!open) {
     return (
-      <div className="hidden rounded-[var(--radius-card)] border border-dashed border-border bg-card p-6 text-muted-foreground lg:block">
-        <p>{strings.clients.selectPrompt}</p>
+      <div className="flex flex-col items-start gap-4 rounded-[var(--radius-card)] border border-dashed border-border bg-card p-6">
+        <p className="text-muted-foreground">
+          {canCreate ? strings.clients.selectPrompt : strings.clients.selectPromptReadOnly}
+        </p>
+        {canCreate ? (
+          <Button asChild className="h-10 rounded-[var(--radius-control)] px-4 font-semibold">
+            <Link href="/clientes?nuevo=1">
+              <Plus aria-hidden className="size-4" />
+              {strings.pendingReview.clients.newClient}
+            </Link>
+          </Button>
+        ) : null}
       </div>
     )
   }

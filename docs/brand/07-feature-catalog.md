@@ -31,7 +31,7 @@ Evidence for the October commands: [../session/pacientes.md](../session/paciente
 
 | Command | Capture | Pattern | Actor | Write |
 |---|---|---|---|---|
-| Clientes | Not a separate October form. The invoice typed the person | Patient header card, saved before the order | Receptionist | `patient.save`. Nombre and Fecha de nac. required. C.I. may be empty, then Sin verificar |
+| Clientes | Not a separate October form. The invoice typed the person | Patient header card, saved before the order | Receptionist, administration | `patient.save`. Nombre and Fecha de nac. required. C.I. may be empty, then Sin verificar |
 | Incluir inactivos | Design rule | Filter on the client list | Reception, administration | Shows deactivated clients. Hides soft-deleted ones |
 | Fusionar | Design rule | Confirm that retypes the surviving name, with a password re-entry | Administration | Moves orders. Soft-deletes the source |
 | Desactivar | Design rule | Client row action on Clientes | Reception, administration | Hides the client from search and from Nueva orden. Portal still opens |
@@ -42,7 +42,7 @@ Evidence for the October commands: [../session/pacientes.md](../session/paciente
 | Ingreso particular | Toolbar and Pacientes | Nueva orden, step Cliente, no convenio | Receptionist | Does not create the client by itself |
 | Ingreso empresa | Toolbar and Pacientes | Nueva orden, step Cliente, convenio required before Pago | Receptionist | Same |
 | Facturar consulta | Invoice opened, blank | Steps Exámenes, Personal, and Pago on that client | Receptionist | Order, lines, payments. Sin verificar needs the billing party’s complete cédula at Pago |
-| Modificar pacientes | Menu | Client card | Receptionist | `patient.save`. Open orders show the new name. Issued reports keep the printed name |
+| Modificar pacientes | Menu | Client card | Receptionist, administration | `patient.save`. Open orders show the new name. Issued reports keep the printed name |
 | Trasladar paciente | Menu | Blocked until a capture names the destination **Unknown** | None | Does not offer invented destinations |
 
 Invoice actions **observed** on the form: Nuevo, Guardar, Cancelar, Salir. Nuevo clears the order form and does not invent a birth date. Cancelar discards unsaved order edits and leaves the client and the last saved order stored.

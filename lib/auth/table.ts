@@ -3,7 +3,7 @@ import 'server-only'
 import type { Condition, Gesture, Grant, PermissionRow } from '@/types/auth/auth.types'
 import type { Grants, RowOptions } from '@/types/auth/table.types'
 
-export const TABLE_VERSION = 6
+export const TABLE_VERSION = 7
 
 const T = (fact: string): Condition => ({ fact, is: true })
 const F = (fact: string): Condition => ({ fact, is: false })
@@ -73,7 +73,7 @@ export const PERMISSION_ROWS: readonly PermissionRow[] = [
     RECEPCION: confirm(),
   }),
   row('R-014', 'Create client, Modificar pacientes', ['client.create', 'client.update'], ALWAYS, {
-    RECEPCION: ok(),
+    RECEPCION: ok(), ADMINISTRACION: ok(),
   }),
   row('R-015', 'Corregir cédula after an order exists', ['client.cedula.correct'], [T('has_order')], {
     ADMINISTRACION: stepUp({ motivo: true }),
