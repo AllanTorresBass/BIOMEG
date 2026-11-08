@@ -6,8 +6,8 @@ export const SESSION_SETTINGS = {
   /** A staff session ends this long after sign-in. Step-up does not extend it. */
   maxSessionHours: 12,
   stepUpFreshSeconds: 120,
-  /** Fifteen characters until a second factor exists. Twelve would be enough with one. */
-  minPasswordLength: 15,
+  /** Owner confirmed 8 characters on 08/11/2026. */
+  minPasswordLength: 8,
 } as const
 
 export const SESSION_COOKIE = 'biomeg_session'

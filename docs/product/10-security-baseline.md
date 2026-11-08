@@ -144,7 +144,7 @@ So the page says: "Esta página confirma el estado de la orden. No confirma los 
 
 | Topic | Rule |
 |---|---|
-| Password length | At least 15 characters, or 12 with a second factor |
+| Password length | At least 8 characters. Confirmed by the owner on 08/11/2026 |
 | Password content | Any characters, with no required mix |
 | Password check | Refused if it's on a list of common or breached passwords |
 | Password change | No scheduled changes. Required on any sign of compromise |

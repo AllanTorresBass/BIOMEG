@@ -30,6 +30,11 @@ export type SignInResult = 'OK' | 'FAILED' | 'PAUSED'
 
 export type PasswordChangeResult = 'OK' | 'WRONG_CURRENT' | 'TOO_SHORT' | 'SAME'
 
+export interface ChangePasswordFormProps {
+  /** The signed-in person still has the temporary clave from installation or a reset. */
+  replaceFirst: boolean
+}
+
 export interface FormState {
   error: string | null
   done?: boolean
