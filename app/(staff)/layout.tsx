@@ -12,7 +12,7 @@ import { ROLE_LABELS } from '@/lib/auth/roles'
 import { SESSION_SETTINGS } from '@/lib/config/session'
 import { mayReach } from '@/lib/server/guard'
 import { requireStaff } from '@/lib/server/session/require'
-import { listDemoAccounts } from '@/lib/server/session/store'
+import { listDemoAccounts } from '@/lib/server/session/accounts'
 import { getShellSettings, isDemoAccessOn } from '@/lib/server/settings'
 import type { StaffRole } from '@/types/auth/auth.types'
 
@@ -46,7 +46,7 @@ export default async function StaffLayout({ children }: { children: ReactNode })
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 p-4">{children}</main>
       {isDemoAccessOn() ? (
         <DemoRoleSwitcher
-          accounts={listDemoAccounts().map((account) => ({ id: account.id, label: roleLabel(account.roles, ' y ') }))}
+          accounts={(await listDemoAccounts()).map((account) => ({ id: account.id, label: roleLabel(account.roles, ' y ') }))}
           currentUserId={context.account.id}
         />
       ) : null}

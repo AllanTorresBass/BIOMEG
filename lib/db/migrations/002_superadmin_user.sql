@@ -1,5 +1,5 @@
--- Seed the laboratory owner account (Administración). Login still uses memory demo auth until V0-26;
--- this row prepares the biomeg.users table for Argon2id. Password hash is set in V0-26 install.
+-- Seed the laboratory owner account (Administración).
+-- The password hash is set by scripts/install-admin.mjs, never in this file.
 
 BEGIN;
 SET LOCAL search_path TO biomeg, public;
