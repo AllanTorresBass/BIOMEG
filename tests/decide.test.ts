@@ -209,7 +209,7 @@ describe('decide: session and invariants', () => {
   })
 
   it('stamps the table version on every answer', () => {
-    expect(run([REC], 'shell.view').tableVersion).toBe(5)
-    expect(run([REC], 'not.a.command').tableVersion).toBe(5)
+    expect(run([REC], 'shell.view').tableVersion).toBe(6)
+    expect(run([REC], 'not.a.command').tableVersion).toBe(6)
   })
 })

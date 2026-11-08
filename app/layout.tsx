@@ -31,9 +31,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-VE" className={`${sourceSans.variable} bg-background`}>
+    <html lang="es-VE" className={`${sourceSans.variable} font-sans`}>
       {/* ColorZilla adds cz-shortcut-listen to body before React hydrates. */}
-      <body className="font-sans antialiased" suppressHydrationWarning>
+      <body className="bg-background font-sans antialiased text-foreground" suppressHydrationWarning>
         {children}
       </body>
     </html>

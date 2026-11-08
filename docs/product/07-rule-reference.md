@@ -51,7 +51,7 @@ Order matters, because the first matching row applies. A row with no grant in th
 | R-014 | Create client, Modificar pacientes | `client.create`, `client.update` | Always |  |
 | R-015 | Corregir cédula after an order exists | `client.cedula.correct` | `has_order` is true |  |
 | R-016 | Incluir inactivos | `client.include_inactive` | Always |  |
-| R-017 | Desactivar | `client.deactivate` | Always |  |
+| R-017 | Desactivar, Reactivar | `client.deactivate`, `client.reactivate` | Always |  |
 | R-018 | Eliminar | `client.delete` | `order_last_30_days` is false |  |
 | R-019 | Request Fusionar | `client.merge.request` | Always |  |
 | R-020 | Fusionar | `client.merge` | `both_complete_and_different` is false |  |

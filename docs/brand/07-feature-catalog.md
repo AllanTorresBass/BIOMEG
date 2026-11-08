@@ -34,7 +34,10 @@ Evidence for the October commands: [../session/pacientes.md](../session/paciente
 | Clientes | Not a separate October form. The invoice typed the person | Patient header card, saved before the order | Receptionist | `patient.save`. Nombre and Fecha de nac. required. C.I. may be empty, then Sin verificar |
 | Incluir inactivos | Design rule | Filter on the client list | Reception, administration | Shows deactivated clients. Hides soft-deleted ones |
 | Fusionar | Design rule | Confirm that retypes the surviving name, with a password re-entry | Administration | Moves orders. Soft-deletes the source |
-| Desactivar | Design rule | Client row action | Reception, administration | Hides the client from search and from Nueva orden. Portal still opens |
+| Desactivar | Design rule | Client row action on Clientes | Reception, administration | Hides the client from search and from Nueva orden. Portal still opens |
+| Reactivar | Design rule | Client row action on Clientes | Reception, administration | Returns a deactivated client to search and Nueva orden. Soft-deleted stay hidden |
+| Corregir cédula | Design rule | Lifecycle panel on Clientes | Administration | Password re-entry and motivo. Issued documents keep what they printed |
+| Deshacer fusión | Design rule | Lifecycle panel on Clientes | Administration | Password re-entry and motivo. Restores orders from the stored map |
 | Eliminar | Design rule | Confirm | Administration | Refused when an order exists in the last 30 days. Otherwise soft-delete |
 | Ingreso particular | Toolbar and Pacientes | Nueva orden, step Cliente, no convenio | Receptionist | Does not create the client by itself |
 | Ingreso empresa | Toolbar and Pacientes | Nueva orden, step Cliente, convenio required before Pago | Receptionist | Same |

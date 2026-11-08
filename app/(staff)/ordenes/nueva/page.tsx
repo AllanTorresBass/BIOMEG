@@ -25,7 +25,11 @@ export default async function NewOrderPage({ searchParams }: { searchParams: Sea
 
   const params = await searchParams
   const draftId = one(params.d)
-  if (draftId === '') redirect(`/ordenes/nueva?d=${beginDraft(context, one(params.via) === 'empresa' ? 'EMPRESA' : 'PARTICULAR')}`)
+  if (draftId === '') {
+    const path = one(params.via) === 'empresa' ? 'EMPRESA' : 'PARTICULAR'
+    const started = beginDraft(context, path, one(params.clientId) || undefined)
+    redirect(`/ordenes/nueva?d=${started}`)
+  }
   const screen = getNewOrderScreen(context, draftId)
   if (!screen) redirect('/ordenes/nueva')
   const { draft, client, step, saved, settings } = screen

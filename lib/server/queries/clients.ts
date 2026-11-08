@@ -15,7 +15,7 @@ import { buildWorklist } from '@/lib/server/domain/worklist'
 import { guardRoute } from '@/lib/server/guard'
 import { toDecisionSession } from '@/lib/server/session/current'
 import { strings } from '@/lib/strings'
-import { computeAge, formatAge, formatDate } from '@/lib/utils/format'
+import { computeAge, formatAge, formatCedula, formatDate } from '@/lib/utils/format'
 import type { ClientCardData } from '@/types/clients/card.types'
 import type { DecisionSession } from '@/types/auth/auth.types'
 import type { ClientRecord, ClientSummary } from '@/types/domain/client.types'
@@ -37,16 +37,7 @@ export function readableClients(session: DecisionSession, text: string, includeI
     .map(summarize)
 }
 
-const NO_ORDERS_OR_RESULTS = {
-  cedula_changed: false,
-  dob_or_sex_changed: false,
-  contact_changed: false,
-  has_order: false,
-  has_result: false,
-  has_released_result: false,
-} as const
-
-function toCardData(record: ClientRecord): ClientCardData {
+function toCardData(record: ClientRecord, facts: ReturnType<typeof orderFacts>): ClientCardData {
   const consentOn = (channel: 'WHATSAPP' | 'EMAIL') =>
     record.consents.some((entry) => entry.channel === channel && entry.withdrawnAt === null)
   return {
@@ -64,6 +55,8 @@ function toCardData(record: ClientRecord): ClientCardData {
     active: record.active,
     consentWhatsapp: consentOn('WHATSAPP'),
     consentEmail: consentOn('EMAIL'),
+    cedulaLocked: facts.has_order,
+    hasOrders: facts.has_order,
   }
 }
 
@@ -82,6 +75,8 @@ const NEW_CLIENT: ClientCardData = {
   active: true,
   consentWhatsapp: false,
   consentEmail: false,
+  cedulaLocked: false,
+  hasOrders: false,
 }
 
 // A missing confirm, step-up or motivo still shows the button; the command asks for it.
@@ -93,11 +88,39 @@ export async function getClientsScreen(context: StaffContext, selectedId: string
   const session = toDecisionSession(context)
   const canIncludeInactive = decide({ session, command: 'client.include_inactive' }).allowed
   const canCreate = decide({ session, command: 'client.create' }).allowed
-  const canEdit = decide({ session, command: 'client.update', facts: NO_ORDERS_OR_RESULTS }).allowed
+  const canOpenOrder = decide({ session, command: 'order.open' }).allowed
 
   const rows = readableClients(session, '', false)
   const selected = selectedId && mayRead(session, selectedId) ? getClient(selectedId) : null
-  const card = selected ? toCardData(selected) : wantsNew && canCreate ? NEW_CLIENT : null
+  const selectedFacts = selected ? orderFacts(selected.id) : null
+
+  const canEdit = selected
+    ? decide({
+        session,
+        command: 'client.update',
+        facts: {
+          cedula_changed: false,
+          dob_or_sex_changed: false,
+          contact_changed: false,
+          has_order: selectedFacts!.has_order,
+          has_result: selectedFacts!.has_result,
+          has_released_result: selectedFacts!.has_released_result,
+        },
+      }).allowed
+    : decide({
+        session,
+        command: 'client.update',
+        facts: {
+          cedula_changed: false,
+          dob_or_sex_changed: false,
+          contact_changed: false,
+          has_order: false,
+          has_result: false,
+          has_released_result: false,
+        },
+      }).allowed
+
+  const card = selected ? toCardData(selected, selectedFacts!) : wantsNew && canCreate ? NEW_CLIENT : null
 
   const may = (command: string, facts: Record<string, boolean>) => {
     const decision = decide({ session, command, facts })
@@ -108,10 +131,15 @@ export async function getClientsScreen(context: StaffContext, selectedId: string
         clientId: selected.id,
         clientName: selected.fullName,
         active: selected.active,
+        currentCedula:
+          selected.cedulaType && selected.cedulaDigits
+            ? formatCedula(selected.cedulaType, selected.cedulaDigits)
+            : strings.clients.unverified,
         capabilities: {
-          deactivate: may('client.deactivate', {}),
+          deactivate: selected.active && may('client.deactivate', {}),
+          reactivate: !selected.active && may('client.reactivate', {}),
           remove: may('client.delete', { order_last_30_days: false }),
-          correctCedula: may('client.cedula.correct', { has_order: orderFacts(selected.id).has_order }),
+          correctCedula: may('client.cedula.correct', { has_order: selectedFacts!.has_order }),
           requestMerge: may('client.merge.request', {}),
           merge: may('client.merge', { both_complete_and_different: false }),
           unmerge: may('client.unmerge', {}),
@@ -120,9 +148,23 @@ export async function getClientsScreen(context: StaffContext, selectedId: string
         merges: listOpenMerges()
           .filter((entry) => entry.survivorId === selected.id)
           .map(({ id, sourceName, mergedAt, mergedBy }) => ({ id, sourceName, mergedAt, mergedBy })),
-        requests: listMergeRequests(selected.id).map(({ note, requestedBy, requestedAt }) => ({ note, requestedBy, requestedAt })),
+        requests: listMergeRequests(selected.id).map(({ note, requestedBy, requestedAt }) => ({
+          note,
+          requestedBy,
+          requestedAt,
+        })),
       }
     : null
 
-  return { kind: 'READY', rows, selectedId: selected?.id ?? null, card, lifecycle, canIncludeInactive, canCreate, canEdit } as const
+  return {
+    kind: 'READY',
+    rows,
+    selectedId: selected?.id ?? null,
+    card,
+    lifecycle,
+    canIncludeInactive,
+    canCreate,
+    canEdit,
+    canOpenOrder,
+  } as const
 }

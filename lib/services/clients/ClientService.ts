@@ -28,6 +28,10 @@ export class ClientService extends BaseService {
     return this.post('/deactivate', input)
   }
 
+  reactivate(input: LifecycleInput): Promise<LifecycleResult> {
+    return this.post('/reactivate', input)
+  }
+
   softDelete(input: LifecycleInput): Promise<LifecycleResult> {
     return this.post('/delete', input)
   }

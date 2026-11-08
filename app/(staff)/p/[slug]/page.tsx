@@ -30,9 +30,19 @@ const DEDICATED_SCREENS: Readonly<Record<string, string>> = {
   [toSlug('Re-imprimir orden empresa')]: '/documentos/reimprimir/orden-empresa',
 }
 
+const CLIENTES_MENU_REDIRECTS: Readonly<Record<string, string>> = {
+  [toSlug('Clientes')]: '/clientes',
+  [toSlug('Modificar pacientes')]: '/clientes',
+  [toSlug('Fusionar')]: '/clientes',
+  [toSlug('Desactivar')]: '/clientes',
+  [toSlug('Eliminar')]: '/clientes',
+  [toSlug('Incluir inactivos')]: '/clientes?incluirInactivos=1',
+}
+
 export default async function ScreenPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  if (slug === 'clientes') redirect('/clientes')
+  const clientesTarget = CLIENTES_MENU_REDIRECTS[slug]
+  if (clientesTarget) redirect(clientesTarget)
   if (slug === toSlug('Hoja de trabajo')) redirect('/hoja-de-trabajo')
   if (slug === toSlug('Ingreso particular')) redirect('/ordenes/nueva?via=particular')
   if (slug === toSlug('Ingreso empresa')) redirect('/ordenes/nueva?via=empresa')

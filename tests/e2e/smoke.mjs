@@ -36,10 +36,24 @@ export async function runSmoke(chromium, B, pw) {
     const text = await rec.locator('table').first().innerText()
     ok('client search filters rows', text.includes('Uno') && !text.includes('Dos'))
     ok('search term stays out of the URL', !rec.url().includes('Uno') && !rec.url().includes('q='), rec.url())
+    ok('client list shows Edad column', text.includes('Edad') || (await rec.locator('th', { hasText: 'Edad' }).count()) > 0)
     await rec.locator('table a').first().click(); await rec.waitForURL(/id=/)
     await rec.waitForTimeout(500)
     const after = await rec.locator('table').first().innerText()
     ok('opening a client keeps the search', after.includes('Uno') && !after.includes('Dos'))
+    ok('card offers Nueva orden', (await rec.getByRole('link', { name: /nueva orden/i }).count()) > 0)
+  })
+
+  await step('pacientes menu deep-links', async () => {
+    await rec.goto(B + '/p/modificar-pacientes')
+    await rec.waitForURL(/\/clientes/, { timeout: 6000 })
+    ok('modificar pacientes opens /clientes', new URL(rec.url()).pathname === '/clientes')
+    await rec.goto(B + '/p/incluir-inactivos')
+    await rec.waitForURL(/incluirInactivos=1/, { timeout: 6000 })
+    ok('incluir inactivos deep-links with the filter', rec.url().includes('incluirInactivos=1'))
+    await rec.goto(B + '/p/trasladar-paciente')
+    await rec.waitForTimeout(400)
+    ok('trasladar stays blocked', (await rec.locator('main').innerText()).includes('BLOQUEADO') || (await rec.getByText('BLOQUEADO').count()) > 0)
   })
 
   await step('client create', async () => {

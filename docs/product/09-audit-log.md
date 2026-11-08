@@ -91,7 +91,7 @@ The command comes from [07-rule-reference.md](07-rule-reference.md). The event i
 | Users | `user.role.change` | R-124, R-126 | Notice |
 | Users | `user.grant.temporary` | R-125 | Notice |
 | Clients | `patient.save` | R-012 to R-014 | Info |
-| Clients | `patient.deactivate`, `patient.delete` | R-017, R-018 | Notice |
+| Clients | `patient.deactivate`, `patient.reactivate`, `patient.delete` | R-017, R-018 | Notice |
 | Clients | `patient.merge`, `patient.unmerge` | R-020, R-021 | Notice |
 | Orders | `order.open`, `order.line.add`, `order.line.remove` | R-023, R-027 to R-029 | Info |
 | Orders | `order.line.change.discount` | R-024, R-025 | Notice |

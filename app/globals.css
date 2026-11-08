@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import './tokens.css';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @theme inline {
   --color-background: var(--surface-page);
@@ -16,6 +18,16 @@
   --color-primary: var(--color-navy);
   --color-primary-deep: var(--color-navy-deep);
   --color-primary-foreground: var(--text-on-navy);
+  --color-secondary: var(--surface-sunken);
+  --color-secondary-foreground: var(--text-primary);
+  --color-muted: var(--surface-sunken);
+  --color-accent: var(--surface-burgundy-wash);
+  --color-accent-foreground: var(--color-burgundy);
+  --color-destructive: var(--flag-high);
+  --color-popover: var(--surface-card);
+  --color-popover-foreground: var(--text-primary);
+  --color-card-foreground: var(--text-primary);
+  --color-input: var(--border-strong);
   --color-flag-high: var(--flag-high);
   --color-flag-high-bg: var(--flag-high-bg);
   --color-flag-low: var(--flag-low);
@@ -27,6 +39,32 @@
   --color-flag-released: var(--flag-released);
   --color-flag-released-bg: var(--flag-released-bg);
   --font-sans: var(--font-source-sans-3), 'Segoe UI', sans-serif;
+  --radius-sm: var(--radius-control);
+  --radius-md: var(--radius-control);
+  --radius-lg: var(--radius-card);
+  --radius-xl: var(--radius-card);
+}
+
+:root {
+  --background: var(--surface-page);
+  --foreground: var(--text-primary);
+  --card: var(--surface-card);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-card);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--color-navy);
+  --primary-foreground: var(--text-on-navy);
+  --secondary: var(--surface-sunken);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--surface-burgundy-wash);
+  --accent-foreground: var(--color-burgundy);
+  --destructive: var(--flag-high);
+  --border: var(--border-default);
+  --input: var(--border-strong);
+  --ring: var(--focus-ring);
+  --radius: 8px;
 }
 
 body {
@@ -45,5 +83,17 @@ body {
   * {
     transition-duration: 0ms !important;
     animation-duration: 0ms !important;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
