@@ -57,8 +57,10 @@ The shell has no rows. The home observations list, when that screen is open, sor
 
 | State | Display |
 |---|---|
-| Empty observations | Title Nueva observación, the date, Buscar, and the sentence “Sin observaciones para esta fecha.” |
-| Single observation | One row, header still shown: date, author, first line of text |
+| Empty observations | Title Nueva observación, the date, Buscar, Agregar, and the sentence “Sin observaciones para esta fecha.” |
+| Single observation | One row, header still shown: date, author, first line of text. Expand shows the full text. Same-day author may Retirar with confirm. **Design rule** |
+| Many observations | Same list, newest first for the selected date. **Design rule** |
+| Composer open | Textarea, privacy caption (no patient data), Guardar / Cancelar. **Design rule** |
 | Partial | The rate chip reads `SIN TASA` in the incomplete colors when the session has no BCV rate. Priced actions stay disabled |
 | Error | A failed sign-in leaves the lockup and the message “No se pudo entrar.” No clinical record is shown |
 | No permission | The menu item is absent. The status chips still show, because the rate and the QR flag affect every role’s reading of a document |

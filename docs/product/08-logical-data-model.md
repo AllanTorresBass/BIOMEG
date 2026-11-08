@@ -274,7 +274,9 @@ A saved or issued document keeps the value it had. A later change never rewrites
 
 These commands exist. Their fields stay **Unknown** until a form is captured, and the screens say so.
 
-Órdenes de compra, inventory and Restar inventario, cuentas por cobrar and por pagar, tipos de retenciones, retention documents, relación de referidos, Cobros Cashea, the libros, insumos, salarios, costos de reactivos, Promedios pacientes/pruebas, Evolución de pacientes, Estadísticas, Nueva observación on the home screen beyond date, author, and text.
+Órdenes de compra, inventory and Restar inventario, cuentas por cobrar and por pagar, tipos de retenciones, retention documents, relación de referidos, Cobros Cashea, the libros, insumos, salarios, costos de reactivos, Promedios pacientes/pruebas, Evolución de pacientes, Estadísticas.
+
+**Design rule.** Nueva observación on the home screen stores date, author, and text only. Same-day retract by the author soft-hides the row. No patient id.
 
 Blocked until a capture says what they do: Trasladar paciente, Reversar relación, Modificar valores.
 

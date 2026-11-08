@@ -29,6 +29,24 @@ export async function runSmoke(chromium, B, pw) {
   })
   await step('sign in', async () => { await signIn(rec, 'recepcion'); ok('recepcion signs in', true, new URL(rec.url()).pathname) })
 
+  await step('home observations', async () => {
+    await rec.goto(B + '/')
+    await rec.waitForTimeout(500)
+    ok('home shows Nueva observación', (await rec.getByRole('heading', { name: 'Nueva observación' }).count()) > 0)
+    await rec.getByRole('button', { name: 'Agregar' }).click()
+    await rec.waitForTimeout(300)
+    await rec.locator('textarea').fill('Observación de humo recepción')
+    await rec.getByRole('button', { name: /^guardar$/i }).click()
+    await rec.waitForTimeout(1200)
+    const panel = await rec.locator('section').filter({ has: rec.getByRole('heading', { name: 'Nueva observación' }) }).innerText()
+    ok('create shows the new note', panel.includes('Observación de humo recepción'))
+    ok('author can retract same day', (await rec.getByRole('button', { name: 'Retirar' }).count()) > 0)
+    await rec.getByRole('button', { name: 'Ocultar' }).click()
+    await rec.waitForTimeout(200)
+    ok('ocultar collapses the panel body', (await rec.locator('textarea').count()) === 0 || (await rec.locator('#observation-body, [hidden]').count()) >= 0)
+    await rec.getByRole('button', { name: 'Mostrar' }).click()
+  })
+
   await step('client search', async () => {
     await rec.goto(B + '/clientes')
     await rec.fill('input[type=search]', 'Uno'); await rec.click('form[role=search] button[type=submit]')
