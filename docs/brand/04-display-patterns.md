@@ -37,8 +37,8 @@ Shell
 ### Regions, top to bottom
 
 1. **Bar** (`--color-navy-deep`, 56px). Emblem on a white tile, then BIOMEG and LABORATORIO CLINICO in white. Trailing cluster, left to right: Usuario activo, Tasa BCV, QR, Precio sábado, Cerrar sesión, Salir.
-2. **Primary actions**, on the page under the bar, as text buttons: Ingreso particular, Ingreso empresa, Hoja de trabajo, Cargar resultados, Presupuesto, Cierre de caja, Clave. These are the toolbar commands from the session.
-3. **Menu**, a single row: Pacientes, Hoja de trabajo y resultados, Registros, Administrativo, Estructura de costos, Reportes, Mantenimiento. Flyouts list the commands in [07-feature-catalog.md](07-feature-catalog.md). A command this role cannot run is omitted. **Design rule:** Pacientes is a direct link to the patient list (no nested Clientes item). A menu group with one reachable command uses the group label as that link. Patient lifecycle and Incluir inactivos live on that screen. Ingreso particular and Ingreso empresa stay on the primary actions row.
+2. **Primary actions**, on the page under the bar, as text buttons: Ingreso particular, Ingreso empresa, Hoja de trabajo, Cierre de caja, Clave. These are the reachable toolbar jobs from the session. **Design rule:** Cargar resultados and Presupuesto are not primary until each has an in-flow destination (order Acciones / quote flow). Operators reach results from the worklist → order hub.
+3. **Menu**, a single row: Pacientes, Hoja de trabajo y resultados, Registros, Administrativo, Estructura de costos, Reportes, Mantenimiento. Flyouts list only destinations that do a job (see [07-feature-catalog.md](07-feature-catalog.md)). A command this role cannot run is omitted. **Design rule:** Pacientes is a direct link to the patient list (no nested Clientes item). A menu group with one reachable command uses the group label as that link. Pending, BLOQUEADO, and alias rows stay off the flyout; legacy `/p/{slug}` URLs redirect to the surviving hub or record. Patient lifecycle and Incluir inactivos live on Pacientes. Ingreso particular and Ingreso empresa stay on the primary actions row.
 
 ### Required content
 

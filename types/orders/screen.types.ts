@@ -81,4 +81,8 @@ export interface OrderActionsProps {
   voided: boolean
   hasPayment: boolean
   lines: { id: string; name: string; priceUsd: string | null }[]
+  /** When false, hide the exam lines table (Acciones tab). Default true. */
+  showLines?: boolean
+  /** When false, hide the void button (Orden tab). Default true. */
+  showVoid?: boolean
 }

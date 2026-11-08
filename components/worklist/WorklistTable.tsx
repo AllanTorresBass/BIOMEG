@@ -20,8 +20,8 @@ function columnsFor(canOpen: boolean): DataTableColumn<WorklistRow>[] {
       cell: (row) =>
         canOpen ? (
           <Link
-            href={`/ordenes/${row.id}/resultados`}
-            aria-label={`${text.loadResults} ${row.number}`}
+            href={`/ordenes/${row.id}?desde=hoja`}
+            aria-label={`${strings.pendingReview.orderHub.openOrder} ${row.number}`}
             className="font-semibold text-primary underline-offset-2 hover:underline"
           >
             {row.number}
