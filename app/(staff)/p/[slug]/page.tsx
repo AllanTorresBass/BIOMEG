@@ -31,6 +31,7 @@ const DEDICATED_SCREENS: Readonly<Record<string, string>> = {
 }
 
 const CLIENTES_MENU_REDIRECTS: Readonly<Record<string, string>> = {
+  [toSlug('Pacientes')]: '/clientes',
   [toSlug('Clientes')]: '/clientes',
   [toSlug('Modificar pacientes')]: '/clientes',
   [toSlug('Fusionar')]: '/clientes',

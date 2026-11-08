@@ -31,7 +31,7 @@ Evidence for the October commands: [../session/pacientes.md](../session/paciente
 
 | Command | Capture | Pattern | Actor | Write |
 |---|---|---|---|---|
-| Clientes | Not a separate October form. The invoice typed the person | List on `/clientes`, then ficha on `/clientes/{id}` with tabs Ficha, Contacto, Acciones. Pacientes menu opens only this screen. **Design rule** | Receptionist, administration | `patient.save`. Nombre and Fecha de nac. required. C.I. may be empty, then Sin verificar |
+| Pacientes (Clientes) | Not a separate October form. The invoice typed the person | List on `/clientes`, then ficha on `/clientes/{id}` with tabs Ficha, Contacto, Acciones. The Pacientes menu item opens this screen directly. **Design rule** | Receptionist, administration | `patient.save`. Nombre and Fecha de nac. required. C.I. may be empty, then Sin verificar |
 | Incluir inactivos | Design rule | Checkbox on the Clientes list (not a menu item) | Reception, administration | Shows deactivated clients. Hides soft-deleted ones |
 | Fusionar | Design rule | Acciones tab on the client ficha. Confirm that retypes the surviving name, with a password re-entry | Administration | Moves orders. Soft-deletes the source |
 | Desactivar | Design rule | Acciones tab on the client ficha | Reception, administration | Hides the client from search and from Nueva orden. Portal still opens |

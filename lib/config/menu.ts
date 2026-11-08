@@ -18,8 +18,8 @@ export const MENU_GROUPS: readonly MenuGroup[] = [
   {
     label: 'Pacientes',
     items: [
-      // Lifecycle and filters live on /clientes. Ingreso is on the primary toolbar.
-      item('Clientes', 'client.read'),
+      // Single item: the menu bar links Pacientes straight to the list (no nested Clientes).
+      item('Pacientes', 'client.read'),
     ],
   },
   {

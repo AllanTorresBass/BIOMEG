@@ -30,10 +30,10 @@ Buscar cliente ──► Crear cliente
 ## Clientes
 
 **Who.** Recepción.  
-**Screen.** Clientes. The Pacientes menu opens only this screen. **Design rule.**  
+**Screen.** Pacientes (route `/clientes`). The Pacientes menu item opens this screen directly. **Design rule.**  
 **Must exist.** A signed-in session.  
 **Writes.** The client master: one name string, cédula type and number or neither, Fecha de nac., computed Edad, sex, teléfono, email.  
-**Shows.** The client list on `/clientes`. Opening a row opens the ficha on `/clientes/{id}` with tabs Ficha, Contacto, and Acciones when the role may run lifecycle commands.  
+**Shows.** The patient list on `/clientes`. Opening a row opens the ficha on `/clientes/{id}` with tabs Ficha, Contacto, and Acciones when the role may run lifecycle commands. Breadcrumb: Pacientes → name.  
 **Why.** The next order and the portal have to find the same person.
 
 Search matches nombre or cédula. Incluir inactivos is a checkbox on the list, not a menu command. The October invoice had a dropdown beside C.I. and did not show its options. The types `V`, `E`, `J`, `P`, and `G` are the **design rule** for that dropdown: Venezolano, Extranjero, Jurídico, Pasaporte, Gobierno.

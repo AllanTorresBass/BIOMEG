@@ -7,6 +7,8 @@ import { strings } from '@/lib/strings'
 import { cn } from '@/lib/utils/cn'
 import type { MenuBarGroup } from '@/types/shell/menu-bar.props'
 
+const linkClass = 'flex h-10 items-center gap-1 px-3 font-semibold text-foreground'
+
 /** Only groups with at least one reachable item arrive here. Others are absent, not greyed. */
 export function MenuBar({ groups }: { groups: MenuBarGroup[] }) {
   const [openLabel, setOpenLabel] = useState<string | null>(null)
@@ -32,6 +34,17 @@ export function MenuBar({ groups }: { groups: MenuBarGroup[] }) {
     <nav ref={navRef} aria-label={strings.shell.menuLabel} className="border-b border-border bg-card">
       <ul className="flex flex-wrap px-4">
         {groups.map((group) => {
+          const sole = group.items.length === 1 ? group.items[0] : null
+          if (sole) {
+            return (
+              <li key={group.label}>
+                <Link href={`/p/${sole.slug}`} className={linkClass}>
+                  {group.label}
+                </Link>
+              </li>
+            )
+          }
+
           const isOpen = openLabel === group.label
           const panelId = `menu-${group.label.replace(/\s+/g, '-').toLowerCase()}`
           return (
@@ -41,10 +54,7 @@ export function MenuBar({ groups }: { groups: MenuBarGroup[] }) {
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => setOpenLabel(isOpen ? null : group.label)}
-                className={cn(
-                  'flex h-10 items-center gap-1 px-3 font-semibold',
-                  isOpen ? 'bg-sunken text-foreground' : 'text-foreground',
-                )}
+                className={cn(linkClass, isOpen ? 'bg-sunken' : undefined)}
               >
                 {group.label}
                 <ChevronDown aria-hidden className="size-4" />

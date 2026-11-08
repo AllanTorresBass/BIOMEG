@@ -218,7 +218,7 @@ export const strings = {
     empty: 'Sin observaciones para esta fecha.',
   },
   clients: {
-    title: 'Clientes',
+    title: 'Pacientes',
     unverified: 'Sin verificar',
     verified: 'Verificado',
     inactive: 'Inactivo',
