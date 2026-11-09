@@ -29,7 +29,8 @@ export const visitSchema: z.ZodType<VisitInput> = z.strictObject({ draftId: id, 
 export const billingSchema: z.ZodType<BillingInput> = z.strictObject({
   draftId: id,
   costType: z.enum(['RUTINA', 'SEGURO_EMPRESA', 'EMERGENCIA', 'HOSPITALIZADO']).nullable(),
-  cedula: shortText,
+  cedulaType: shortText,
+  cedulaNumber: shortText,
   razonSocial: shortText,
   direccion: shortText,
 })

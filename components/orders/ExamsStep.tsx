@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatusChip } from '@/components/shared/StatusChip'
 import { COST_TYPES, COST_TYPE_LABELS, PRICE_COLUMNS, PRICE_COLUMN_LABELS } from '@/lib/config/price-defaults'
 import { strings } from '@/lib/strings'
+import { CEDULA_TYPES } from '@/lib/utils/format'
 import type { AddLineInput, CostType, PriceColumn } from '@/types/orders/draft.types'
 import type { ExamsStepProps } from '@/types/orders/screen.types'
 import type { Question } from '@/types/orders/exams-step.props'
@@ -16,8 +17,19 @@ const text = strings.pendingReview.orders
 
 const FIELD = 'h-10 rounded-[var(--radius-control)] border border-border-strong bg-background px-3'
 
-export function ExamsStep({ draftId, patient, costType, billing, catalog, lines, totals, rateMissing }: ExamsStepProps) {
-  const { saveBilling, addLine, removeLine, goToStep, cancelDraft } = useOrderCommands()
+export function ExamsStep({
+  draftId,
+  patient,
+  costType,
+  billing,
+  catalog,
+  lines,
+  totals,
+  rateMissing,
+  visit,
+  todayText = '',
+}: ExamsStepProps) {
+  const { saveBilling, saveVisit, addLine, removeLine, goToStep, cancelDraft } = useOrderCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState('')
@@ -28,9 +40,12 @@ export function ExamsStep({ draftId, patient, costType, billing, catalog, lines,
   const [column, setColumn] = useState<PriceColumn | ''>('')
 
   const [cost, setCost] = useState<CostType | ''>(costType ?? '')
-  const [cedula, setCedula] = useState(billing.cedula)
+  const [cedulaType, setCedulaType] = useState(billing.cedulaType ?? '')
+  const [cedulaNumber, setCedulaNumber] = useState(billing.cedulaNumber ?? '')
   const [razonSocial, setRazonSocial] = useState(billing.razonSocial)
   const [direccion, setDireccion] = useState(billing.direccion)
+  const [motivo, setMotivo] = useState(visit?.motivo ?? '')
+  const [sampleDate, setSampleDate] = useState(visit?.sampleDate ?? '')
 
   const visible = useMemo(() => {
     const needle = filter.trim().toLowerCase()
@@ -76,21 +91,34 @@ export function ExamsStep({ draftId, patient, costType, billing, catalog, lines,
     })
   }
 
+  function billingInput() {
+    return {
+      draftId,
+      costType: cost === '' ? null : cost,
+      cedulaType,
+      cedulaNumber,
+      razonSocial,
+      direccion,
+    }
+  }
+
   function saveBillingCard() {
     startTransition(async () => {
-      const result = await saveBilling({
-        draftId,
-        costType: cost === '' ? null : cost,
-        cedula,
-        razonSocial,
-        direccion,
-      })
+      const result = await saveBilling(billingInput())
       setMessage(result.message)
     })
   }
 
   function move(step: 1 | 3) {
     startTransition(async () => {
+      if (step === 3) {
+        const billed = await saveBilling(billingInput())
+        if (!billed.ok) return setMessage(billed.message)
+        if (visit) {
+          const saved = await saveVisit({ draftId, motivo, sampleDate })
+          if (!saved.ok) return setMessage(saved.message)
+        }
+      }
       const result = await goToStep(draftId, step)
       setMessage(result.message)
     })
@@ -109,6 +137,41 @@ export function ExamsStep({ draftId, patient, costType, billing, catalog, lines,
     <div className="flex flex-col gap-4">
       <PatientHeader patient={patient} />
 
+      {visit ? (
+        <fieldset className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-card p-4">
+          <legend className="px-1 font-semibold">{text.motivo}</legend>
+          <label className="flex flex-col gap-1">
+            <span className="sr-only">{text.motivo}</span>
+            <input
+              value={motivo}
+              maxLength={200}
+              onChange={(event) => setMotivo(event.target.value)}
+              className={FIELD}
+            />
+          </label>
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="flex flex-col gap-1">
+              <span className="font-semibold">{text.sampleDate}</span>
+              <input
+                value={sampleDate}
+                placeholder={text.sampleDatePlaceholder}
+                inputMode="numeric"
+                onChange={(event) => setSampleDate(event.target.value)}
+                className="h-10 w-44 rounded-[var(--radius-control)] border border-border-strong bg-background px-3 tabular-nums"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setSampleDate(todayText)}
+              className="h-10 rounded-[var(--radius-control)] border border-border-strong px-4 font-semibold"
+            >
+              {text.newVisit}
+            </button>
+          </div>
+          <p className="text-sm text-muted-foreground">{text.newVisitHint}</p>
+        </fieldset>
+      ) : null}
+
       <fieldset className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-card p-4">
         <legend className="px-1 font-semibold">{text.billingTitle}</legend>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -125,7 +188,29 @@ export function ExamsStep({ draftId, patient, costType, billing, catalog, lines,
           </label>
           <label className="flex flex-col gap-1">
             <span className="font-semibold">{text.cedula}</span>
-            <input value={cedula} maxLength={20} onChange={(event) => setCedula(event.target.value)} className={FIELD} />
+            <span className="flex gap-2">
+              <select
+                value={cedulaType}
+                aria-label={strings.pendingReview.clients.cedulaType}
+                onChange={(event) => setCedulaType(event.target.value)}
+                className="h-10 w-20 rounded-[var(--radius-control)] border border-border-strong bg-background px-2"
+              >
+                <option value="">{strings.empty.dash}</option>
+                {CEDULA_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={cedulaNumber}
+                aria-label={strings.pendingReview.clients.cedulaNumber}
+                inputMode="numeric"
+                maxLength={14}
+                onChange={(event) => setCedulaNumber(event.target.value)}
+                className={`${FIELD} min-w-0 flex-1 tabular-nums`}
+              />
+            </span>
           </label>
           <label className="flex flex-col gap-1 sm:col-span-2">
             <span className="font-semibold">{text.razonSocial}</span>
@@ -228,14 +313,13 @@ export function ExamsStep({ draftId, patient, costType, billing, catalog, lines,
                   <td className="px-3 py-2">{line.currency}</td>
                   <td className="px-3 py-2 text-right tabular-nums">
                     {line.sinPrecio ? (
-                      <StatusChip status="INCOMPLETO" />
+                      <span className="font-semibold">{line.priceText}</span>
                     ) : (
                       <span className="flex flex-col items-end">
                         <span>{line.priceText}</span>
                         <span className="text-xs text-muted-foreground">{line.basisLabel}</span>
                       </span>
                     )}
-                    {line.sinPrecio ? <span className="sr-only">{line.priceText}</span> : null}
                   </td>
                   <td className="px-3 py-2">
                     <StatusChip status={line.available ? 'DISPONIBLE' : 'NO_DISP'} />
@@ -273,6 +357,7 @@ export function ExamsStep({ draftId, patient, costType, billing, catalog, lines,
           <dt className="text-muted-foreground">{text.totalBs}</dt>
           <dd className="font-semibold">{totals.bs ?? strings.empty.dash}</dd>
         </div>
+        {totals.rate ? <p className="basis-full text-sm text-muted-foreground">{text.rateUsed(totals.rate)}</p> : null}
         {totals.hasSinPrecio ? <p className="basis-full text-sm text-muted-foreground">{text.sinPrecioNote}</p> : null}
       </dl>
 

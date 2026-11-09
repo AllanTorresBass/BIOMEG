@@ -12,8 +12,8 @@ Actor is a **Design rule** inferred from the job. The vendor publishes the roles
 | Command | Where seen | Pattern | Actor | Notes |
 |---|---|---|---|---|
 | Usuario activo, Tasa BCV, QR, Precio sábado | Shell, opened | Shell | Any signed-in role reads. Who sets each one is in [../product/06-access-control.md](../product/06-access-control.md) | Words Activo and Inactivo. Rate repeated on new totals |
-| Ingreso particular | Toolbar and Pacientes | Nueva orden. Its later steps use the patient header card, billing card, and line table | Receptionist | Starts as facturado al paciente |
-| Ingreso empresa | Toolbar and Pacientes | Same order | Receptionist | Requires an active convenio and a razón social before Guardar |
+| Ingreso particular | Toolbar and Pacientes | Nueva orden. Its later steps use the patient header card, billing card, and line table | Receptionist, administration | Starts as facturado al paciente |
+| Ingreso empresa | Toolbar and Pacientes | Same order | Receptionist, administration | Requires an active convenio and a razón social before Guardar |
 | Hoja de trabajo | Toolbar and Hoja de trabajo | Worklist. Row opens the order hub (`/ordenes/{id}`) with breadcrumb back. **Design rule** | Auxiliary, bioanalyst | Form not opened. Five minimum columns. Sole item under Hoja de trabajo y resultados |
 | Cargar resultados | Order hub Acciones (and legacy `/p/cargar-resultados` → worklist). Not a flyout or primary action. **Design rule** | Result grid | Bioanalyst. Auxiliary before release | Form not opened. Grid shape comes from the preview |
 | Presupuesto | Demoted from primary until the quote flow is a real destination. Legacy slug stays pending. **Design rule** | Billing card + line table | Reception, administration | A quote. It does not allocate Factura N°. Screen not opened |
@@ -39,9 +39,9 @@ Evidence for the October commands: [../session/pacientes.md](../session/paciente
 | Corregir cédula | Design rule | Acciones tab on the client ficha | Administration | Password re-entry and motivo. Issued documents keep what they printed |
 | Deshacer fusión | Design rule | Acciones tab on the client ficha | Administration | Password re-entry and motivo. Restores orders from the stored map |
 | Eliminar | Design rule | Acciones tab confirm | Administration | Refused when an order exists in the last 30 days. Otherwise soft-delete |
-| Ingreso particular | Toolbar | Nueva orden, step Cliente, no convenio | Receptionist | Does not create the client by itself |
-| Ingreso empresa | Toolbar | Nueva orden, step Cliente, convenio required before Pago | Receptionist | Same |
-| Facturar consulta | Invoice opened, blank | Steps Exámenes, Personal, and Pago on that client. Not in the Pacientes flyout until a route exists | Receptionist | Order, lines, payments. Sin verificar needs the billing party’s complete cédula at Pago |
+| Ingreso particular | Toolbar | Nueva orden, step Cliente, no convenio | Receptionist, administration | Does not create the client by itself |
+| Ingreso empresa | Toolbar | Nueva orden, step Cliente, convenio required before Pago | Receptionist, administration | Same |
+| Facturar consulta | Invoice opened, blank | Steps Exámenes, Personal, and Pago on that client. Pacientes flyout and the client ficha | Receptionist, administration | Order, lines, payments. Sin verificar needs the billing party’s complete cédula at Pago |
 | Modificar pacientes | Design rule | Same as opening a row on Clientes and editing Ficha / Contacto. Old `/p/modificar-pacientes` redirects to `/clientes` | Receptionist, administration | `patient.save`. Open orders show the new name. Issued reports keep the printed name |
 | Trasladar paciente | Design rule | Blocked until a capture names the destination **Unknown**. Not in the Pacientes flyout | None | Does not offer invented destinations |
 

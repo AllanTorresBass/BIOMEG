@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { strings } from '@/lib/strings'
-import { formatDate, formatMoney, formatRate } from '@/lib/utils/format'
+import { formatBillingCedula, formatDate, formatMoney, formatRate } from '@/lib/utils/format'
 import type { FiscalDocumentView, FiscalNote } from '@/types/orders/fiscal.types'
 import type { SavedOrder } from '@/types/orders/order.types'
 
@@ -18,7 +18,7 @@ export function invoiceDocument(order: SavedOrder): FiscalDocumentView {
       { label: text.order, value: order.number },
       { label: text.date, value: formatDate(order.savedAt) },
       { label: text.patient, value: order.billing.razonSocial || order.clientName },
-      { label: text.cedula, value: order.billing.cedula || strings.empty.dash },
+      { label: text.cedula, value: formatBillingCedula(order.billing.cedulaType, order.billing.cedulaNumber) || strings.empty.dash },
       { label: text.address, value: order.billing.direccion || strings.empty.dash },
       { label: text.rate, value: order.rateBs ? formatRate(order.rateBs) : strings.empty.dash },
     ],

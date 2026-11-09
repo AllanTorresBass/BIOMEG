@@ -36,7 +36,7 @@ function newOrder(priceUsd = '100.00') {
     `k-${keyCounter}`,
     {
       clientId: 'c-1', clientName: 'Paciente Demo', path: 'PARTICULAR', physicianId: null, physicianName: null, convenioId: null, convenioName: null,
-      titular: '', billing: { cedula: '', razonSocial: '', direccion: '' }, costType: null, motivo: '', sampleDate: null, lines, payments: [],
+      titular: '', billing: { cedulaType: '', cedulaNumber: '', razonSocial: '', direccion: '' }, costType: null, motivo: '', sampleDate: null, lines, payments: [],
       discountPct: '0', discountMotivo: '', rateBs: '100.00', rateDate: '2026-11-04', ivaRate: null, igtfRate: null,
       totals: computeOrderTotals({ ...base, lines, payments: [] }),
       savedById: 'u', savedByName: 'u', savedAt: new Date().toISOString(),

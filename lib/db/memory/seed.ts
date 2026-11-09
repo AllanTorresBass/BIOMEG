@@ -136,8 +136,8 @@ function buildSeed(): DemoSeed {
     qrEnabled: true,
     saturdayPriceEnabled: false,
     discountLimit: 0,
-    ivaRate: null,
-    igtfRate: null,
+    ivaRate: '16',
+    igtfRate: '3',
     portalCodeWorks: false,
   },
   }
@@ -147,3 +147,6 @@ const globalStore = globalThis as typeof globalThis & { __biomegDemoSeed?: DemoS
 
 /** One object for every server bundle. A rate or price change has to be visible to the next screen. */
 export const demoSeed: DemoSeed = (globalStore.__biomegDemoSeed ??= buildSeed())
+// A process that already built the seed keeps the old object. Gate B rates still apply.
+if (demoSeed.settings.ivaRate == null) demoSeed.settings.ivaRate = '16'
+if (demoSeed.settings.igtfRate == null) demoSeed.settings.igtfRate = '3'

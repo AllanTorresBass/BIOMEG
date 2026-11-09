@@ -402,11 +402,18 @@ export function ClientCard({
             </Button>
           ) : null}
           {!embedded && data.id && data.active && canOpenOrder ? (
-            <Button asChild variant="outline" className="h-10 rounded-[var(--radius-control)] px-4 font-semibold">
-              <Link href={`/ordenes/nueva?via=particular&clientId=${encodeURIComponent(data.id)}`}>
-                {strings.clients.newOrder}
-              </Link>
-            </Button>
+            <>
+              <Button asChild variant="outline" className="h-10 rounded-[var(--radius-control)] px-4 font-semibold">
+                <Link href={`/ordenes/nueva?via=particular&clientId=${encodeURIComponent(data.id)}`}>
+                  {strings.clients.newOrder}
+                </Link>
+              </Button>
+              <Button asChild className="h-10 rounded-[var(--radius-control)] px-4 font-semibold">
+                <Link href={`/ordenes/facturar?clientId=${encodeURIComponent(data.id)}`}>
+                  {strings.clients.billOrder}
+                </Link>
+              </Button>
+            </>
           ) : null}
         </div>
 

@@ -265,6 +265,7 @@ export const strings = {
     emptyInactiveHint: 'Si busca un cliente desactivado, marque Incluir inactivos.',
     openFichaHint: 'Use las flechas ↑ ↓ para abrir la ficha del nombre resaltado.',
     newOrder: 'Nueva orden',
+    billOrder: 'Facturar consulta',
   },
   orders: {
     clientNotFound: 'Paciente no encontrado o inactivo.',
@@ -595,7 +596,9 @@ export const strings = {
     orders: {
       voidNoteLine: 'Anulación de la orden',
       title: 'Nueva orden',
+      facturarTitle: 'Facturar consulta',
       steps: ['Cliente', 'Exámenes', 'Personal', 'Pago'],
+      facturarSteps: ['Exámenes', 'Personal', 'Pago'],
       stepsLabel: 'Pasos de la orden',
       pathParticular: 'Ingreso particular',
       pathEmpresa: 'Ingreso empresa',
@@ -703,6 +706,7 @@ export const strings = {
       needConvenio: 'Elija un convenio para guardar una orden de empresa.',
       needTitular: 'Este convenio exige el nombre del titular.',
       needRazonSocial: 'Falta la razón social para facturar a la empresa.',
+      needBillingCedula: 'Falta la cédula completa de quien se factura.',
       paymentSaved: 'Pago guardado.',
       subTotal: 'Sub total',
       exento: 'Total exento',

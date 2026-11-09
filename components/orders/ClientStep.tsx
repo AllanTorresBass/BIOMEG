@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 
 const text = strings.pendingReview.orders
 
-export function ClientStep({ draftId, patient, visit, todayText, canCreateClient }: ClientStepProps) {
+export function ClientStep({ draftId, patient, visit, todayText, canCreateClient, searchOnly = false }: ClientStepProps) {
   const { selectClient, saveVisit, goToStep, cancelDraft } = useOrderCommands()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -48,9 +48,8 @@ export function ClientStep({ draftId, patient, visit, todayText, canCreateClient
 
   return (
     <div className="flex flex-col gap-4">
-      {patient ? (
-        <PatientHeader patient={patient} />
-      ) : (
+      {patient ? <PatientHeader patient={patient} /> : null}
+      {searchOnly || !patient ? (
         <form
           role="search"
           onSubmit={(event) => {
@@ -74,7 +73,7 @@ export function ClientStep({ draftId, patient, visit, todayText, canCreateClient
           >
             {text.searchButton}
           </button>
-          {canCreateClient ? (
+          {canCreateClient && !searchOnly ? (
             <Link
               href="/clientes/nuevo"
               className="inline-flex h-10 items-center rounded-[var(--radius-control)] border border-border-strong px-4 font-semibold"
@@ -83,9 +82,9 @@ export function ClientStep({ draftId, patient, visit, todayText, canCreateClient
             </Link>
           ) : null}
         </form>
-      )}
+      ) : null}
 
-      {!patient && query !== '' && !search.isLoading ? (
+      {(searchOnly || !patient) && query !== '' && !search.isLoading ? (
         results.length === 0 ? (
           <p className="text-muted-foreground">{text.noMatches}</p>
         ) : (
@@ -110,7 +109,7 @@ export function ClientStep({ draftId, patient, visit, todayText, canCreateClient
         )
       ) : null}
 
-      {patient ? (
+      {!searchOnly && patient ? (
         <>
           <fieldset className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-card p-4">
             <legend className="px-1 font-semibold">{text.steps[0]}</legend>
@@ -160,14 +159,16 @@ export function ClientStep({ draftId, patient, visit, todayText, canCreateClient
         >
           {text.cancel}
         </button>
-        <button
-          type="button"
-          disabled={pending || !patient}
-          onClick={next}
-          className="h-10 rounded-[var(--radius-control)] bg-primary px-4 font-semibold text-primary-foreground disabled:opacity-60"
-        >
-          {text.next}
-        </button>
+        {searchOnly ? null : (
+          <button
+            type="button"
+            disabled={pending || !patient}
+            onClick={next}
+            className="h-10 rounded-[var(--radius-control)] bg-primary px-4 font-semibold text-primary-foreground disabled:opacity-60"
+          >
+            {text.next}
+          </button>
+        )}
       </div>
     </div>
   )

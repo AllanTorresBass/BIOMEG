@@ -36,8 +36,8 @@ export function searchDraftPatients(context: StaffContext, draftId: string, text
   return searchClients({ text, includeInactive: false }).slice(0, MAX_MATCHES).map(toPatient)
 }
 
-export async function canOpenOrders(context: StaffContext): Promise<boolean> {
-  return guardRoute(context, ['order.open'], '/ordenes/nueva')
+export async function canOpenOrders(context: StaffContext, route = '/ordenes/nueva'): Promise<boolean> {
+  return guardRoute(context, ['order.open'], route)
 }
 
 export function beginDraft(context: StaffContext, path: OrderPath, clientId?: string): string {
@@ -49,6 +49,17 @@ export function beginDraft(context: StaffContext, path: OrderPath, clientId?: st
     }
   }
   return draft.id
+}
+
+/** Facturar consulta. An active client opens on Exámenes. Anyone else stays on the search. */
+export function beginFacturar(context: StaffContext, clientId?: string): { draftId: string; missingClient: boolean } {
+  const draft = startDraft(context.account.id, 'PARTICULAR', 'FACTURAR')
+  if (!clientId) return { draftId: draft.id, missingClient: false }
+  const client = getClient(clientId)
+  if (!client || !client.active || client.deletedAt) return { draftId: draft.id, missingClient: true }
+  draft.clientId = client.id
+  draft.step = 2
+  return { draftId: draft.id, missingClient: false }
 }
 
 export function getNewOrderScreen(context: StaffContext, draftId: string) {

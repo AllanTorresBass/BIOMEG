@@ -3,7 +3,7 @@ import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { getQuoteScreen } from '@/lib/server/queries/orders'
 import { requireReadyStaff } from '@/lib/server/session/require'
 import { strings } from '@/lib/strings'
-import { LAB_TIME_ZONE, formatMoney, formatRate } from '@/lib/utils/format'
+import { LAB_TIME_ZONE, formatBillingCedula, formatMoney, formatRate } from '@/lib/utils/format'
 
 const text = strings.pendingReview.orders
 
@@ -21,7 +21,7 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
   )
   const billing = [
     [text.billingName, quote.billing.razonSocial],
-    [text.billingCedula, quote.billing.cedula],
+    [text.billingCedula, formatBillingCedula(quote.billing.cedulaType, quote.billing.cedulaNumber)],
     [text.billingAddress, quote.billing.direccion],
   ].filter(([, value]) => value && value.trim() !== '')
 

@@ -35,7 +35,7 @@ function newOrder(lines: DraftLine[], payments: DraftPayment[]): NewOrder {
     convenioId: null,
     convenioName: null,
     titular: '',
-    billing: { cedula: '', razonSocial: '', direccion: '' },
+    billing: { cedulaType: '', cedulaNumber: '', razonSocial: '', direccion: '' },
     costType: null,
     motivo: '',
     sampleDate: null,
@@ -107,7 +107,7 @@ describe('createQuote', () => {
     const quote = createQuote({
       clientId: 'c-1',
       clientName: 'Paciente Prueba',
-      billing: { cedula: '', razonSocial: '', direccion: '' },
+      billing: { cedulaType: '', cedulaNumber: '', razonSocial: '', direccion: '' },
       lines: [line('a', '10.00')],
       discountPct: '0',
       rateBs: '40',
