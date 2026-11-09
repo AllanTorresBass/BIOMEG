@@ -3,7 +3,8 @@ import 'server-only'
 import { z } from 'zod'
 import { PORTAL_SETTINGS } from '@/lib/config/portal'
 import { addressKey, checkChallenge, failureKey, isPaused, openChallenge, registerFailure } from '@/lib/db/memory/portal-store'
-import { currentProvider, fakeProviderSent } from '@/lib/server/delivery/provider'
+import { serverContainer } from '@/lib/server/container'
+import { fakeProviderSent } from '@/lib/server/ports/fake-delivery'
 import { hasAnyOrder, matchClients, phoneFor } from '@/lib/server/domain/portal'
 import { auditEvent, requestAddress } from '@/lib/server/audit'
 import { enterPortal, leavePortalSession, pendingChallenge, rememberChallenge } from '@/lib/server/portal/session'
@@ -64,7 +65,7 @@ export async function requestPortalCode(input: PortalCodeRequestInput): Promise<
     clients.map((client) => client.id),
     clients[0]!.fullName,
   )
-  const result = await currentProvider().send({
+  const result = await serverContainer.deliveryPort.send({
     channel: 'WHATSAPP',
     to: phone,
     subject: null,

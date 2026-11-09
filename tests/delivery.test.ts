@@ -5,7 +5,7 @@ vi.mock('server-only', () => ({}))
 import { approveIncomplete, completeResendTask, createResendTask, incompleteApprovalOf, recordDelivery, restoreDeliveries, snapshotDeliveries, updateDelivery } from '@/lib/db/memory/delivery-store'
 import { getStub } from '@/lib/db/memory/order-index'
 import { demoSeed } from '@/lib/db/memory/seed'
-import { clearFakeProvider, fakeProvider, fakeProviderSent, setFakeProviderFailing } from '@/lib/server/delivery/provider'
+import { clearFakeProvider, fakeDeliveryPort, fakeProviderSent, setFakeProviderFailing } from '@/lib/server/ports/fake-delivery'
 import { blockedReason, buildDeliveryView, deliveryModeAllowed, deliveryStateOf, destinationOf, messageFor, modeOf, resendChannelsOf } from '@/lib/server/domain/delivery'
 import type { ClientRecord } from '@/types/domain/client.types'
 
@@ -113,13 +113,13 @@ describe('the provider', () => {
   const message = messageFor({ channel: 'WHATSAPP', to: '0414', mode: 'PORTAL_LINK', orderNumber: 'o-1', origin: null, resend: false, incomplete: false })
 
   it('records what it was asked to send', async () => {
-    expect(await fakeProvider.send(message)).toEqual({ ok: true })
+    expect(await fakeDeliveryPort.send(message)).toEqual({ ok: true })
     expect(fakeProviderSent()).toHaveLength(1)
   })
 
   it('can fail without recording a send', async () => {
     setFakeProviderFailing(true)
-    const result = await fakeProvider.send(message)
+    const result = await fakeDeliveryPort.send(message)
     expect(result.ok).toBe(false)
     expect(fakeProviderSent()).toHaveLength(0)
   })

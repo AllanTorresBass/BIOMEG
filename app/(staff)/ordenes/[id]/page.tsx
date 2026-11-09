@@ -2,8 +2,7 @@ import Link from 'next/link'
 import { OrderActions } from '@/components/orders/OrderActions'
 import { BlockedNotice } from '@/components/shared/BlockedNotice'
 import { StatusChip } from '@/components/shared/StatusChip'
-import { getOrder } from '@/lib/db/memory/order-store'
-import { guardRoute } from '@/lib/server/guard'
+import { getOrderScreen } from '@/lib/server/queries/orders'
 import { requireReadyStaff } from '@/lib/server/session/require'
 import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE, formatMoney } from '@/lib/utils/format'
@@ -18,10 +17,10 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const context = await requireReadyStaff()
   if (context.locked) return null
   const { id } = await params
-  if (!(await guardRoute(context, ['order.open'], `/ordenes/${id}`))) return <BlockedNotice />
-
-  const order = getOrder(id)
-  if (!order) return <p className="text-muted-foreground">{text.orderMissing}</p>
+  const screen = await getOrderScreen(context, id)
+  if (screen.kind === 'BLOCKED') return <BlockedNotice />
+  if (screen.kind === 'MISSING') return <p className="text-muted-foreground">{text.orderMissing}</p>
+  const { order } = screen
 
   const rows: [string, string][] = [
     [text.savedPatient, order.clientName],

@@ -5,7 +5,7 @@ import { deliveryListOf, incompleteApprovalOf, resendTasksOf } from '@/lib/db/me
 import { sectionsWithResults } from '@/lib/db/memory/result-store'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { reportKindOf } from '@/lib/server/domain/report'
-import type { ProviderMessage } from '@/types/server/provider.types'
+import type { ProviderMessage } from '@/types/contracts/ports.contracts'
 import { strings } from '@/lib/strings'
 import type { ClientRecord } from '@/types/domain/client.types'
 import type { OrderStub } from '@/types/domain/order-stub.types'

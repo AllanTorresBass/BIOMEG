@@ -10,9 +10,7 @@ export interface PatientView {
 
 export interface ClientStepProps {
   draftId: string
-  query: string
   patient: PatientView | null
-  results: PatientView[]
   visit: { motivo: string; sampleDate: string }
   todayText: string
   canCreateClient: boolean
