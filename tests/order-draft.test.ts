@@ -122,6 +122,15 @@ describe('draft store', () => {
     expect(startDraft('owner-c', 'PARTICULAR')).not.toBe(first)
   })
 
+  it('keeps a facturar draft apart from a nueva orden draft', () => {
+    const nueva = startDraft('owner-f', 'PARTICULAR')
+    const facturar = startDraft('owner-f', 'PARTICULAR', 'FACTURAR')
+    expect(nueva.entry).toBe('NUEVA')
+    expect(facturar.entry).toBe('FACTURAR')
+    expect(facturar).not.toBe(nueva)
+    expect(startDraft('owner-f', 'PARTICULAR', 'FACTURAR')).toBe(facturar)
+  })
+
   it('starts a new draft once the first one has a client', () => {
     const first = startDraft('owner-d', 'PARTICULAR')
     first.clientId = 'c-1'

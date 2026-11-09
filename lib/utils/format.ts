@@ -104,6 +104,14 @@ export function formatCedula(type: CedulaType, digits: string): string {
   return `${type}-${groupThousands(clean)}`
 }
 
+/** The billing card stores the pair. An empty pair prints nothing. */
+export function formatBillingCedula(type: string, number: string): string {
+  const kind = (type ?? '').trim().toUpperCase()
+  if (!kind || !(number ?? '').trim()) return ''
+  if (!(CEDULA_TYPES as readonly string[]).includes(kind)) return ''
+  return formatCedula(kind as CedulaType, number)
+}
+
 /**
  * Only this paste parser reads a bare digit string as type V.
  * "V-12.345.678", "e 12345678", and "12.345.678" are accepted.

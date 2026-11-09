@@ -3,7 +3,7 @@
 **Type:** [01-application-type.md](01-application-type.md)
 **Analysis and evidence:** [../access-control-plan.md](../access-control-plan.md)
 **Row conditions and command names:** [07-rule-reference.md](07-rule-reference.md)  
-**Table version:** 7. Each change to the table raises it, and each audit row stores the version that decided it
+**Table version:** 8. Each change to the table raises it, and each audit row stores the version that decided it
 
 This page says who may run each command, in which state, with which gesture, and what is recorded. If an actor on another page differs, this page wins. All of it is a **design rule**. The vendor published no permission matrix, and the screens that would show the current program’s rules were not opened.
 
@@ -54,6 +54,7 @@ Accepted on 1 November 2026, on the instruction to apply the recommendations.
 | Two different cédulas | A merge is refused. A wrong cédula goes through Corregir cédula | |
 | Reactivar | Same roles and confirm as Desactivar (R-017). Soft-deleted clients stay hidden | |
 | Administración creates clients | R-014 also grants Administración create and Modificar, so the owner account can cover reception | |
+| Administración bills a visit | R-023 grants Administración `order.open` and `order.save`, and R-027 grants `order.line.add`. The owner account can open Facturar consulta, Ingreso particular, and Ingreso empresa, and can save the factura. Asked on 8 November 2026 | |
 | Self-entered values | No second reviewer. Recorded and reviewed | Lead bioanalyst to confirm |
 | Money owed | Does not block the portal or the release | |
 | `SIN PRECIO` | Blocks the fiscal issue. Does not block Liberar. This replaces the earlier rule | Lead bioanalyst to confirm |
@@ -128,11 +129,11 @@ A correction works on one released section, and that section’s results move to
 | R-020 | Fusionar | — | — | — | S | Two complete, different cédulas are refused |
 | R-021 | Deshacer fusión | — | — | — | S + motivo | New command. Restores from the stored map of moved orders |
 | R-022 | Trasladar paciente | — | — | — | — | Blocked until a capture names the destination |
-| R-023 | Ingreso particular, Ingreso empresa, Facturar consulta | ● | — | — | — |  |
+| R-023 | Ingreso particular, Ingreso empresa, Facturar consulta | ● | — | — | ● |  |
 | R-024 | Discount | ● to limit | — | — | ● | The limit is a setting. It starts at 0 percent until the owner sets it |
 | R-025 | Discount above the limit | — | — | — | ● + motivo | Administrator approval and motivo |
 | R-026 | Price column other than the default | C + motivo | — | — | ● | Applies once a saved pair sets a default. Until then the operator chooses |
-| R-027 | Add exam line | ● | — | — | — |  |
+| R-027 | Add exam line | ● | — | — | ● |  |
 | R-028 | Remove line, no results | ● | — | — | ● |  |
 | R-029 | Remove line, result exists | — | — | S | — | Clinical correction. Money follows through a note |
 | R-030 | Anular orden: result released | — | — | — | — | Refused. Correct it instead |

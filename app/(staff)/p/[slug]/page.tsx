@@ -75,6 +75,19 @@ export default async function ScreenPage({ params }: { params: Promise<{ slug: s
   if (slug === toSlug('Hoja de trabajo')) redirect('/hoja-de-trabajo')
   if (slug === toSlug('Ingreso particular')) redirect('/ordenes/nueva?via=particular')
   if (slug === toSlug('Ingreso empresa')) redirect('/ordenes/nueva?via=empresa')
+  if (slug === toSlug('Facturar consulta')) {
+    const context = await requireReadyStaff()
+    if (context.locked) return null
+    if (!(await guardRoute(context, ['order.open'], `/p/${slug}`))) {
+      return (
+        <section className="flex flex-col items-start gap-2">
+          <h1 className="text-xl font-semibold">{strings.pendingReview.orders.facturarTitle}</h1>
+          <StatusChip status="BLOQUEADO" />
+        </section>
+      )
+    }
+    redirect('/ordenes/facturar')
+  }
   const screen = DESTINATIONS[slug]
   if (screen) redirect(screen)
 
@@ -89,12 +102,12 @@ export default async function ScreenPage({ params }: { params: Promise<{ slug: s
       </section>
     )
   }
-  if (slug === toSlug('Facturar consulta') || slug === toSlug('Generar presupuesto')) {
+  if (slug === toSlug('Generar presupuesto')) {
     const context = await requireReadyStaff()
     if (context.locked) return null
-    const command = slug === toSlug('Generar presupuesto') ? 'quote.create' : 'order.open'
+    const command = 'quote.create'
     if (!(await guardRoute(context, [command], `/p/${slug}`))) return <BlockedNotice />
-    const label = slug === toSlug('Generar presupuesto') ? 'Generar presupuesto' : 'Facturar consulta'
+    const label = 'Generar presupuesto'
     return (
       <section className="flex flex-col gap-2">
         <h1 className="text-xl font-semibold">{label}</h1>

@@ -8,7 +8,7 @@ import { discardDraft, nextLineId } from '@/lib/db/memory/draft-store'
 import { allOrders } from '@/lib/db/memory/order-index'
 import { demoSeed } from '@/lib/db/memory/seed'
 import { COST_TYPES, PRICE_COLUMNS, SAVED_PRICE_PAIRS } from '@/lib/config/price-defaults'
-import { parseBirthDate, todayInLab } from '@/lib/server/domain/client-rules'
+import { parseBirthDate, todayInLab, validateCedulaPair } from '@/lib/server/domain/client-rules'
 import { needsColumnOverride, repeatedExamIds } from '@/lib/server/domain/order-draft-rules'
 import { priceFor, pricingBasis } from '@/lib/domain/pricing'
 import { strings } from '@/lib/strings'
@@ -16,6 +16,11 @@ import { activeClient, done, fail, gate, gated, isResult, open, record, refresh 
 import type { AddLineInput, BillingInput, DraftResult, VisitInput } from '@/types/orders/draft.types'
 
 const text = strings.pendingReview.orders
+
+function cedulaError(code: string): string {
+  const errors = strings.pendingReview.clients.errors
+  return code in errors ? errors[code as keyof typeof errors] : text.notAllowed
+}
 
 export async function selectClient({ draftId, clientId }: SelectClientInput): Promise<DraftResult> {
   const opened = await open(draftId)
@@ -30,7 +35,9 @@ export async function selectClient({ draftId, clientId }: SelectClientInput): Pr
   // Another person means another visit: the lines were priced for the first one.
   if (before !== client.id) {
     opened.draft.lines = []
-    opened.draft.step = 1
+    opened.draft.step = opened.draft.entry === 'FACTURAR' ? 2 : 1
+  } else if (opened.draft.entry === 'FACTURAR') {
+    opened.draft.step = 2
   }
   opened.draft.clientId = client.id
   await record(opened, 'order.open', allowed.rowId, { before: { clientId: before }, after: { clientId: client.id } })
@@ -69,10 +76,13 @@ export async function saveBilling(input: BillingInput): Promise<DraftResult> {
   if (gated(allowed)) return allowed
 
   if (input.costType !== null && !COST_TYPES.includes(input.costType)) return fail(text.notAllowed)
+  const pair = validateCedulaPair(input.cedulaType, input.cedulaNumber)
+  if (!pair.ok) return fail(cedulaError(pair.refusal.code))
   const before = { costType: opened.draft.costType, billing: opened.draft.billing }
   opened.draft.costType = input.costType
   opened.draft.billing = {
-    cedula: input.cedula.trim().slice(0, 20),
+    cedulaType: pair.type ?? '',
+    cedulaNumber: pair.digits ?? '',
     razonSocial: input.razonSocial.trim().slice(0, 120),
     direccion: input.direccion.trim().slice(0, 200),
   }

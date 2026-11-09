@@ -9,6 +9,7 @@ import { auditEvent } from '@/lib/server/audit'
 import { activeClient, done, fail, gate, gated, isResult, open, record, recordRefusal, refresh } from '@/lib/server/draft-gate'
 import type { Opened } from '@/types/server/draft-gate.types'
 import { computeOrderTotals, parseAmountCents, parsePercentBp } from '@/lib/domain/order-totals'
+import { validateCedulaPair } from '@/lib/server/domain/client-rules'
 import { centsToDecimal } from '@/lib/domain/pricing'
 import { strings } from '@/lib/strings'
 import { LAB_TIME_ZONE, formatRate } from '@/lib/utils/format'
@@ -124,8 +125,16 @@ function saved(orderId: string, message = ''): SaveResult {
 /** What an order of this kind needs before it can exist. Null when nothing is missing. */
 function missingFor(opened: Opened): string | null {
   const { draft } = opened
-  if (!activeClient(draft.clientId)) return strings.orders.clientNotFound
+  const client = activeClient(draft.clientId)
+  if (!client) return strings.orders.clientNotFound
   if (draft.lines.length === 0) return text.needLines
+  const pair = validateCedulaPair(draft.billing.cedulaType ?? '', draft.billing.cedulaNumber ?? '')
+  if (!pair.ok) {
+    const errors = strings.pendingReview.clients.errors
+    return pair.refusal.code in errors ? errors[pair.refusal.code as keyof typeof errors] : text.notAllowed
+  }
+  if (!client.verified && !pair.type) return text.needBillingCedula
+  if (draft.costType === 'SEGURO_EMPRESA' && draft.billing.razonSocial.trim() === '') return text.needRazonSocial
   if (draft.path === 'EMPRESA') {
     const convenio = activeConvenio(draft.convenioId)
     if (!convenio) return text.needConvenio

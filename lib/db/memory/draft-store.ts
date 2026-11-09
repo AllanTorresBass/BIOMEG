@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { emptyPayments } from '@/lib/config/payment-methods'
-import type { OrderDraft, OrderPath } from '@/types/orders/draft.types'
+import type { OrderDraft, OrderEntry, OrderPath } from '@/types/orders/draft.types'
 import type { DraftState } from '@/types/stores/draft-store.types'
 
 const globalStore = globalThis as typeof globalThis & { __biomegDrafts?: DraftState }
@@ -21,14 +21,15 @@ export function getDraft(id: string, ownerId: string): OrderDraft | null {
  * Opens a draft in state BORRADOR. Opening the screen twice reuses the empty draft already
  * waiting, so a refresh never leaves a second empty order behind.
  */
-export function startDraft(ownerId: string, path: OrderPath): OrderDraft {
+export function startDraft(ownerId: string, path: OrderPath, entry: OrderEntry = 'NUEVA'): OrderDraft {
   for (const draft of state.drafts.values()) {
-    if (draft.ownerId === ownerId && draft.path === path && isUntouched(draft)) return draft
+    if (draft.ownerId === ownerId && draft.path === path && draft.entry === entry && isUntouched(draft)) return draft
   }
   state.counter += 1
   const draft: OrderDraft = {
     id: `d-${state.counter}`,
     ownerId,
+    entry,
     path,
     step: 1,
     state: 'BORRADOR',
@@ -36,7 +37,7 @@ export function startDraft(ownerId: string, path: OrderPath): OrderDraft {
     motivo: '',
     sampleDate: null,
     costType: null,
-    billing: { cedula: '', razonSocial: '', direccion: '' },
+    billing: { cedulaType: '', cedulaNumber: '', razonSocial: '', direccion: '' },
     lines: [],
     physicianId: null,
     convenioId: null,

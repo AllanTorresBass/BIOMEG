@@ -22,7 +22,7 @@ Staff work is the system of record: the order, the result grid, validation, the 
 | Auxiliary | Auxiliar | Hoja de trabajo. Cargar resultados before release. Never Liberar |
 | Bioanalyst | Bioanalista | Cargar resultados, Liberar, the issued report |
 | Physician | Médico | Optional requester on the order. Reader of the delivered report. No account in the first release |
-| Administrator | Administración | Money after the factura, registries, prices, users, backup, and Auditoría. No clinical values |
+| Administrator | Administración | Factura and the money after it, registries, prices, users, backup, and Auditoría. No clinical values |
 | Client | Cliente | Portal only: Mis visitas and Descargar informe |
 | Holder of the paper | Público | Verification page only, with the token in the code |
 | Analyzer link, sender, scheduler | Sistema | Limited to their own commands. Cannot sign in |

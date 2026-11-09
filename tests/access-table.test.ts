@@ -42,7 +42,7 @@ function parseCell(cell: string) {
 
 describe('permission table against the docs', () => {
   it('has the version and the 105 rows', () => {
-    expect(TABLE_VERSION).toBe(7)
+    expect(TABLE_VERSION).toBe(8)
     expect(PERMISSION_ROWS).toHaveLength(105)
     expect(referenceRows).toHaveLength(105)
   })

@@ -89,7 +89,7 @@ function savedOrder(rateBs: string, physicianName: string | null, basis: 'ORDINA
       convenioId: null,
       convenioName: null,
       titular: '',
-      billing: { cedula: '', razonSocial: '', direccion: '' },
+      billing: { cedulaType: '', cedulaNumber: '', razonSocial: '', direccion: '' },
       costType: null,
       motivo: '',
       sampleDate: null,

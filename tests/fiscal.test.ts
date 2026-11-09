@@ -30,7 +30,7 @@ function newOrder(priceUsd: string | null = '100.00', payments: { method: string
     `fiscal-${keys}`,
     {
       clientId: 'c-1', clientName: 'Paciente Demo', path: 'PARTICULAR', physicianId: null, physicianName: null, convenioId: null, convenioName: null,
-      titular: '', billing: { cedula: '', razonSocial: '', direccion: '' }, costType: null, motivo: '', sampleDate: null, lines, payments,
+      titular: '', billing: { cedulaType: '', cedulaNumber: '', razonSocial: '', direccion: '' }, costType: null, motivo: '', sampleDate: null, lines, payments,
       discountPct: '0', discountMotivo: '', rateBs: '100.00', rateDate: '2026-11-04', ivaRate: null, igtfRate: null,
       totals: computeOrderTotals({ rate: '100.00', ivaRate: null, igtfRate: null, discountPct: '0', lines, payments: payments as never }),
       savedById: 'u', savedByName: 'u', savedAt: new Date().toISOString(),

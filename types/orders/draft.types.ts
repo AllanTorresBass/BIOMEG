@@ -7,6 +7,9 @@ export type CostType = 'RUTINA' | 'SEGURO_EMPRESA' | 'EMERGENCIA' | 'HOSPITALIZA
 
 export type OrderPath = 'PARTICULAR' | 'EMPRESA'
 
+/** Nueva orden keeps the client step. Facturar consulta starts on a client who already exists. */
+export type OrderEntry = 'NUEVA' | 'FACTURAR'
+
 export type PricingBasis = 'SABADO' | 'ORDINARIO'
 
 export type ExamStatus = 'DISPONIBLE' | 'NO_DISP'
@@ -28,7 +31,9 @@ export interface DraftLine {
 }
 
 export interface DraftBilling {
-  cedula: string
+  /** Empty together, or a complete pair: V, E, J, P, G and 6–10 digits. */
+  cedulaType: string
+  cedulaNumber: string
   razonSocial: string
   direccion: string
 }
@@ -54,6 +59,7 @@ export interface DraftPayment {
 export interface OrderDraft {
   id: string
   ownerId: string
+  entry: OrderEntry
   path: OrderPath
   step: 1 | 2 | 3 | 4
   state: 'BORRADOR'
@@ -138,7 +144,8 @@ export interface VisitInput {
 export interface BillingInput {
   draftId: string
   costType: CostType | null
-  cedula: string
+  cedulaType: string
+  cedulaNumber: string
   razonSocial: string
   direccion: string
 }

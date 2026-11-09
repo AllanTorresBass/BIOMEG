@@ -20,7 +20,7 @@ function item(label: string, ...commands: string[]): MenuItem {
 export const MENU_GROUPS: readonly MenuGroup[] = [
   {
     label: 'Pacientes',
-    items: [item('Pacientes', 'client.read')],
+    items: [item('Pacientes', 'client.read'), item('Facturar consulta', 'order.open')],
   },
   {
     label: 'Hoja de trabajo y resultados',

@@ -116,6 +116,7 @@ export async function recordRefusal(opened: Subject, command: string, reason: Re
 
 export function refresh(): void {
   revalidatePath(ROUTE)
+  revalidatePath('/ordenes/facturar')
 }
 
 export function activeClient(clientId: string | null) {

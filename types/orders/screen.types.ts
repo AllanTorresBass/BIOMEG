@@ -14,6 +14,8 @@ export interface ClientStepProps {
   visit: { motivo: string; sampleDate: string }
   todayText: string
   canCreateClient: boolean
+  /** Facturar consulta only searches. The visit fields live on Exámenes. */
+  searchOnly?: boolean
 }
 
 export interface ExamsStepProps {
@@ -25,6 +27,9 @@ export interface ExamsStepProps {
   lines: DraftLineView[]
   totals: DraftTotalsView
   rateMissing: boolean
+  /** Set on Facturar consulta, which has no Cliente step. */
+  visit?: { motivo: string; sampleDate: string }
+  todayText?: string
 }
 
 export interface PersonalStepProps {
